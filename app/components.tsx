@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
 import Animated, { ZoomIn } from 'react-native-reanimated';
-import { GooeyMenu, LikeButton, LiquidToggle, MorphButton, SplitButton, SwipeToDelete, useToast } from '@/dissolve';
+import { GooeyMenu, LikeButton, MorphButton, SplitButton, SwipeToDelete, useToast } from '@/dissolve';
 import { C, layout, mono } from '@/ui';
 
 const P = {
@@ -132,32 +132,15 @@ function Post() {
 
 function Liquid() {
   const toast = useToast();
-  const [notif, setNotif] = useState(true);
-  const [dark, setDark] = useState(false);
-  const [sync, setSync] = useState(true);
   return (
     <View>
-      <Header index="04" title="Morph button" note="Pours into a loading drop, flows back out as done." />
+      <Header index="04" title="Morph button" note="Folds into a loader, opens back up as done." />
       <MorphButton label="Pay 42 €" doneLabel="Paid" onPress={() => new Promise((r) => setTimeout(r, 1400))} />
 
-      <Header index="05" title="Split button" note="Splits like a drop into Cancel and Confirm." />
+      <Header index="05" title="Split button" note="Slides apart into Cancel and Confirm." />
       <SplitButton label="Delete project" confirmLabel="Delete" onConfirm={() => toast.show({ title: 'Project deleted', tone: 'error' })} />
 
-      <Header index="06" title="Liquid toggle" note="The knob travels like a drop." />
-      <View style={st.settings}>
-        {[
-          ['Notifications', notif, setNotif],
-          ['Dark mode', dark, setDark],
-          ['iCloud sync', sync, setSync],
-        ].map(([label, v, set], i) => (
-          <View key={label as string} style={[st.setting, i > 0 && st.settingLine]}>
-            <Text style={st.settingText}>{label as string}</Text>
-            <LiquidToggle value={v as boolean} onValueChange={set as (b: boolean) => void} />
-          </View>
-        ))}
-      </View>
-
-      <Header index="07" title="Gooey menu" note="Actions pour out of the button as drops." />
+      <Header index="06" title="Gooey menu" note="Actions pour out of the button as drops." />
       <View style={st.menuStage}>
         <Image source={P.lake} style={StyleSheet.absoluteFill} contentFit="cover" />
         <GooeyMenu
