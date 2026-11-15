@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
-import { Canvas, Circle, Group, RoundedRect } from '@shopify/react-native-skia';
+import { Canvas, Circle, Group, Oval, RoundedRect } from '@shopify/react-native-skia';
 import { Easing, interpolateColor, useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { gooLayer } from './goo';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
+const SOFT = Easing.inOut(Easing.cubic);
 const PAD = 10;
 
 export type LiquidToggleProps = {
@@ -36,15 +36,28 @@ export function LiquidToggle({ value, onValueChange, width = 56, height = 34, on
 
   useEffect(() => {
     const to = value ? 1 : 0;
-    head.value = withTiming(to, { duration: 260, easing: CALM });
-    tail.value = withTiming(to, { duration: 520, easing: CALM });
+    head.value = withTiming(to, { duration: 400, easing: SOFT });
+    tail.value = withTiming(to, { duration: 1000, easing: SOFT });
   }, [value, head, tail]);
 
   const cy = PAD + height / 2;
   const hx = useDerivedValue(() => x0 + (x1 - x0) * head.value);
   const tx = useDerivedValue(() => x0 + (x1 - x0) * tail.value);
   const mx = useDerivedValue(() => (hx.value + tx.value) / 2);
-  const tr = useDerivedValue(() => r * (1 - 0.18 * Math.min(1, Math.abs(head.value - tail.value) * 2.2)));
+  const q1 = useDerivedValue(() => hx.value + (tx.value - hx.value) * 0.25);
+  const q3 = useDerivedValue(() => hx.value + (tx.value - hx.value) * 0.75);
+  // The further apart head and tail are, the thinner the neck between them.
+  const stretch = useDerivedValue(() => Math.min(1, Math.abs(head.value - tail.value) * 2));
+  const tr = useDerivedValue(() => r * (1 - 0.3 * stretch.value));
+  const nr = useDerivedValue(() => r * (1 - 0.62 * stretch.value));
+  const qr = useDerivedValue(() => r * (1 - 0.42 * stretch.value));
+  // Squash and stretch: the leading drop flattens and widens while the liquid is pulled.
+  const hw = useDerivedValue(() => r * (1 + 0.28 * stretch.value));
+  const hh = useDerivedValue(() => r * (1 - 0.2 * stretch.value));
+  const ox = useDerivedValue(() => hx.value - hw.value);
+  const oy = useDerivedValue(() => cy - hh.value);
+  const ow = useDerivedValue(() => hw.value * 2);
+  const oh = useDerivedValue(() => hh.value * 2);
   const track = useDerivedValue(() => interpolateColor(head.value, [0, 1], [offColor, onColor]));
 
   return (
@@ -61,10 +74,12 @@ export function LiquidToggle({ value, onValueChange, width = 56, height = 34, on
     >
       <Canvas style={{ position: 'absolute', left: -PAD, top: -PAD, width: width + PAD * 2, height: height + PAD * 2 }}>
         <RoundedRect x={PAD} y={PAD} width={width} height={height} r={height / 2} color={track} />
-        <Group layer={gooLayer(3.2)}>
+        <Group layer={gooLayer(4)}>
           <Circle cx={tx} cy={cy} r={tr} color={knobColor} />
-          <Circle cx={mx} cy={cy} r={tr} color={knobColor} />
-          <Circle cx={hx} cy={cy} r={r} color={knobColor} />
+          <Circle cx={q3} cy={cy} r={qr} color={knobColor} />
+          <Circle cx={mx} cy={cy} r={nr} color={knobColor} />
+          <Circle cx={q1} cy={cy} r={qr} color={knobColor} />
+          <Oval x={ox} y={oy} width={ow} height={oh} color={knobColor} />
         </Group>
       </Canvas>
     </Pressable>
