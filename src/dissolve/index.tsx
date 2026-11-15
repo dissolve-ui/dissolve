@@ -79,7 +79,9 @@ export function useDissolve() {
         grain: grain ?? DEFAULT_GRAIN[preset],
         duration,
       });
-      setDissolving(true);
+      // Hide the original only once the overlay has had a frame to paint the
+      // identical first state, so there is never a blank frame in between.
+      requestAnimationFrame(() => requestAnimationFrame(() => setDissolving(true)));
       await new Promise((r) => setTimeout(r, duration * 0.6));
     },
     [ctx],

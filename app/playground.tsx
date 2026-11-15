@@ -25,7 +25,7 @@ export default function Playground() {
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
       <Stage style={{ height: 210, alignItems: 'center', justifyContent: 'center' }}>
         <Pressable onPress={play}>
-          <Animated.View key={k} entering={k ? FadeIn.duration(400) : undefined}>
+          <Animated.View key={k} entering={k ? FadeIn.duration(400) : undefined} style={{ width: 240 }}>
             <View ref={ref} collapsable={false} style={[st.card, { opacity: dissolving ? 0 : 1 }]}>
               <View style={st.art} />
               <View>
