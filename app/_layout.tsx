@@ -26,6 +26,15 @@ export default function Layout() {
           <Stack.Screen name="photos" options={{ title: 'Photos' }} />
           <Stack.Screen name="tasks" options={{ title: 'Tasks' }} />
           <Stack.Screen name="playground" options={{ title: 'Playground' }} />
+          <Stack.Screen name="stream" options={{ title: 'Stream' }} />
+          <Stack.Screen name="appear" options={{ title: 'Entrances' }} />
+          <Stack.Screen name="fling" options={{ title: 'Fling and snap' }} />
+          <Stack.Screen name="gestures" options={{ title: 'Scrub and hold' }} />
+          <Stack.Screen name="cascade" options={{ title: 'Cascade' }} />
+          <Stack.Screen name="screen" options={{ headerShown: false, animation: 'none', gestureEnabled: false }} />
+          <Stack.Screen name="shatter" options={{ title: 'Shatter' }} />
+          <Stack.Screen name="pile" options={{ title: 'Pile' }} />
+          <Stack.Screen name="morph" options={{ title: 'Morph' }} />
         </Stack>
       </DissolveProvider>
     </GestureHandlerRootView>

@@ -1,92 +1,90 @@
-import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { makeImageFromView } from '@shopify/react-native-skia';
 import { useReducedMotion } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
-import { Particles, type Burst } from './Particles';
-import { DEFAULT_GRAIN, type Preset } from './presets';
+import { DissolveContext } from './context';
+import { frames } from './core';
+import { BurstHost, makeBurst } from './Host';
+import type { Burst, BurstInput, DissolveCtx } from './types';
 
+/**
+ * Public entry point. Owned by the master agent: every builder export is wired below,
+ * builders never edit this file. See docs/CONTRACT.md.
+ */
+
+// Types and engine
+export * from './types';
 export * from './presets';
+export { capture, measure, capGrain, frames, defaultHaptics, MAX_GRAINS, DEFAULT_END, ss, eo, backOut, clamp01 } from './core';
+export { useDissolveContext } from './context';
+export { Particles } from './Particles';
+export { REGISTRY, FIELDS, VARIANTS, VARIANT_INFO, VARIANT_GRAIN, getVariant } from './variants/registry';
+export { useDissolve, runDissolve } from './hooks/useDissolve';
 
-export type DissolveOptions = {
-  preset?: Preset;
-  /** Grain size in points. Defaults depend on the preset. */
-  grain?: number;
-  /** Full effect duration in ms. */
-  duration?: number;
-  /** Soft impact plus a few ticks during the sweep. */
-  haptics?: boolean;
-};
-
-type Ctx = { add: (b: Burst) => void; reduced: boolean };
-const DissolveContext = createContext<Ctx | null>(null);
+// Group B: entrances
+export { useAppear, DissolveIn, type AppearOptions, type DissolveInProps } from './hooks/useAppear';
+// Group C: gestures
+export { useDissolveScrub, type ScrubOptions } from './hooks/useDissolveScrub';
+export { useDissolveHold, type HoldOptions } from './hooks/useDissolveHold';
+// Group D: full screen
+export { useDissolveScreen, type ScreenOptions } from './hooks/useDissolveScreen';
+// Group F: morph and pile
+export { useDissolveMorph, type MorphOptions, type MorphPhase } from './hooks/useDissolveMorph';
+export { usePile } from './hooks/usePile';
 
 export function DissolveProvider({ children }: { children: ReactNode }) {
   const [bursts, setBursts] = useState<Burst[]>([]);
+  const [layers, setLayers] = useState<Record<string, ReactNode>>({});
   const reduced = useReducedMotion();
-  const add = useCallback((b: Burst) => setBursts((all) => [...all, b]), []);
+
+  const remove = useCallback((key: string) => {
+    setBursts((all) => all.filter((o) => o.key !== key));
+  }, []);
+
+  const add = useCallback(
+    (input: BurstInput) => {
+      const b = makeBurst(input);
+      setBursts((all) => [...all, b]);
+      return { key: b.key, remove: () => remove(b.key) };
+    },
+    [remove],
+  );
+
+  const setLayer = useCallback((id: string, node: ReactNode | null) => {
+    setLayers((all) => {
+      const next = { ...all };
+      if (node == null) delete next[id];
+      else next[id] = node;
+      return next;
+    });
+  }, []);
+
+  // Internally driven bursts end here: notify the owner first (an entrance reveals the
+  // real view), then drop the overlay two frames later so there is never a flash.
+  const finish = useCallback(
+    (b: Burst) => {
+      b.onFinish?.();
+      frames(2).then(() => remove(b.key));
+    },
+    [remove],
+  );
+
+  const value = useMemo<DissolveCtx>(() => ({ add, remove, setLayer, reduced }), [add, remove, setLayer, reduced]);
 
   return (
-    <DissolveContext.Provider value={{ add, reduced }}>
+    <DissolveContext.Provider value={value}>
       <View style={{ flex: 1 }}>
         {children}
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
+          {Object.entries(layers).map(([id, node]) => (
+            <View key={id} style={StyleSheet.absoluteFill} pointerEvents="none">
+              {node}
+            </View>
+          ))}
           {bursts.map((b) => (
-            <Particles key={b.key} burst={b} onDone={() => setBursts((all) => all.filter((o) => o.key !== b.key))} />
+            <BurstHost key={b.key} burst={b} onDone={() => finish(b)} />
           ))}
         </View>
       </View>
     </DissolveContext.Provider>
   );
-}
-
-/**
- * const { ref, dissolving, dissolve } = useDissolve();
- * <View ref={ref} style={{ opacity: dissolving ? 0 : 1 }} />
- * await dissolve({ preset: 'sand' }); // resolves when the space can be reclaimed
- */
-export function useDissolve() {
-  const ctx = useContext(DissolveContext);
-  if (!ctx) throw new Error('useDissolve must be used inside <DissolveProvider>');
-  const ref = useRef<View>(null);
-  const [dissolving, setDissolving] = useState(false);
-
-  const dissolve = useCallback(
-    async ({ preset = 'dust', grain, duration = 1500, haptics = true }: DissolveOptions = {}) => {
-      const view = ref.current;
-      if (!view) return;
-      if (ctx.reduced) {
-        setDissolving(true);
-        return;
-      }
-      const [image, box] = await Promise.all([
-        makeImageFromView(ref as React.RefObject<View>),
-        new Promise<{ x: number; y: number; width: number; height: number }>((res) =>
-          view.measureInWindow((x, y, width, height) => res({ x, y, width, height })),
-        ),
-      ]);
-      if (!image || box.width === 0) return;
-
-      if (haptics) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-        [0.08, 0.18, 0.28].forEach((f) => setTimeout(() => Haptics.selectionAsync(), duration * f));
-      }
-      ctx.add({
-        key: `${Date.now()}-${Math.random()}`,
-        image,
-        ...box,
-        preset,
-        grain: grain ?? DEFAULT_GRAIN[preset],
-        duration,
-      });
-      // Hide the original only once the overlay has had a frame to paint the
-      // identical first state, so there is never a blank frame in between.
-      requestAnimationFrame(() => requestAnimationFrame(() => setDissolving(true)));
-      await new Promise((r) => setTimeout(r, duration * 0.6));
-    },
-    [ctx],
-  );
-
-  const reset = useCallback(() => setDissolving(false), []);
-  return { ref, dissolving, dissolve, reset };
 }

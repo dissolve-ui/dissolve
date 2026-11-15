@@ -10,7 +10,15 @@ const EXAMPLES = [
   { href: '/chat', title: 'Chat', note: 'Long press a message to unsend it.' },
   { href: '/photos', title: 'Photos', note: 'Delete from a grid with the pixel preset.' },
   { href: '/tasks', title: 'Tasks', note: 'Complete a task and it pours away as sand.' },
-  { href: '/playground', title: 'Playground', note: 'Tune preset, grain and duration live.' },
+  { href: '/playground', title: 'Playground', note: 'All 15 variants with live options and code.' },
+  { href: '/stream', title: 'Stream', note: 'Mails fly into the trash, bubbles pour out of send.' },
+  { href: '/appear', title: 'Entrances', note: 'Rows assemble on insert: gather, rain, print.' },
+  { href: '/fling', title: 'Fling and snap', note: 'Swipe cards away, tap tiles to burst them.' },
+  { href: '/gestures', title: 'Scrub and hold', note: 'Finger driven and reversible, hold to destroy.' },
+  { href: '/cascade', title: 'Cascade', note: 'Clear a whole list, dissolve a screen on back.' },
+  { href: '/shatter', title: 'Shatter', note: 'A paywall breaks like glass where you tap.' },
+  { href: '/pile', title: 'Pile', note: 'Checked todos pile up as sand on the floor.' },
+  { href: '/morph', title: 'Morph', note: 'Follow becomes Following, grain by grain.' },
 ] as const;
 
 const SWATCH: Record<Preset, string> = {
@@ -106,7 +114,7 @@ removeItem()`}
         </Code>
       </Section>
 
-      <Section title="Presets" note="Five presets. Tap a bar to preview it.">
+      <Section title="Presets" note="The five classic presets. Tap a bar to preview it. Ten more variants live in the examples below.">
         <View style={{ marginTop: 4 }}>
           {PRESETS.map((p) => (
             <PresetRow key={p} preset={p} />

@@ -1,3 +1,6 @@
+import type { VariantName } from './types';
+
+/** The five classic presets (kept for backward compatibility). */
 export type Preset = 'dust' | 'sand' | 'ember' | 'pixel' | 'vortex';
 
 export const PRESETS: Preset[] = ['dust', 'sand', 'ember', 'pixel', 'vortex'];
@@ -13,3 +16,5 @@ export const PRESET_INFO: Record<Preset, string> = {
   pixel: 'Blocky, stepped collapse. Very digital.',
   vortex: 'Spirals into the center and vanishes.',
 };
+
+export const isPreset = (n: VariantName): n is Preset => (PRESETS as string[]).includes(n);
