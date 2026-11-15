@@ -1,4 +1,39 @@
-import type { AtlasVariant } from '../types';
+import { AlphaType, ColorType } from '@shopify/react-native-skia';
+import type { AtlasVariant, Burst } from '../types';
+
+/**
+ * Dominant color of a snapshot: colors are bucketed (3 bits per channel), each pixel
+ * weighted by its saturation so a colored bubble wins over white text or a gray backdrop.
+ * Returns the average color of the heaviest bucket, plus the raw pixels for per-grain lookups.
+ */
+function palette(burst: Burst) {
+  const img = burst.image;
+  const W = img.width();
+  const H = img.height();
+  const px = img.readPixels(0, 0, { width: W, height: H, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Unpremul }) as Uint8Array | null;
+  if (!px) return null;
+  const count = new Float32Array(512);
+  const sum = new Float32Array(512 * 3);
+  const stepPx = Math.max(1, Math.floor(Math.sqrt((W * H) / 20000)));
+  for (let y = 0; y < H; y += stepPx) {
+    for (let x = 0; x < W; x += stepPx) {
+      const i = (y * W + x) * 4;
+      if (px[i + 3] < 128) continue;
+      const r = px[i], g = px[i + 1], b = px[i + 2];
+      const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+      const w = 0.15 + (mx === 0 ? 0 : (mx - mn) / mx);
+      const q = ((r >> 5) << 6) | ((g >> 5) << 3) | (b >> 5);
+      count[q] += w;
+      sum[q * 3] += r * w;
+      sum[q * 3 + 1] += g * w;
+      sum[q * 3 + 2] += b * w;
+    }
+  }
+  let best = 0;
+  for (let q = 1; q < 512; q++) if (count[q] > count[best]) best = q;
+  const c = count[best] || 1;
+  return { px, W, H, dom: [sum[best * 3] / c / 255, sum[best * 3 + 1] / c / 255, sum[best * 3 + 2] / c / 255] };
+}
 
 /**
  * The five original presets, moved verbatim into the variant structure.
@@ -47,6 +82,32 @@ export const sand: AtlasVariant = {
 export const ember: AtlasVariant = {
   kind: 'atlas',
   name: 'ember',
+  colorMode: 'tint',
+  // Per grain glow color: its own color mixed with the view's dominant color, lifted a bit.
+  extra: 3,
+  prepare: (d, stride, count, P, burst) => {
+    const pal = palette(burst);
+    for (let i = 0; i < count; i++) {
+      const k = i * stride;
+      let r = 1, g = 1, b = 1;
+      if (pal) {
+        const x = Math.min(pal.W - 1, Math.floor(d[k] * P.pr));
+        const y = Math.min(pal.H - 1, Math.floor(d[k + 1] * P.pr));
+        const j = (y * pal.W + x) * 4;
+        const own = pal.px[j + 3] < 128 ? pal.dom : [pal.px[j] / 255, pal.px[j + 1] / 255, pal.px[j + 2] / 255];
+        r = own[0] * 0.4 + pal.dom[0] * 0.6;
+        g = own[1] * 0.4 + pal.dom[1] * 0.6;
+        b = own[2] * 0.4 + pal.dom[2] * 0.6;
+        // lift toward a glow without washing out the hue
+        r = r + (1 - r) * 0.3;
+        g = g + (1 - g) * 0.3;
+        b = b + (1 - b) * 0.3;
+      }
+      d[k + 8] = r;
+      d[k + 9] = g;
+      d[k + 10] = b;
+    }
+  },
   info: 'Burns from the edge and rises as sparks.',
   defaultGrain: 3,
   spread: 0.6,
@@ -60,13 +121,16 @@ export const ember: AtlasVariant = {
     const e = t * t;
     o.cx += (r2 - 0.5) * 40 * e + Math.sin(t * 5 + r4 * 6.28) * 8 * t;
     o.cy += -(40 + r3 * 140) * e;
-    o.s = 1 - t * 0.7;
     o.rot = (r4 - 0.5) * 3 * e;
-    const hot = t < 0.25 ? t / 0.25 : 1;
-    o.g = 1 - 0.45 * hot;
-    o.b = 1 - 0.85 * hot;
-    const f = t < 0.25 ? 0 : (t - 0.25) / 0.75;
-    o.a = 1 - f * f * (3 - 2 * f);
+    // Burning front: the grain flares toward the view's dominant color, then keeps a soft glow.
+    const heat = t < 0.12 ? t / 0.12 : t < 0.35 ? 1 - ((t - 0.12) / 0.23) * 0.6 : 0.4;
+    o.r = d[k + 8];
+    o.g = d[k + 9];
+    o.b = d[k + 10];
+    o.a = heat * 0.8;
+    // Fade by shrinking (tint mode keeps the grain's own opacity).
+    const f = t < 0.2 ? 0 : (t - 0.2) / 0.8;
+    o.s = 1 - f * f * (3 - 2 * f);
   },
 };
 

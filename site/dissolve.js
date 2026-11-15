@@ -52,8 +52,11 @@ export function dissolve({ source, x, y, w, h, preset = 'dust', grain, duration 
       tinted.height = source.height;
       const t = tinted.getContext('2d');
       t.drawImage(source, 0, 0);
+      // Glow toward the element's own dominant color (saturation weighted), never a fixed orange.
+      const [r, g, b] = dominant(source);
+      const lift = (c) => Math.round(c + (255 - c) * 0.3);
       t.globalCompositeOperation = 'source-atop';
-      t.fillStyle = 'rgba(255, 96, 20, 0.82)';
+      t.fillStyle = `rgba(${lift(r)}, ${lift(g)}, ${lift(b)}, 0.6)`;
       t.fillRect(0, 0, tinted.width, tinted.height);
     }
     bursts.push({
@@ -68,6 +71,28 @@ export function dissolve({ source, x, y, w, h, preset = 'dust', grain, duration 
       requestAnimationFrame(frame);
     }
   });
+}
+
+function dominant(canvas) {
+  const w = 48, h = Math.max(1, Math.round((48 * canvas.height) / canvas.width));
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  x.drawImage(canvas, 0, 0, w, h);
+  const px = x.getImageData(0, 0, w, h).data;
+  const count = new Float32Array(512), sum = new Float32Array(1536);
+  for (let i = 0; i < px.length; i += 4) {
+    if (px[i + 3] < 128) continue;
+    const r = px[i], g = px[i + 1], b = px[i + 2];
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    const wt = 0.15 + (mx ? (mx - mn) / mx : 0);
+    const q = ((r >> 5) << 6) | ((g >> 5) << 3) | (b >> 5);
+    count[q] += wt; sum[q * 3] += r * wt; sum[q * 3 + 1] += g * wt; sum[q * 3 + 2] += b * wt;
+  }
+  let best = 0;
+  for (let q = 1; q < 512; q++) if (count[q] > count[best]) best = q;
+  const n = count[best] || 1;
+  return [sum[best * 3] / n, sum[best * 3 + 1] / n, sum[best * 3 + 2] / n];
 }
 
 function localT(b, k, p) {

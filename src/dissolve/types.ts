@@ -231,6 +231,13 @@ export type AtlasVariant = VariantBase & {
    */
   prepare?: (d: number[], stride: number, count: number, P: BurstParams, burst: Burst) => void;
   step: StepFn;
+  /**
+   * How the per-grain color (o.r, o.g, o.b, o.a) is applied to the grain.
+   * - 'modulate' (default): multiplies, o.a is the grain opacity.
+   * - 'tint': mixes the grain toward (o.r, o.g, o.b) by o.a, keeps the grain opacity.
+   *   Fade such variants out with o.s. Use it for glows that must not muddy colors.
+   */
+  colorMode?: 'modulate' | 'tint';
 };
 
 export type RendererProps = {

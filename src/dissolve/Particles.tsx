@@ -33,6 +33,7 @@ export function Particles({ burst, variant, progress, field }: ParticlesProps) {
   const rev = natural !== 'both' && natural !== burst.direction;
   const stride = BASE_STRIDE + (variant.extra ?? 0);
   const step = variant.step;
+  const tint = variant.colorMode === 'tint' ? 1 : 0;
 
   const { sprites, data, transforms, colors } = useMemo(() => {
     const sprites = [];
@@ -92,7 +93,8 @@ export function Particles({ burst, variant, progress, field }: ParticlesProps) {
       const restOut = t === 0 && natural !== 'in' && !burst.aux0 && !burst.aux1 && !(natural === 'both' && P.dir === 1);
       if (restOut) {
         xf.push(Skia.RSXform(1 / pr, 0, x + lx - grain / 2, y + ly - grain / 2));
-        cl.push(Skia.Color('white'));
+        // At rest the grain must look untouched: white x grain (modulate) or no tint (tint mode).
+        cl.push(tint ? new Float32Array([1, 1, 1, 0]) : Skia.Color('white'));
         continue;
       }
       o.cx = x + lx;
@@ -104,7 +106,7 @@ export function Particles({ burst, variant, progress, field }: ParticlesProps) {
       o.b = 1;
       o.a = 1 - t * t * (3 - 2 * t);
       step(t, data, k, P, a0, a1, o);
-      const sc = (o.s < 0 || o.a <= 0 ? 0 : o.s) / pr;
+      const sc = (o.s < 0 || (tint === 0 && o.a <= 0) ? 0 : o.s) / pr;
       const scos = o.rot === 0 ? sc : sc * Math.cos(o.rot);
       const ssin = o.rot === 0 ? 0 : sc * Math.sin(o.rot);
       xf.push(Skia.RSXform(scos, ssin, o.cx - (scos * half - ssin * half), o.cy - (ssin * half + scos * half)));
@@ -157,7 +159,7 @@ export function Particles({ burst, variant, progress, field }: ParticlesProps) {
         o.b = 1;
         o.a = 1 - t * t * (3 - 2 * t);
         step(t, data, k, P, a0, a1, o);
-        const sc = (o.s < 0 || o.a <= 0 ? 0 : o.s) / pr;
+        const sc = (o.s < 0 || (tint === 0 && o.a <= 0) ? 0 : o.s) / pr;
         const scos = o.rot === 0 ? sc : sc * Math.cos(o.rot);
         const ssin = o.rot === 0 ? 0 : sc * Math.sin(o.rot);
         T[i].set(scos, ssin, o.cx - (scos * half - ssin * half), o.cy - (ssin * half + scos * half));
@@ -180,7 +182,7 @@ export function Particles({ burst, variant, progress, field }: ParticlesProps) {
 
   return (
     <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Atlas image={image} sprites={sprites} transforms={transforms} colors={colors} colorBlendMode="modulate" />
+      <Atlas image={image} sprites={sprites} transforms={transforms} colors={colors} colorBlendMode={tint ? 'srcATop' : 'modulate'} />
     </Canvas>
   );
 }
