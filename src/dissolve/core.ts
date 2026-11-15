@@ -1,3 +1,4 @@
+import type { ViewRef } from './types';
 import type { RefObject } from 'react';
 import { Dimensions, type View } from 'react-native';
 import { makeImageFromView, type SkImage } from '@shopify/react-native-skia';
@@ -18,7 +19,7 @@ export function capGrain(w: number, h: number, grain: number, max = MAX_GRAINS) 
   return grain < min ? Math.ceil(min * 2) / 2 : grain;
 }
 
-export function measure(ref: RefObject<View | null>): Promise<Box | null> {
+export function measure(ref: RefObject<ViewRef | null>): Promise<Box | null> {
   return new Promise((res) => {
     const v = ref.current;
     if (!v) return res(null);
@@ -27,9 +28,9 @@ export function measure(ref: RefObject<View | null>): Promise<Box | null> {
 }
 
 /** Snapshot plus window rect, in parallel. Null when the view is gone or empty. */
-export async function capture(ref: RefObject<View | null>): Promise<{ image: SkImage; box: Box } | null> {
+export async function capture(ref: RefObject<ViewRef | null>): Promise<{ image: SkImage; box: Box } | null> {
   if (!ref.current) return null;
-  const [image, box] = await Promise.all([makeImageFromView(ref as RefObject<View>), measure(ref)]);
+  const [image, box] = await Promise.all([makeImageFromView(ref as unknown as Parameters<typeof makeImageFromView>[0]), measure(ref)]);
   if (!image || !box || box.width === 0 || box.height === 0) return null;
   return { image, box };
 }

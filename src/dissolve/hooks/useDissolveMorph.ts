@@ -1,3 +1,4 @@
+import type { ViewRef } from '../types';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { View, ViewStyle } from 'react-native';
 import { capGrain, capture, frames } from '../core';
@@ -32,8 +33,8 @@ const HIDDEN = 0.01;
 
 export function useDissolveMorph() {
   const ctx = useDissolveContext();
-  const refA = useRef<View>(null);
-  const refB = useRef<View>(null);
+  const refA = useRef<ViewRef>(null);
+  const refB = useRef<ViewRef>(null);
   const [phase, setPhase] = useState<MorphPhase>('a');
   const busy = useRef(false);
 

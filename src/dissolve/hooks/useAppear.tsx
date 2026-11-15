@@ -1,3 +1,4 @@
+import type { ViewRef } from '../types';
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { frames, measure } from '../core';
@@ -22,7 +23,7 @@ import type { DissolveOptions, VariantName } from '../types';
 export type AppearOptions = Omit<DissolveOptions, 'preset'> & {
   preset?: Extract<VariantName, 'gather' | 'rain' | 'print' | 'stream'> | VariantName;
   /** Source view for stream entrances (grains pour out of it). Same as `to`. */
-  from?: RefObject<View | null>;
+  from?: RefObject<ViewRef | null>;
   /** Delay before starting, in ms (list stagger). */
   delay?: number;
 };
@@ -31,7 +32,7 @@ const HIDDEN = 0.01;
 const DEFAULT_DURATION = 1200;
 
 /** Wait until the view is laid out with a non empty size (max ~30 frames). */
-async function waitLayout(ref: RefObject<View | null>) {
+async function waitLayout(ref: RefObject<ViewRef | null>) {
   for (let i = 0; i < 30; i++) {
     if (ref.current) {
       const b = await measure(ref);
@@ -53,7 +54,7 @@ async function waitLayout(ref: RefObject<View | null>) {
  */
 export function useAppear() {
   const ctx = useDissolveContext();
-  const ref = useRef<View>(null);
+  const ref = useRef<ViewRef>(null);
   const [visible, setVisible] = useState(false);
   const running = useRef(false);
 

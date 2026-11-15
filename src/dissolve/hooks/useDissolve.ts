@@ -1,3 +1,4 @@
+import type { ViewRef } from '../types';
 import { useCallback, useRef, useState, type RefObject } from 'react';
 import type { View } from 'react-native';
 import { capture, defaultHaptics, frames, measure } from '../core';
@@ -14,7 +15,7 @@ const isBox = (t: unknown): t is Box => !!t && typeof (t as Box).width === 'numb
  */
 export async function runDissolve(
   ctx: DissolveCtx,
-  ref: RefObject<View | null>,
+  ref: RefObject<ViewRef | null>,
   opts: DissolveOptions = {},
   extra: RunExtra = {},
 ): Promise<{ handle: BurstHandle; duration: number } | null> {
@@ -68,7 +69,7 @@ export async function runDissolve(
  */
 export function useDissolve() {
   const ctx = useDissolveContext();
-  const ref = useRef<View>(null);
+  const ref = useRef<ViewRef>(null);
   const [dissolving, setDissolving] = useState(false);
 
   const dissolve = useCallback(

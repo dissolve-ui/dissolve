@@ -1,3 +1,4 @@
+import type { ViewRef } from '../types';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { View } from 'react-native';
 import { Gesture } from 'react-native-gesture-handler';
@@ -109,7 +110,7 @@ function inkProfile(image: SkImage, axis: 'x' | 'y', fromEnd: boolean): number[]
 
 export function useDissolveScrub(opts: ScrubOptions = {}) {
   const ctx = useDissolveContext();
-  const ref = useRef<View>(null);
+  const ref = useRef<ViewRef>(null);
   const axis = opts.axis ?? 'x';
   const preset = opts.preset ?? 'dust';
   const v = getVariant(preset);

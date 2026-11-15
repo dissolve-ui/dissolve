@@ -1,3 +1,4 @@
+import type { ViewRef } from '../types';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { GestureResponderEvent, View } from 'react-native';
 import { Gesture } from 'react-native-gesture-handler';
@@ -58,7 +59,7 @@ const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 
 export function useDissolveHold(opts: HoldOptions = {}) {
   const ctx = useDissolveContext();
-  const ref = useRef<View>(null);
+  const ref = useRef<ViewRef>(null);
   /** 0..1 while held (aux0 of the burst). Usable for a progress ring. */
   const charge = useSharedValue(0);
   /** Clock in ms (aux1 of the burst). */

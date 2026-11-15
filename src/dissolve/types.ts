@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode, RefObject } from 'react';
+import type { ComponentRef, ComponentType, ReactNode, RefObject } from 'react';
 import type { View } from 'react-native';
 import type { SkImage } from '@shopify/react-native-skia';
 import type { SharedValue } from 'react-native-reanimated';
@@ -7,6 +7,9 @@ import type { SharedValue } from 'react-native-reanimated';
  * Shared types of the engine. Owned by the master agent: builders import from here,
  * they never edit it. See docs/CONTRACT.md.
  */
+
+/** Ref to a native view. Works with the View typings of every React Native version. */
+export type ViewRef = ComponentRef<typeof View>;
 
 export type Box = { x: number; y: number; width: number; height: number };
 export type Point = { x: number; y: number };
@@ -271,9 +274,9 @@ export type DissolveOptions = {
   /** Swipe velocity in pt/s (fling). */
   velocity?: Point;
   /** Target view or window rect (stream). */
-  to?: RefObject<View | null> | Box;
+  to?: RefObject<ViewRef | null> | Box;
   /** Floor in window coords, or 'screen' (pile). */
-  floor?: number | 'screen' | RefObject<View | null>;
+  floor?: number | 'screen' | RefObject<ViewRef | null>;
   /** Delay field override (cascade) and its row bounds in local Y. */
   field?: FieldName;
   rows?: number[];

@@ -1,3 +1,4 @@
+import type { ViewRef } from '../types';
 import { useCallback } from 'react';
 import type { View } from 'react-native';
 import { frames } from '../core';
@@ -6,7 +7,7 @@ import { clearHeaps, frozenHeaps, pileStore } from '../variants/pile.store';
 import type { DissolveOptions } from '../types';
 import { runDissolve } from './useDissolve';
 
-const NO_VIEW = { current: null as View | null };
+const NO_VIEW = { current: null as ViewRef | null };
 
 /**
  * Controls the persistent sand heap left by the 'pile' variant (provider layer 'pile').

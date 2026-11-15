@@ -1,3 +1,4 @@
+import type { ViewRef } from '../types';
 import { useCallback, useRef, useState } from 'react';
 import type { View } from 'react-native';
 import { capGrain, capture, frames } from '../core';
@@ -52,7 +53,7 @@ export function screenGrain(w: number, h: number, base: number, max = SCREEN_GRA
 
 export function useDissolveScreen() {
   const ctx = useDissolveContext();
-  const ref = useRef<View>(null);
+  const ref = useRef<ViewRef>(null);
   const [dissolving, setDissolving] = useState(false);
   const busy = useRef(false);
 

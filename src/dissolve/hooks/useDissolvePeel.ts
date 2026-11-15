@@ -1,3 +1,4 @@
+import type { ViewRef } from '../types';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { View } from 'react-native';
 import { Gesture } from 'react-native-gesture-handler';
@@ -47,7 +48,7 @@ const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 
 export function useDissolvePeel(opts: PeelOptions = {}) {
   const ctx = useDissolveContext();
-  const ref = useRef<View>(null);
+  const ref = useRef<ViewRef>(null);
   const end = getVariant('peel').end ?? DEFAULT_END;
 
   const progress = useSharedValue(0);
