@@ -532,10 +532,10 @@ export function showcaseHTML() {
   return `
 
 
-  <div class="sc-platform">
-    <span class="sc-platform-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></span>
-    <span><strong>An animation library for React Native.</strong> Wrap any view, call <code>dissolve()</code>, it turns into dust. iOS and Android, works with Expo.</span>
-    <span class="sc-platform-note">The demos below run a web port of the same engine.</span>
+  <div class="sc-start">
+    <p class="sc-start-label">React Native animation library <span>iOS · Android · Expo</span></p>
+    <div class="cmd"><span class="cmd-dollar">$</span><code>npx expo install react-native-dissolve</code><button class="icon-btn" aria-label="Copy command" data-copy><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg></button></div>
+    <div class="cmd"><span class="cmd-dollar">$</span><code>mkdir -p ~/.dissolve && curl -fsSL ${location.origin}/mcp/server.mjs -o ~/.dissolve/server.mjs && claude mcp add dissolve -- node ~/.dissolve/server.mjs</code><button class="icon-btn" aria-label="Copy command" data-copy><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg></button></div>
   </div>
   ${head('01', 'Bento', 'Tap a card. snap starts where your cursor lands.')}
   <div class="sc-bento">
