@@ -75,7 +75,7 @@ function Screen() {
     setTimeout(() => {
       setItems((list) => list.filter((i) => i.id !== item.id));
       setHidden((h) => h.filter((id) => id !== item.id));
-    }, 380);
+    }, 900);
   };
 
   return (
