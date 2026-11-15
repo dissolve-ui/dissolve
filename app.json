@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "dissolve",
+    "slug": "dissolve",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": { "supportsTablet": false }
+  }
+}
