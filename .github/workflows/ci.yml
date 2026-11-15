@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Syntax check web and mcp modules
+        run: |
+          set -e
+          for f in web/*.js web/engine/*.js; do
+            echo "node --check $f"
+            node --check --input-type=module < "$f"
+          done
+          for f in mcp/*.mjs; do
+            echo "node --check $f"
+            node --check "$f"
+          done
