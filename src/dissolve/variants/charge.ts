@@ -1,4 +1,43 @@
-import type { AtlasVariant } from '../types';
+import { AlphaType, ColorType } from '@shopify/react-native-skia';
+import type { AtlasVariant, Burst } from '../types';
+
+/**
+ * Dominant color of the snapshot (3 bits per channel buckets, saturation weighted), lifted a
+ * little toward white. Copied from classic.ts (variant files do not import each other).
+ */
+function heatColor(burst: Burst): [number, number, number] {
+  try {
+    const img = burst.image;
+    const W = img.width();
+    const H = img.height();
+    const px = img.readPixels(0, 0, { width: W, height: H, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Unpremul }) as Uint8Array | null;
+    if (!px) return [1, 0.65, 0.2];
+    const count = new Float32Array(512);
+    const sum = new Float32Array(512 * 3);
+    const step = Math.max(1, Math.floor(Math.sqrt((W * H) / 20000)));
+    for (let y = 0; y < H; y += step) {
+      for (let x = 0; x < W; x += step) {
+        const i = (y * W + x) * 4;
+        if (px[i + 3] < 128) continue;
+        const r = px[i], g = px[i + 1], b = px[i + 2];
+        const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+        const w = 0.15 + (mx === 0 ? 0 : (mx - mn) / mx);
+        const q = ((r >> 5) << 6) | ((g >> 5) << 3) | (b >> 5);
+        count[q] += w;
+        sum[q * 3] += r * w;
+        sum[q * 3 + 1] += g * w;
+        sum[q * 3 + 2] += b * w;
+      }
+    }
+    let best = 0;
+    for (let q = 1; q < 512; q++) if (count[q] > count[best]) best = q;
+    const c = (count[best] || 1) * 255;
+    const lift = (v: number) => v + (1 - v) * 0.3;
+    return [lift(sum[best * 3] / c), lift(sum[best * 3 + 1] / c), lift(sum[best * 3 + 2] / c)];
+  } catch {
+    return [1, 0.65, 0.2];
+  }
+}
 
 /**
  * GROUP C. charge: hold to destroy (docs/VARIANTS.md section 6).
@@ -6,7 +45,7 @@ import type { AtlasVariant } from '../types';
  * Two phases share one step:
  * - Pre-phase (every grain while progress is 0, driven by aux): a0 = charge level 0..1,
  *   a1 = clock in ms. The view shakes (amplitude c * c * 2.5 pt), its edges fray outward
- *   in a band of c * 12 pt, and it heats toward orange through the color modulation.
+ *   in a band of c * 12 pt, and it heats toward its own dominant color (modulate blend).
  * - Burst (once progress runs): grains blow outward from P.ox / P.oy like snap, with a
  *   push 1.4 times stronger. The shake and fray fade out with (1 - t) so a grain leaves
  *   from exactly where it was shaking, and the heat stays on while it flies.
@@ -34,13 +73,14 @@ export const charge: AtlasVariant = {
   defaultGrain: 3,
   end: 1,
   ownsOrigin: true,
-  extra: 5,
+  extra: 8,
   timing: (g, P) => {
     const dx = g.lx - P.ox;
     const dy = g.ly - P.oy;
     return { delay: (Math.sqrt(dx * dx + dy * dy) / (P.maxD || 1)) * DELAY_SPREAD + g.r1 * DELAY_JITTER, life: LIFE };
   },
-  prepare: (d, stride, count, P) => {
+  prepare: (d, stride, count, P, burst) => {
+    const [hr, hg, hb] = heatColor(burst);
     const strength = (P.n0 > 0 ? P.n0 : 1) * PUSH;
     for (let i = 0; i < count; i++) {
       const k = i * stride;
@@ -86,6 +126,9 @@ export const charge: AtlasVariant = {
       d[k + 10] = nx;
       d[k + 11] = ny;
       d[k + 12] = edge < 0 ? 0 : edge;
+      d[k + 13] = hr;
+      d[k + 14] = hg;
+      d[k + 15] = hb;
     }
   },
   step: (t, d, k, _P, a0, a1, o) => {
@@ -111,9 +154,10 @@ export const charge: AtlasVariant = {
         o.cy += d[k + 11] * push;
         o.a *= 1 - 0.3 * f * c;
       }
-      // Heat, through the modulate blend: white to orange.
-      o.g = 1 - 0.35 * c2;
-      o.b = 1 - 0.8 * c2;
+      // Heat, through the modulate blend: white toward the view's own dominant color.
+      o.r = 1 - (1 - d[k + 13]) * c2;
+      o.g = 1 - (1 - d[k + 14]) * c2;
+      o.b = 1 - (1 - d[k + 15]) * c2;
     }
     if (t > 0) {
       // Ease out cubic: the blast is strongest when the wave reaches the grain.
