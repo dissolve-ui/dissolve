@@ -137,7 +137,7 @@ function Liquid() {
       <Header index="04" title="Morph button" note="Folds into a loader, opens back up as done." />
       <MorphButton label="Pay 42 €" doneLabel="Paid" onPress={() => new Promise((r) => setTimeout(r, 1400))} />
 
-      <Header index="05" title="Split button" note="Slides apart into Cancel and Confirm." />
+      <Header index="05" title="Split button" note="Divides in the middle like a drop of liquid metal." />
       <SplitButton label="Delete project" confirmLabel="Delete" onConfirm={() => toast.show({ title: 'Project deleted', tone: 'error' })} />
 
       <Header index="06" title="Gooey menu" note="Actions pour out of the button as drops." />
