@@ -6,70 +6,94 @@ import { Particles } from '../Particles';
 import type { AtlasVariant, CustomVariant, RendererProps } from '../types';
 
 /**
- * melt: the view melts down like a liquid.
+ * melt: the view melts down like warm wax.
  *
- * Motion (atlas step): columns get a smooth random speed (two sine waves with a random phase
- * per burst), so neighbouring columns sag together and a few run ahead as drips. Lower
- * grains fall further than the top ones, which stretches each column into a drop, and grains
- * are pulled toward the nearest drip axis (every DRIP points) so the drops narrow as they
- * fall. Grains never fade: they shrink at the end, so the liquid thins out and pinches off.
+ * One continuous mass, one global clock (delay 0, life END for every grain), so it stretches
+ * instead of breaking into strands:
+ * - sag: every column slumps by a smooth, low frequency amount, and lower grains move more
+ *   than upper ones (v^1.5, v = ly / h), so the view stretches downward like soft wax;
+ * - drips: 3 to 6 drops along the bottom edge (gaussian bumps over x) run much further
+ *   (v^4, so only the lower part of the view flows into them) and narrow toward their axis,
+ *   which gives each drop a rounded teardrop tip; grains grow with the local stretch so a
+ *   drop stays one continuous body of liquid instead of a string of beads;
+ * - end: from t = 0.72 the grains shrink away, so the puddle and the drops thin out.
  *
  * Look (Skia layer): the grains are drawn through a gooey layer, a blur followed by an alpha
- * threshold (ColorMatrix alpha * 18 - 7). Nearby grains merge into one continuous liquid
- * with sharp edges, drops stretch and snap like syrup. The blur grows from 0 with progress,
- * so the first frame is the exact view.
+ * threshold (ColorMatrix alpha * 18 - 7), so they read as one liquid with clean edges. The blur
+ * grows from 0 once the wax flows, so the first frames are the exact view.
  *
  * Extras per grain (prepare, JS side, once):
- *   d[k+8] column speed 0.35..1, d[k+9] offset to the nearest drip axis, points.
+ *   d[k+8] sag 0.55..1, d[k+9] drip strength 0..1, d[k+10] offset to the drip axis, points.
  */
-const DRIP = 22;
 const END = 1.2;
 /** Gooey threshold: alpha * 18 - 7, colors untouched. */
 const GOO = [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 18, -7];
 /** Blur radius at full melt, points. */
-const BLUR = 5;
+const BLUR = 2.6;
 
 const meltAtlas: AtlasVariant = {
   kind: 'atlas',
   name: 'melt',
-  info: 'Melts down like a liquid, in drips that merge and pinch off.',
+  info: 'Melts down like warm wax: it sags, stretches and drips.',
   defaultGrain: 3,
   end: END,
-  extra: 2,
-  spread: 0.3,
-  jitter: 0.08,
-  // Top rows let go a little later. max 0.12 + 0.06 + 0.95 = 1.13 < 1.2
-  timing: (g, P) => ({ delay: (1 - g.ly / P.h) * 0.12 + g.r1 * 0.06, life: 0.95 }),
-  prepare: (d, stride, count) => {
+  extra: 3,
+  ownsOrigin: true,
+  timing: () => ({ delay: 0, life: END }),
+  prepare: (d, stride, count, P) => {
+    // Low frequency sag profile and a handful of drips along the width.
     const ph = Math.random() * Math.PI * 2;
-    const ph2 = Math.random() * Math.PI * 2;
+    const drips = 3 + Math.floor(Math.random() * 4);
+    const dx: number[] = [];
+    const da: number[] = [];
+    const dw: number[] = [];
+    for (let j = 0; j < drips; j++) {
+      dx.push(((j + 0.25 + Math.random() * 0.5) / drips) * P.w);
+      da.push(0.55 + Math.random() * 0.45);
+      dw.push(5 + Math.random() * 7);
+    }
     for (let i = 0; i < count; i++) {
       const k = i * stride;
-      const c = d[k] / DRIP;
-      const a = 0.5 + 0.5 * Math.sin(c * 1.3 + ph);
-      const b = 0.5 + 0.5 * Math.sin(c * 0.55 + ph2);
-      d[k + 8] = 0.35 + 0.65 * a * (0.6 + 0.4 * b);
-      d[k + 9] = Math.round(c) * DRIP - d[k];
+      const x = d[k];
+      d[k + 8] = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin((x / P.w) * 5.2 + ph));
+      let best = 0;
+      let off = 0;
+      for (let j = 0; j < drips; j++) {
+        const g = da[j] * Math.exp(-((x - dx[j]) * (x - dx[j])) / (2 * dw[j] * dw[j]));
+        if (g > best) {
+          best = g;
+          off = dx[j] - x;
+        }
+      }
+      d[k + 9] = best;
+      d[k + 10] = off;
     }
   },
   step: (t, d, k, P, _a0, _a1, o) => {
     'worklet';
-    const speed = d[k + 8];
-    const depth = 0.35 + 0.65 * (d[k + 1] / P.h);
-    // Slow start, then it really lets go.
-    const e = t * t * (1.4 - 0.4 * t);
-    o.cy += (30 + speed * (P.h * 0.9 + 160)) * e * depth;
-    o.cx += d[k + 9] * 0.55 * ss(t < 0.5 ? t * 2 : 1);
-    // Opaque all along (the goo threshold would cut a fade): thin out by shrinking.
+    const v = d[k + 1] / P.h;
+    const e = t * t * (1.6 - 0.6 * t);
+    const sag = d[k + 8];
+    const drip = d[k + 9];
+    const v15 = v * Math.sqrt(v);
+    const v4 = v * v * v * v;
+    const A = P.h * 0.55 * sag;
+    const B = (P.h * 1.6 + 160) * drip;
+    o.cy += e * (A * v15 + B * v4) + 14 * e * sag;
+    // Drops narrow toward their axis as they stretch.
+    o.cx += d[k + 10] * 0.45 * e * drip * v4;
     o.a = 1;
-    o.s = t < 0.5 ? 1 : 1 - ss((t - 0.5) / 0.5);
+    // Grow each grain with the local stretch (d dy / d ly) so the flow stays continuous.
+    const stretch = 1 + (e * (A * 1.5 * Math.sqrt(v) + B * 4 * v * v * v)) / P.h;
+    o.s = (stretch < 3.2 ? stretch : 3.2) * (t < 0.72 ? 1 : 1 - ss((t - 0.72) / 0.28));
   },
 };
 
 function MeltRenderer({ burst, progress }: RendererProps) {
   const blur = useDerivedValue(() => {
-    const r = progress.value / 0.25;
-    return (r > 1 ? 1 : r) * BLUR;
+    // Starts once the wax flows, so the view stays sharp at first.
+    const r = (progress.value - 0.2) / 0.5;
+    return (r < 0 ? 0 : r > 1 ? 1 : r) * BLUR;
   });
   const layer = useMemo(
     () => (

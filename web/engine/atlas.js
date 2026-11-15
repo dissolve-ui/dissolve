@@ -432,24 +432,35 @@ VARIANTS.peel.post = function (b, p, offX, offY) {
 };
 
 VARIANTS.melt = {
-  grain: 3, extra: 2, goo: 5, // liquid look: blur + alpha threshold, like the Skia layer spread: 0.3, jitter: 0.08,
-  timing: (g, P) => ({ delay: (1 - g.ly / P.h) * 0.12 + g.r1 * 0.06, life: 0.95 }),
-  prepare(d, stride, count) {
-    const ph = Math.random() * Math.PI * 2, ph2 = Math.random() * Math.PI * 2;
+  // Warm wax: sag + drips on one global clock (see src/dissolve/variants/melt.tsx).
+  grain: 3, extra: 3, end: 1.2, ownsOrigin: true, goo: 2.6, // liquid look: blur + alpha threshold
+  duration: () => 1800,
+  timing: () => ({ delay: 0, life: 1.2 }),
+  prepare(d, stride, count, P) {
+    const ph = Math.random() * Math.PI * 2;
+    const drips = 3 + Math.floor(Math.random() * 4), dx = [], da = [], dw = [];
+    for (let j = 0; j < drips; j++) { dx.push(((j + 0.25 + Math.random() * 0.5) / drips) * P.w); da.push(0.55 + Math.random() * 0.45); dw.push(5 + Math.random() * 7); }
     for (let i = 0; i < count; i++) {
-      const k = i * stride, c = d[k] / 22;
-      const a = 0.5 + 0.5 * Math.sin(c * 1.3 + ph), b = 0.5 + 0.5 * Math.sin(c * 0.55 + ph2);
-      d[k + 8] = 0.35 + 0.65 * a * (0.6 + 0.4 * b);
-      d[k + 9] = Math.round(c) * 22 - d[k];
+      const k = i * stride, x = d[k];
+      d[k + 8] = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin((x / P.w) * 5.2 + ph));
+      let best = 0, off = 0;
+      for (let j = 0; j < drips; j++) {
+        const g = da[j] * Math.exp(-((x - dx[j]) ** 2) / (2 * dw[j] * dw[j]));
+        if (g > best) { best = g; off = dx[j] - x; }
+      }
+      d[k + 9] = best; d[k + 10] = off;
     }
   },
   step(t, d, k, P, a0, a1, o) {
-    const depth = 0.35 + 0.65 * (d[k + 1] / P.h), e = t * t * (1.4 - 0.4 * t);
-    o.cy += (30 + d[k + 8] * (P.h * 0.9 + 160)) * e * depth;
-    o.cx += d[k + 9] * 0.55 * ss(t < 0.5 ? t * 2 : 1);
-    // Opaque all along (the goo threshold would cut a fade): thin out by shrinking.
+    const v = d[k + 1] / P.h, e = t * t * (1.6 - 0.6 * t), sag = d[k + 8], drip = d[k + 9];
+    const v15 = v * Math.sqrt(v), v4 = v * v * v * v;
+    const A = P.h * 0.55 * sag, B = (P.h * 1.6 + 160) * drip;
+    o.cy += e * (A * v15 + B * v4) + 14 * e * sag;
+    o.cx += d[k + 10] * 0.45 * e * drip * v4;
     o.a = 1;
-    o.s = t < 0.5 ? 1 : 1 - ss((t - 0.5) / 0.5);
+    // Grow each grain with the local stretch (d dy / d ly) so the flow stays continuous.
+    const stretch = 1 + (e * (A * 1.5 * Math.sqrt(v) + B * 4 * v * v * v)) / P.h;
+    o.s = Math.min(3.2, stretch) * (t < 0.72 ? 1 : 1 - ss((t - 0.72) / 0.28));
   },
 };
 
@@ -1118,7 +1129,7 @@ function frame(now) {
     v.post?.(b, p, offX, offY);
     if (v.goo) {
       // Blur grows from 0 so the first frame is the exact view.
-      const r = Math.min(1, raw / 0.25) * v.goo * DPR;
+      const r = Math.min(1, Math.max(0, (raw - 0.2) / 0.5)) * v.goo * DPR; // starts once it flows
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.globalAlpha = 1;
