@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
-import Animated, { FadeIn, useAnimatedStyle } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useDissolveHold, useDissolvePeel, useDissolveScrub, type VariantName } from '@/dissolve';
 import { Button, C, Caption, Chip, Code, Section, Stage, mono } from '@/ui';
@@ -24,8 +24,7 @@ function ScrubCard({ preset, onDone }: { preset: VariantName; onDone: () => void
 }
 
 function HoldCard({ onDone }: { onDone: () => void }) {
-  const { ref, pressHandlers, style, charge } = useDissolveHold({ holdMs: 1200, onCommit: onDone });
-  const ring = useAnimatedStyle(() => ({ width: `${charge.value * 100}%` }));
+  const { ref, pressHandlers, style } = useDissolveHold({ holdMs: 1200, onCommit: onDone });
   return (
     <View style={{ gap: 10 }}>
       <Pressable {...pressHandlers}>
@@ -37,9 +36,6 @@ function HoldCard({ onDone }: { onDone: () => void }) {
           </View>
         </Animated.View>
       </Pressable>
-      <View style={st.track}>
-        <Animated.View style={[st.fill, ring]} />
-      </View>
     </View>
   );
 }
