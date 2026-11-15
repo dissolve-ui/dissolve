@@ -31,6 +31,11 @@ export { useDissolveScreen, type ScreenOptions } from './hooks/useDissolveScreen
 // Group F: morph and pile
 export { useDissolveMorph, type MorphOptions, type MorphPhase } from './hooks/useDissolveMorph';
 export { usePile } from './hooks/usePile';
+// Components
+export { SwipeToDelete, type SwipeToDeleteProps } from './components/SwipeToDelete';
+export { ToastProvider, useToast, type ToastOptions, type ToastTone } from './components/Toast';
+export { useFlyTo, useBump, type FlyToOptions } from './components/FlyTo';
+export { LikeButton, type LikeButtonProps } from './components/LikeButton';
 
 export function DissolveProvider({ children }: { children: ReactNode }) {
   const [bursts, setBursts] = useState<Burst[]>([]);

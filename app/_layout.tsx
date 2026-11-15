@@ -1,13 +1,16 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { DissolveProvider } from '@/dissolve';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { DissolveProvider, ToastProvider } from '@/dissolve';
 import { C } from '@/ui';
 
 export default function Layout() {
+  const insets = useSafeAreaInsets();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <DissolveProvider>
+        <ToastProvider top={insets.top + 6}>
         <StatusBar style="dark" />
         <Stack
           screenOptions={{
@@ -21,6 +24,7 @@ export default function Layout() {
           }}
         >
           <Stack.Screen name="index" options={{ title: 'dissolve' }} />
+          <Stack.Screen name="components" options={{ title: 'Components' }} />
           <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
           <Stack.Screen name="chat" options={{ title: 'Chat' }} />
           <Stack.Screen name="photos" options={{ title: 'Photos' }} />
@@ -38,6 +42,7 @@ export default function Layout() {
           <Stack.Screen name="gallery" options={{ title: 'Gallery' }} />
           <Stack.Screen name="glass" options={{ headerShown: false }} />
         </Stack>
+        </ToastProvider>
       </DissolveProvider>
     </GestureHandlerRootView>
   );
