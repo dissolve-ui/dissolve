@@ -39,6 +39,15 @@ export { MorphButton, type MorphButtonProps } from './components/MorphButton';
 export { GooeyMenu, type GooeyMenuProps, type GooeyMenuItem } from './components/GooeyMenu';
 export { SplitButton, type SplitButtonProps } from './components/SplitButton';
 export { SlideToConfirm, type SlideToConfirmProps } from './components/SlideToConfirm';
+export { OTPInput, type OTPInputProps } from './components/OTPInput';
+export { NumberTicker, type NumberTickerProps } from './components/NumberTicker';
+export { WheelPicker, WheelPickerGroup, type WheelPickerProps, type WheelItem } from './components/WheelPicker';
+export { ReactionPicker, DEFAULT_REACTIONS, type ReactionPickerProps } from './components/ReactionPicker';
+export { VoiceNote, voiceLevels, type VoiceNoteProps, type VoiceNoteColors } from './components/VoiceNote';
+export { CardStack, type CardStackProps } from './components/CardStack';
+export { Receipt, type ReceiptProps, type ReceiptHandle, type ReceiptItem, type ReceiptTax } from './components/Receipt';
+export { SignaturePad, type SignaturePadProps, type SignaturePadHandle, type SignatureExport } from './components/SignaturePad';
+export { BeforeAfter, type BeforeAfterProps, type BeforeAfterSize } from './components/BeforeAfter';
 
 export function DissolveProvider({ children }: { children: ReactNode }) {
   const [bursts, setBursts] = useState<Burst[]>([]);

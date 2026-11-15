@@ -6,6 +6,7 @@ import { PRESETS, useDissolve, type Preset } from '@/dissolve';
 import { C, Caption, Code, Section, Stage, mono, s } from '@/ui';
 
 const EXAMPLES = [
+  { href: '/micro', title: 'Micro-interactions', note: 'OTP, ticker, wheel, reactions, voice, cards, receipt, signature, before/after.' },
   { href: '/components', title: 'Components', note: 'Swipe to delete, toasts, like button.' },
   { href: '/notifications', title: 'Notifications', note: 'Tap to clear. The default dust preset.' },
   { href: '/chat', title: 'Chat', note: 'Long press a message to unsend it.' },
