@@ -41,7 +41,6 @@ export { SplitButton, type SplitButtonProps } from './components/SplitButton';
 export { SlideToConfirm, type SlideToConfirmProps } from './components/SlideToConfirm';
 export { OTPInput, type OTPInputProps } from './components/OTPInput';
 export { NumberTicker, type NumberTickerProps } from './components/NumberTicker';
-export { WheelPicker, WheelPickerGroup, type WheelPickerProps, type WheelItem } from './components/WheelPicker';
 export { ReactionPicker, DEFAULT_REACTIONS, type ReactionPickerProps } from './components/ReactionPicker';
 export { VoiceNote, voiceLevels, type VoiceNoteProps, type VoiceNoteColors } from './components/VoiceNote';
 export { CardStack, type CardStackProps } from './components/CardStack';
