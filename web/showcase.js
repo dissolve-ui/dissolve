@@ -35,6 +35,20 @@ export function text(ctx, str, x, y, { size = 14, weight = 400, color, align = '
   ctx.textAlign = 'left';
 }
 
+/** Draws one line that never runs past maxW: shrinks down to minSize, then ends with an ellipsis. */
+function fitText(ctx, str, x, y, maxW, { size = 14, minSize = size - 2, weight = 400, color, mono = false } = {}) {
+  const font = (s) => `${weight} ${s}px ${mono ? "'Geist Mono', monospace" : FONT}`;
+  let s = size;
+  ctx.font = font(s);
+  while (s > minSize && ctx.measureText(str).width > maxW) ctx.font = font(s -= 0.5);
+  let out = str;
+  if (ctx.measureText(out).width > maxW) {
+    while (out.length > 1 && ctx.measureText(out + '…').width > maxW) out = out.slice(0, -1);
+    out = out.trimEnd() + '…';
+  }
+  text(ctx, out, x, y, { size: s, weight, color, mono });
+}
+
 function tag(ctx, name, xr, y, dark) {
   ctx.font = `500 10.5px 'Geist Mono', monospace`;
   const w = ctx.measureText(name).width + 16;
@@ -311,8 +325,8 @@ function arrivalRow(w, img, preset) {
     ctx.fillStyle = c.card; rr(ctx, 0, 0, w, 68, 16); ctx.fill();
     ctx.strokeStyle = c.line; rr(ctx, 0.5, 0.5, w - 1, 67, 15.5); ctx.stroke();
     ctx.save(); rr(ctx, 10, 10, 48, 48, 11); ctx.clip(); cover(ctx, IMG[img], 10, 10, 48, 48); ctx.restore();
-    text(ctx, 'New painting added', 72, 31, { size: 14.5, weight: 600, color: c.ink });
-    text(ctx, `entered with ${preset}`, 72, 50, { size: 12.5, color: c.text, mono: true });
+    fitText(ctx, 'New painting added', 72, 31, w - 86, { size: 14.5, weight: 600, color: c.ink });
+    fitText(ctx, `entered with ${preset}`, 72, 50, w - 86, { size: 12.5, minSize: 11, color: c.text, mono: true });
   });
 }
 
@@ -340,8 +354,8 @@ function gCard(w, img, title, sub) {
     ctx.fillStyle = c.card; rr(ctx, 0, 0, w, 76, 18); ctx.fill();
     ctx.strokeStyle = c.line; rr(ctx, 0.5, 0.5, w - 1, 75, 17.5); ctx.stroke();
     ctx.save(); rr(ctx, 12, 12, 52, 52, 12); ctx.clip(); cover(ctx, IMG[img], 12, 12, 52, 52); ctx.restore();
-    text(ctx, title, 78, 34, { size: 15, weight: 600, color: c.ink });
-    text(ctx, sub, 78, 54, { size: 12.5, color: c.text, mono: true });
+    fitText(ctx, title, 78, 34, w - 92, { size: 15, weight: 600, color: c.ink });
+    fitText(ctx, sub, 78, 54, w - 92, { size: 12.5, minSize: 10.5, color: c.text, mono: true });
   });
 }
 
@@ -428,7 +442,7 @@ function mountCascade(root) {
     ctx.strokeStyle = c.line; rr(ctx, 0.5, 0.5, w - 1, 57, 15.5); ctx.stroke();
     ctx.save(); rr(ctx, 10, 10, 38, 38, 10); ctx.clip(); cover(ctx, IMG[n.img], 10, 10, 38, 38); ctx.restore();
     text(ctx, n.app.toUpperCase(), 60, 25, { size: 10.5, weight: 600, color: c.muted });
-    text(ctx, n.text, 60, 43, { size: 14, color: c.ink });
+    fitText(ctx, n.text, 60, 43, w - 74, { size: 14, color: c.ink });
   }));
   list.replaceChildren(...rows);
   let busy = false;
@@ -497,7 +511,7 @@ function todoRow(w, label) {
     ctx.strokeStyle = c.line; rr(ctx, 0.5, 0.5, w - 1, 43, 11.5); ctx.stroke();
     ctx.strokeStyle = c.muted; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(22, 22, 8, 0, Math.PI * 2); ctx.stroke();
-    text(ctx, label, 42, 27, { size: 14, color: c.ink });
+    fitText(ctx, label, 42, 27, w - 56, { size: 14, color: c.ink });
   });
 }
 
