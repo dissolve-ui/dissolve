@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
 import Animated, { ZoomIn } from 'react-native-reanimated';
-import { LikeButton, SwipeToDelete, useBump, useFlyTo, useToast } from '@/dissolve';
+import { LikeButton, SwipeToDelete, useToast } from '@/dissolve';
 import { C, layout, mono } from '@/ui';
 
 const P = {
@@ -98,79 +98,7 @@ function Toasts() {
   );
 }
 
-/* ---------- 03 FlyToCart ---------- */
-
-const PRINTS = [
-  { id: '1', title: 'Temple', price: 42, img: P.temple },
-  { id: '2', title: 'Cypress', price: 38, img: P.cypress },
-  { id: '3', title: 'Pines', price: 34, img: P.pines },
-  { id: '4', title: 'Lake', price: 46, img: P.lake },
-];
-
-function Product({ item, bag, onAdd }: { item: (typeof PRINTS)[number]; bag: React.RefObject<View | null>; onAdd: (price: number) => void }) {
-  const { ref, fly } = useFlyTo({ target: bag, onArrive: () => onAdd(item.price) });
-  return (
-    <View style={st.product}>
-      <View ref={ref} collapsable={false}>
-        <Image source={item.img} style={st.productImg} contentFit="cover" />
-      </View>
-      <View style={st.productRow}>
-        <View>
-          <Text style={st.productTitle}>{item.title}</Text>
-          <Text style={st.productPrice}>{item.price} €</Text>
-        </View>
-        <Pressable onPress={fly} hitSlop={8} style={({ pressed }) => [st.add, pressed && { opacity: 0.7 }]}>
-          <SymbolView name="plus" size={14} tintColor="white" weight="bold" />
-        </Pressable>
-      </View>
-    </View>
-  );
-}
-
-function Shop() {
-  const bag = useRef<View>(null);
-  const { style, bump } = useBump();
-  const [items, setItems] = useState(0);
-  const [total, setTotal] = useState(0);
-  return (
-    <View>
-      <Header
-        index="03"
-        title="Fly to cart"
-        note="Tap + and the print flies into the bag."
-        right={
-          <View>
-            <Animated.View ref={bag} collapsable={false} style={[st.bag, style]}>
-              <SymbolView name="bag" size={20} tintColor={C.ink} />
-            </Animated.View>
-            {items ? (
-              <Animated.View key={items} entering={ZoomIn.duration(200)} style={st.badge}>
-                <Text style={st.badgeText}>{items}</Text>
-              </Animated.View>
-            ) : null}
-          </View>
-        }
-      />
-      <View style={st.grid}>
-        {PRINTS.map((p) => (
-          <Product
-            key={p.id}
-            item={p}
-            bag={bag}
-            onAdd={(price) => {
-              bump();
-              setItems((n) => n + 1);
-              setTotal((t) => t + price);
-            }}
-          />
-        ))}
-      </View>
-      {items ? <Text style={st.total}>{items} item{items > 1 ? 's' : ''} · {total} €</Text> : null}
-    </View>
-  );
-}
-
-/* ---------- 04 LikeButton ---------- */
+/* ---------- 03 LikeButton ---------- */
 
 function Post() {
   const [liked, setLiked] = useState(false);
@@ -203,7 +131,7 @@ function Post() {
 export default function Components() {
   return (
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}>
-      <Text style={st.lead}>Four ready-made components built on the dissolve engine.</Text>
+      <Text style={st.lead}>Ready-made components built on the dissolve engine.</Text>
 
       <Header index="01" title="Swipe to delete" note="Swipe a row left. Past the line, it turns to dust." />
       <Inbox />
@@ -211,9 +139,7 @@ export default function Components() {
       <Header index="02" title="Toast" note="Arrives in grains, leaves as dust. Tap to dismiss." />
       <Toasts />
 
-      <Shop />
-
-      <Header index="04" title="Like button" note="Sparks on like, the heart snaps away on unlike." />
+      <Header index="03" title="Like button" note="Sparks on like, the heart snaps away on unlike." />
       <Post />
     </ScrollView>
   );

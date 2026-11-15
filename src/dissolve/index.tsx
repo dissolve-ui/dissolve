@@ -34,7 +34,6 @@ export { usePile } from './hooks/usePile';
 // Components
 export { SwipeToDelete, type SwipeToDeleteProps } from './components/SwipeToDelete';
 export { ToastProvider, useToast, type ToastOptions, type ToastTone } from './components/Toast';
-export { useFlyTo, useBump, type FlyToOptions } from './components/FlyTo';
 export { LikeButton, type LikeButtonProps } from './components/LikeButton';
 
 export function DissolveProvider({ children }: { children: ReactNode }) {
