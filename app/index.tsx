@@ -12,7 +12,7 @@ const EXAMPLES = [
   { href: '/tasks', title: 'Tasks', note: 'Complete a task and it pours away as sand.' },
   { href: '/playground', title: 'Playground', note: 'All 15 variants with live options and code.' },
   { href: '/gallery', title: 'Gallery', note: 'Bento cards, an email, image messages.' },
-  { href: '/glass', title: 'Liquid glass', note: 'Glass surfaces turning into dust.' },
+  { href: '/glass', title: 'Liquid glass', note: 'An iOS lock screen in real liquid glass.' },
   { href: '/stream', title: 'Stream', note: 'Mails fly into the trash, bubbles pour out of send.' },
   { href: '/appear', title: 'Entrances', note: 'Rows assemble on insert: gather, rain, print.' },
   { href: '/fling', title: 'Fling and snap', note: 'Swipe cards away, tap tiles to burst them.' },
