@@ -146,7 +146,8 @@ function MorphRenderer({ burst, progress }: RendererProps) {
         px = Math.cos(an);
         py = Math.sin(an);
       }
-      const off = (Math.random() - 0.5) * Math.min(80, 24 + len * 0.6);
+      // Gentle arcs: short hops barely bend, long ones curve a little.
+      const off = (Math.random() - 0.5) * Math.min(48, 10 + len * 0.3);
       const j = k * S;
       d[j] = ax;
       d[j + 1] = ay;
@@ -154,7 +155,8 @@ function MorphRenderer({ burst, progress }: RendererProps) {
       d[j + 3] = by;
       d[j + 4] = (ax + bx) / 2 + px * off;
       d[j + 5] = (ay + by) / 2 + py * off;
-      d[j + 6] = Math.random() * 0.3 + (k / N) * 0.2;
+      // Coherent sweep: grains leave A from left to right, with a little jitter.
+      d[j + 6] = ((ia % colsA) / Math.max(1, colsA - 1)) * 0.3 + Math.random() * 0.08;
       d[j + 7] = LIFE;
       d[j + 8] = ra !== lastA ? 1 : 0;
       d[j + 9] = rb !== lastB ? 1 : 0;
@@ -178,7 +180,7 @@ function MorphRenderer({ burst, progress }: RendererProps) {
       const v = 1 - u;
       const cx = v * v * d[j] + 2 * v * u * d[j + 4] + u * u * d[j + 2];
       const cy = v * v * d[j + 1] + 2 * v * u * d[j + 5] + u * u * d[j + 3];
-      const s = t === 0 || t === 1 ? 1 : 1 + 0.3 * Math.sin(Math.PI * t);
+      const s = t === 0 || t === 1 ? 1 : 1 + 0.18 * Math.sin(Math.PI * t);
       let c = (t - 0.3) / 0.4;
       c = c < 0 ? 0 : c > 1 ? 1 : c;
       const cross = c * c * (3 - 2 * c);
@@ -229,7 +231,7 @@ function MorphRenderer({ burst, progress }: RendererProps) {
         const v = 1 - u;
         const cx = v * v * d[j] + 2 * v * u * d[j + 4] + u * u * d[j + 2];
         const cy = v * v * d[j + 1] + 2 * v * u * d[j + 5] + u * u * d[j + 3];
-        const s = t === 0 || t === 1 ? 1 : 1 + 0.3 * Math.sin(Math.PI * t);
+        const s = t === 0 || t === 1 ? 1 : 1 + 0.18 * Math.sin(Math.PI * t);
         let c = (t - 0.3) / 0.4;
         c = c < 0 ? 0 : c > 1 ? 1 : c;
         const cross = ss(c);
