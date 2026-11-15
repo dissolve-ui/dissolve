@@ -5,7 +5,7 @@ import Animated, { Easing, useAnimatedStyle, useDerivedValue, useSharedValue, wi
 import * as Haptics from 'expo-haptics';
 import { gooLayer } from './goo';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
+const SOFT = Easing.inOut(Easing.cubic);
 const PAD = 16;
 
 export type GooeyMenuItem = { icon: ReactNode; onPress: () => void; label?: string };
@@ -27,7 +27,7 @@ export type GooeyMenuProps = {
 
 const local = (p: number, i: number, n: number) => {
   'worklet';
-  const step = 0.09;
+  const step = 0.14;
   const t = (p - i * step) / Math.max(0.0001, 1 - step * (n - 1));
   return t < 0 ? 0 : t > 1 ? 1 : t;
 };
@@ -36,8 +36,17 @@ function Blob({ i, n, p, c, dir, distance, r, color }: { i: number; n: number; p
   const t = useDerivedValue(() => local(p.value, i, n));
   const cx = useDerivedValue(() => c.x + dir.x * distance * t.value);
   const cy = useDerivedValue(() => c.y + dir.y * distance * t.value);
-  const rr = useDerivedValue(() => r * (0.35 + 0.65 * t.value));
-  return <Circle cx={cx} cy={cy} r={rr} color={color} />;
+  const rr = useDerivedValue(() => r * (0.5 + 0.5 * Math.min(1, t.value * 1.6)));
+  // A strand from the button to the drop that thins out and breaks around two thirds.
+  const sx = useDerivedValue(() => c.x + dir.x * distance * t.value * 0.5);
+  const sy = useDerivedValue(() => c.y + dir.y * distance * t.value * 0.5);
+  const sr = useDerivedValue(() => (t.value > 0.7 ? 0 : r * 0.55 * (1 - t.value / 0.7)));
+  return (
+    <>
+      <Circle cx={sx} cy={sy} r={sr} color={color} />
+      <Circle cx={cx} cy={cy} r={rr} color={color} />
+    </>
+  );
 }
 
 function Action({ item, i, n, p, c, dir, distance, size, close }: { item: GooeyMenuItem; i: number; n: number; p: SharedValue<number>; c: { x: number; y: number }; dir: { x: number; y: number }; distance: number; size: number; close: () => void }) {
@@ -85,7 +94,7 @@ export function GooeyMenu({ items, size = 56, distance = 92, startAngle = -90, e
   const toggle = (next = !open) => {
     if (haptics) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setOpen(next);
-    p.value = withTiming(next ? 1 : 0, { duration: next ? 620 : 520, easing: CALM });
+    p.value = withTiming(next ? 1 : 0, { duration: next ? 1000 : 820, easing: SOFT });
   };
 
   const dirs = items.map((_, i) => {
@@ -98,7 +107,7 @@ export function GooeyMenu({ items, size = 56, distance = 92, startAngle = -90, e
   return (
     <View style={[{ width: box, height: box }, style]} pointerEvents="box-none">
       <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-        <Group layer={gooLayer(8)}>
+        <Group layer={gooLayer(9)}>
           <Circle cx={c.x} cy={c.y} r={R} color={color} />
           {items.map((_, i) => (
             <Blob key={i} i={i} n={n} p={p} c={c} dir={dirs[i]} distance={distance} r={itemSize / 2} color={color} />
