@@ -25,6 +25,7 @@ export { useAppear, DissolveIn, type AppearOptions, type DissolveInProps } from 
 // Group C: gestures
 export { useDissolveScrub, type ScrubOptions } from './hooks/useDissolveScrub';
 export { useDissolveHold, type HoldOptions } from './hooks/useDissolveHold';
+export { useDissolvePeel, type PeelOptions } from './hooks/useDissolvePeel';
 // Group D: full screen
 export { useDissolveScreen, type ScreenOptions } from './hooks/useDissolveScreen';
 // Group F: morph and pile
