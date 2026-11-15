@@ -3,6 +3,7 @@
 An animation library for React Native. Turn any view into dust: a Skia snapshot, cut into grains,
 animated by Reanimated 4 on the UI thread.
 
+[![npm](https://img.shields.io/npm/v/react-native-dissolve.svg)](https://www.npmjs.com/package/react-native-dissolve)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.0.1-brightgreen.svg)](CHANGELOG.md)
 [![Expo SDK 57](https://img.shields.io/badge/Expo%20SDK-57-000020.svg)](https://expo.dev)
@@ -17,12 +18,11 @@ at 6000 per burst.
 
 ## Install
 
-dissolve is not published on npm yet. For now, copy `src/dissolve/` into your app (this repo
-imports it through the `@/dissolve` path alias, see `tsconfig.json`) and install its peers:
-
 ```sh
-npx expo install @shopify/react-native-skia react-native-reanimated react-native-worklets react-native-gesture-handler expo-haptics
+npx expo install react-native-dissolve @shopify/react-native-skia react-native-reanimated react-native-worklets react-native-gesture-handler expo-haptics
 ```
+
+The demo app in this repo imports the source directly through the `@/dissolve` path alias.
 
 Known good versions (from `package.json`): Expo SDK 57, React Native 0.86, React 19.2,
 `@shopify/react-native-skia` 2.6, `react-native-reanimated` 4.5, `react-native-worklets` 0.10,
@@ -156,8 +156,8 @@ pile, morph).
   `list_variants`, `get_variant`, `get_setup`. Register it with:
 
   ```sh
-  claude mcp add dissolve -- node /path/to/dissolve/mcp/server.mjs
-  codex mcp add dissolve -- node /path/to/dissolve/mcp/server.mjs
+  claude mcp add dissolve -- npx -y -p react-native-dissolve react-native-dissolve-mcp
+  codex mcp add dissolve -- npx -y -p react-native-dissolve react-native-dissolve-mcp
   ```
 
   More clients in [mcp/README.md](mcp/README.md).

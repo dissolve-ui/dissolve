@@ -157,18 +157,19 @@ const MCP_TOOLS = [
   ['get_setup', 'Install command, provider snippet, first effect and picking rules.'],
 ];
 
-const SERVER = '/absolute/path/to/dissolve/mcp/server.mjs';
+// Shipped inside the npm package as the react-native-dissolve-mcp bin.
+const SERVER_CMD = 'npx -y -p react-native-dissolve react-native-dissolve-mcp';
 const DESKTOP = `{
   "mcpServers": {
     "dissolve": {
-      "command": "node",
-      "args": ["${SERVER}"]
+      "command": "npx",
+      "args": ["-y", "-p", "react-native-dissolve", "react-native-dissolve-mcp"]
     }
   }
 }`;
 const CODEX = `[mcp_servers.dissolve]
-command = "node"
-args = ["${SERVER}"]`;
+command = "npx"
+args = ["-y", "-p", "react-native-dissolve", "react-native-dissolve-mcp"]`;
 
 export function agentPromptPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) {
   const url = skillURL();
@@ -181,14 +182,14 @@ export function agentPromptPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) {
         <p class="dc-label">Install the skill</p>
         ${cmd(`mkdir -p ~/.claude/skills/react-native-dissolve && curl -fsSL ${url} -o ~/.claude/skills/react-native-dissolve/SKILL.md`)}
         <p class="dc-label">Add the MCP server</p>
-        ${cmd(`claude mcp add dissolve -- node ${SERVER}`)}
+        ${cmd(`claude mcp add dissolve -- ${SERVER_CMD}`)}
       </section>
       <section class="dc-quick-card">
         <header>${mark(OPENAI_PATH, 'OpenAI')}<strong>Codex</strong></header>
         <p class="dc-label">Add the instructions to AGENTS.md</p>
         ${cmd(`curl -fsSL ${url} >> AGENTS.md`)}
         <p class="dc-label">Add the MCP server</p>
-        ${cmd(`codex mcp add dissolve -- node ${SERVER}`)}
+        ${cmd(`codex mcp add dissolve -- ${SERVER_CMD}`)}
       </section>
     </div>
 
@@ -229,7 +230,7 @@ export function agentPromptPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) {
       </table>
     </div>
     <p class="dc-label">Claude Code</p>
-    ${cmd(`claude mcp add dissolve -- node ${SERVER}`)}
+    ${cmd(`claude mcp add dissolve -- ${SERVER_CMD}`)}
     ${codeBlock(DESKTOP, { title: 'Claude Desktop · claude_desktop_config.json', lang: 'json' })}
     ${codeBlock(DESKTOP, { title: 'Cursor · .cursor/mcp.json', lang: 'json' })}
     ${codeBlock(CODEX, { title: 'Codex · ~/.codex/config.toml', lang: 'toml' })}
