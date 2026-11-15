@@ -31,7 +31,7 @@ export const COPY = {
   pile: ['Mail', 'Promo', 'Last chance, 40% off everything.', 'tuscany'],
   morph: ['Updates', 'Downloading', 'Version 2.4, 68 MB left.', 'lake'],
   peel: ['Stickers', 'New sticker pack', 'Twelve paintings to stick anywhere.', 'arch'],
-  melt: ['Weather', 'Heat wave', '38° this afternoon, stay in the shade.', 'tuscany'],
+  melt: ['Weather', 'Heat wave', '38° today, stay in the shade.', 'tuscany'],
   morphB: ['Updates', 'Ready to install', 'Restart to finish the update.', 'pines'],
 };
 
