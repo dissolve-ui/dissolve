@@ -217,9 +217,47 @@ function route(keepScroll) {
   if (id === 'gallery' || !(VARIANTS[id] || PAGES[id])) {
     document.body.classList.add('is-showcase');
     $('#sc-all').innerHTML = tiles();
-    view.querySelectorAll('[data-demo]').forEach((el, i) => mountDemo(el, el.dataset.demo, { size: 'sm', autoplay: 500 + (i % 3) * 180 }));
+    const demos = [...view.querySelectorAll('#sc-all [data-demo]')].map((el) => ({ el, api: mountDemo(el, el.dataset.demo, { size: 'sm', autoplay: false }) }));
+    sequence($('#sc-all'), demos);
     mountShowcase(view);
   } else document.body.classList.remove('is-showcase');
+}
+
+/**
+ * Plays the "Every variant" tiles one after another instead of all at once, so each
+ * variant's timing reads on its own. Only tiles that are shown (filters) and on screen
+ * take part. The cycle loops while the grid is visible and stops when the page changes.
+ */
+function sequence(grid, demos, { gap = 700, rest = 1600 } = {}) {
+  let visible = false, running = false;
+  const onScreen = (el) => {
+    if (el.closest('[hidden]') || el.offsetParent === null) return false;
+    const r = el.getBoundingClientRect();
+    return r.bottom > 60 && r.top < innerHeight - 40;
+  };
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  async function loop() {
+    if (running) return;
+    running = true;
+    while (visible && document.body.contains(grid)) {
+      let played = 0;
+      for (const d of demos) {
+        if (!visible || !document.body.contains(grid)) break;
+        if (!d.api?.run || d.el.dataset.demo === 'peel' || !onScreen(d.el)) continue;
+        d.api.run();
+        played += 1;
+        await wait(gap);
+      }
+      await wait(played ? rest : 400);
+    }
+    running = false;
+  }
+  const io = new IntersectionObserver(([en]) => {
+    visible = en.isIntersecting;
+    if (!document.body.contains(grid)) return io.disconnect();
+    if (visible) loop();
+  }, { threshold: 0.15 });
+  io.observe(grid);
 }
 
 function wire(root) {
