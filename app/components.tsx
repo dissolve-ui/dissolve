@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
 import Animated, { ZoomIn } from 'react-native-reanimated';
-import { LikeButton, SwipeToDelete, useToast } from '@/dissolve';
+import { GooeyMenu, LikeButton, LiquidToggle, MorphButton, SplitButton, SwipeToDelete, useToast } from '@/dissolve';
 import { C, layout, mono } from '@/ui';
 
 const P = {
@@ -128,6 +128,51 @@ function Post() {
   );
 }
 
+/* ---------- Liquid ---------- */
+
+function Liquid() {
+  const toast = useToast();
+  const [notif, setNotif] = useState(true);
+  const [dark, setDark] = useState(false);
+  const [sync, setSync] = useState(true);
+  return (
+    <View>
+      <Header index="04" title="Morph button" note="Pours into a loading drop, flows back out as done." />
+      <MorphButton label="Pay 42 €" doneLabel="Paid" onPress={() => new Promise((r) => setTimeout(r, 1400))} />
+
+      <Header index="05" title="Split button" note="Splits like a drop into Cancel and Confirm." />
+      <SplitButton label="Delete project" confirmLabel="Delete" onConfirm={() => toast.show({ title: 'Project deleted', tone: 'error' })} />
+
+      <Header index="06" title="Liquid toggle" note="The knob travels like a drop." />
+      <View style={st.settings}>
+        {[
+          ['Notifications', notif, setNotif],
+          ['Dark mode', dark, setDark],
+          ['iCloud sync', sync, setSync],
+        ].map(([label, v, set], i) => (
+          <View key={label as string} style={[st.setting, i > 0 && st.settingLine]}>
+            <Text style={st.settingText}>{label as string}</Text>
+            <LiquidToggle value={v as boolean} onValueChange={set as (b: boolean) => void} />
+          </View>
+        ))}
+      </View>
+
+      <Header index="07" title="Gooey menu" note="Actions pour out of the button as drops." />
+      <View style={st.menuStage}>
+        <Image source={P.lake} style={StyleSheet.absoluteFill} contentFit="cover" />
+        <GooeyMenu
+          style={{ position: 'absolute', right: 4, bottom: 4 }}
+          items={[
+            { icon: <SymbolView name="camera.fill" size={20} tintColor="white" />, label: 'Camera', onPress: () => toast.show({ title: 'Camera' }) },
+            { icon: <SymbolView name="photo.fill" size={20} tintColor="white" />, label: 'Photo', onPress: () => toast.show({ title: 'Photo library' }) },
+            { icon: <SymbolView name="mic.fill" size={20} tintColor="white" />, label: 'Voice', onPress: () => toast.show({ title: 'Voice memo' }) },
+          ]}
+        />
+      </View>
+    </View>
+  );
+}
+
 export default function Components() {
   return (
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}>
@@ -141,6 +186,8 @@ export default function Components() {
 
       <Header index="03" title="Like button" note="Sparks on like, the heart snaps away on unlike." />
       <Post />
+
+      <Liquid />
     </ScrollView>
   );
 }
@@ -185,4 +232,10 @@ const st = StyleSheet.create({
   postImg: { width: '100%', aspectRatio: 4 / 3 },
   postActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingVertical: 12 },
   caption: { fontSize: 13, color: C.text, paddingHorizontal: 14, paddingBottom: 14 },
+
+  settings: { backgroundColor: C.surface, borderRadius: 18, paddingHorizontal: 16 },
+  setting: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14 },
+  settingLine: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: C.line },
+  settingText: { fontSize: 16, color: C.ink },
+  menuStage: { height: 230, borderRadius: 22, overflow: 'hidden', backgroundColor: C.surface },
 });

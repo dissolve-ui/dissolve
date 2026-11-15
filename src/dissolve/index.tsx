@@ -35,6 +35,10 @@ export { usePile } from './hooks/usePile';
 export { SwipeToDelete, type SwipeToDeleteProps } from './components/SwipeToDelete';
 export { ToastProvider, useToast, type ToastOptions, type ToastTone } from './components/Toast';
 export { LikeButton, type LikeButtonProps } from './components/LikeButton';
+export { MorphButton, type MorphButtonProps } from './components/MorphButton';
+export { GooeyMenu, type GooeyMenuProps, type GooeyMenuItem } from './components/GooeyMenu';
+export { LiquidToggle, type LiquidToggleProps } from './components/LiquidToggle';
+export { SplitButton, type SplitButtonProps } from './components/SplitButton';
 
 export function DissolveProvider({ children }: { children: ReactNode }) {
   const [bursts, setBursts] = useState<Burst[]>([]);
