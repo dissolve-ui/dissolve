@@ -1,7 +1,9 @@
 import { GETTING_STARTED, GROUPS, VARIANTS, ORDER } from './data.js';
 import { icon, GLYPH } from './icons.js';
-import { mountDemo, HINTS } from './demo.js';
-import { PORTED } from './engine/atlas.js';
+import { mountDemo, HINTS, tilesHTML, mountTiles } from './demo.js';
+import { cancelAll } from './engine/atlas.js';
+import { playgroundHTML, mountPlayground } from './playground.js';
+import { OPTIONS, PRACTICES, PEERS, INSTALL, PROVIDER, PKG } from './variants-content.js';
 import { showcaseHTML, mountShowcase } from './showcase.js';
 import { ready } from './images.js';
 import { introductionPage, installationPage, agentPromptPage, agentsStripHTML } from './docs.js';
@@ -25,7 +27,7 @@ function renderSidebar() {
     ${GROUPS.map((g) => `
       <div class="side-group">
         <p class="side-label">${g.label}</p>
-        ${g.ids.map((id) => link(id, VARIANTS[id].title, PORTED.includes(id) ? '' : 'Soon')).join('')}
+        ${g.ids.map((id) => link(id, VARIANTS[id].title)).join('')}
       </div>`).join('')}
     <div class="side-foot">
       <div class="socials">
@@ -41,9 +43,6 @@ function renderSidebar() {
 }
 
 /* ---------- Building blocks ---------- */
-
-const ph = (label, note = '', cls = '') =>
-  `<div class="ph ${cls}"><span class="ph-tag">Placeholder</span><p class="ph-label">${label}</p>${note ? `<p class="ph-note">${note}</p>` : ''}</div>`;
 
 function highlight(code) {
   return esc(code)
@@ -83,20 +82,26 @@ function pageHead(id, title, desc, glyph) {
   </header>`;
 }
 
-/* ---------- Variant page (dust is the reference skeleton) ---------- */
+/* ---------- Variant page ---------- */
 
-function chips(label, opts, on = 0) {
-  return `<div class="ctl"><p class="ctl-label">${label}</p><div class="chips">${opts.map((o, i) => `<button class="chip${i === on ? ' on' : ''}">${o}</button>`).join('')}</div></div>`;
+function optionsTable(id) {
+  return `<div class="dc-table-wrap">
+    <table class="dc-table opt-table">
+      <thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>${OPTIONS[id].map((o) => `<tr><td><code>${o.name}</code></td><td><code class="opt-type">${o.type}</code></td><td><code>${o.def}</code></td><td>${o.desc}</td></tr>`).join('')}</tbody>
+    </table>
+  </div>`;
 }
-function slider(label, val, unit, pct) {
-  return `<div class="ctl"><div class="slider" style="--p:${pct}%"><span>${label}</span><span class="slider-val">${val}${unit}</span></div></div>`;
+
+const DO = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 8.5 3 3 6-7"/></svg>';
+const DONT = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m4.5 4.5 7 7M11.5 4.5l-7 7"/></svg>';
+
+function practicesList(id) {
+  return `<ul class="bp">${PRACTICES[id].map(([k, t]) => `<li class="bp-${k}"><span class="bp-icon" aria-label="${k === 'do' ? 'Do' : 'Don\'t'}">${k === 'do' ? DO : DONT}</span><span>${t}</span></li>`).join('')}</ul>`;
 }
 
 function variantPage(id) {
   const v = VARIANTS[id];
-  const full = id === 'dust';
-  const live = PORTED.includes(id);
-  const code = v.code ?? `// ${v.title} usage snippet goes here (see README.md)\nimport { ${v.hook} } from 'react-native-dissolve';`;
   return `
   ${pageHead(id, v.title, v.desc, `<span class="glyph-lg">${icon(id, 26)}</span>`)}
 
@@ -108,10 +113,10 @@ function variantPage(id) {
     <div class="toolbar-right">
       <div class="platforms" role="radiogroup" aria-label="Platform">
         <button class="plat on" data-plat="rn">React Native</button>
-        <button class="plat" data-plat="web">Web<span class="soon">Port</span></button>
+        <button class="plat" data-plat="web">Web<span class="plat-tag">Port</span></button>
       </div>
       <button class="btn btn-accent" data-scroll="playground"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2 4h7M12 4h2M2 12h3M8 12h6"/><circle cx="10.5" cy="4" r="1.5"/><circle cx="6.5" cy="12" r="1.5"/></svg>Tune in Playground</button>
-      <button class="btn" data-copy>${copyIcon}Copy prompt</button>
+      <button class="btn" data-copy-prompt>${copyIcon}Copy prompt</button>
     </div>
   </div>
 
@@ -119,46 +124,47 @@ function variantPage(id) {
     <section class="stage" id="main-stage">
       <div class="stage-slot"></div>
       <p class="stage-hint">${HINTS[id]}</p>
-      ${live ? '<button class="btn btn-sm stage-replay" data-replay>Replay</button>' : '<span class="stage-flag">Native only for now</span>'}
+      <button class="btn btn-sm stage-replay" data-replay>Replay</button>
     </section>
 
-    <div class="tiles">
-      ${full ? ph('Demo tile: inbox row swipe', 'Small scene, 1/3 width') + ph('Demo tile: photo grid delete', 'Wide scene, 2/3 width', 'tile-wide')
-             : ph('Demo tile', '') + ph('Demo tile', '', 'tile-wide')}
-    </div>
+    ${tilesHTML(id)}
 
-    <h2 class="section-title" id="playground">Playground</h2>
-    <div class="pg">
-      <div class="pg-stage">
-        ${ph('Playground canvas', 'Same scene as the stage, driven by the panel on the right')}
-        <div class="pg-actions"><button class="chip on">Play</button><button class="chip">Reverse</button><button class="chip">Reset</button></div>
-      </div>
-      <aside class="panel" aria-label="Controls (not wired yet)">
-        ${chips('Origin', ['left', 'right', 'top', 'bottom', 'center'])}
-        ${chips('Direction', ['out', 'in'])}
-        ${slider('Grain', 3, ' px', 30)}
-        ${slider('Duration', 1500, ' ms', 55)}
-        ${slider('Spread', 1, 'x', 40)}
-        <div class="ctl ctl-row"><span>Haptics</span><span class="switch on" role="switch" aria-checked="true"></span></div>
-        <p class="panel-note">Controls are not wired in the blank version.</p>
-      </aside>
-    </div>
-
-    <div class="code-swap" data-code="rn">${codeBlock(code, { title: `${v.hook} · React Native` })}</div>
-    <div class="code-swap" data-code="web" hidden>${codeBlock(v.web ?? '// Web snippet', { title: 'Canvas 2D port · Web', lang: 'js' })}</div>
+    ${playgroundHTML(id, { codeBlock, title: v.title })}
 
     <h2 class="section-title">Options</h2>
-    ${ph('API table', 'Prop, type, default, description. One row per option (origin, direction, grain, duration, haptics, field, n).', 'ph-table')}
+    ${optionsTable(id)}
 
     <h2 class="section-title">Best practices</h2>
-    ${ph('Do and don\'t list', 'When to use this variant, grain budget, accessibility (reduced motion).')}
+    ${practicesList(id)}
   </div>
 
   <div class="tab-panel" data-panel="install" hidden>
-    ${cmd('npx expo install react-native-dissolve @shopify/react-native-skia react-native-reanimated')}
-    ${codeBlock(`import { DissolveProvider } from 'react-native-dissolve';\n\nexport default function Layout() {\n  return <DissolveProvider><Stack /></DissolveProvider>;\n}`, { title: 'app/_layout.tsx' })}
-    ${ph('Peer dependency matrix', 'Expo SDK, Skia, Reanimated 4, worklets versions')}
+    <p class="dc-text">Install the package and its peers. ${v.title} needs nothing more than the provider.</p>
+    ${cmd(INSTALL)}
+    <div class="dc-table-wrap">
+      <table class="dc-table">
+        <thead><tr><th>Peer</th><th>Tested</th><th>Used for</th></tr></thead>
+        <tbody>${PEERS.map(([p, ver, u]) => `<tr><td><code>${p}</code></td><td>${ver}</td><td>${u}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>
+    <p class="dc-note">Expo's Babel preset already adds the worklets plugin. In a bare React Native app, add <code>'react-native-worklets/plugin'</code> to <code>babel.config.js</code>.</p>
+    <h2 class="section-title">Provider</h2>
+    <p class="dc-text">Wrap the app once, above the navigator, so effects survive a screen pop. Grains are drawn in a full screen overlay that ignores touches.</p>
+    ${codeBlock(PROVIDER, { title: 'app/_layout.tsx' })}
   </div>`;
+}
+
+function promptFor(id, root) {
+  const v = VARIANTS[id];
+  const code = root.querySelector('[data-code="rn"] code')?.innerText ?? '';
+  return `Add the ${v.title} effect from ${PKG} to this React Native / Expo app. ${v.desc}
+Install: ${INSTALL}
+Wrap the root layout once in <DissolveProvider> (above the navigator).
+Use these exact settings:
+
+${code}
+
+Hide the original view while it dissolves and update state after the promise resolves. Keep grains reasonable (6000 max per burst) and respect reduced motion (the provider already skips effects).`;
 }
 
 /* ---------- Getting started + gallery ---------- */
@@ -183,16 +189,31 @@ function tiles() {
 
 /* ---------- Router ---------- */
 
+let teardown = [];
+
 function route(keepScroll) {
   const id = location.hash.replace(/^#\/?/, '') || 'gallery';
   const view = $('#view');
+  // Stop everything the previous render started (bursts, loops, timers).
+  teardown.forEach((f) => f());
+  teardown = [];
+  cancelAll();
   view.innerHTML = VARIANTS[id] ? variantPage(id) : (PAGES[id] ?? PAGES.gallery)();
   document.querySelectorAll('.side-link').forEach((a) => a.classList.toggle('on', a.dataset.id === id));
   document.title = `${VARIANTS[id]?.title ?? (GETTING_STARTED.find((p) => p.id === id)?.title || (id === 'gallery' ? 'Gallery' : 'Introduction'))} · dissolve`;
   document.body.classList.remove('side-open');
   if (keepScroll !== true) window.scrollTo(0, 0);
   wire(view);
-  if (VARIANTS[id]) mountDemo($('#main-stage'), id);
+  if (VARIANTS[id]) {
+    mountDemo($('#main-stage'), id);
+    teardown.push(mountPlayground(view, id, { highlight }), mountTiles(view, id));
+    const cp = view.querySelector('[data-copy-prompt]');
+    cp?.addEventListener('click', () => {
+      navigator.clipboard?.writeText(promptFor(id, view)).catch(() => {});
+      cp.classList.add('done');
+      setTimeout(() => cp.classList.remove('done'), 900);
+    });
+  }
   if (id === 'gallery' || !(VARIANTS[id] || PAGES[id])) {
     document.body.classList.add('is-showcase');
     $('#sc-all').innerHTML = tiles();
