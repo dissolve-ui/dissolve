@@ -177,7 +177,7 @@ export function agentPromptPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) {
     ${pageHead('agent-prompt', 'Agent prompt', 'Give dissolve to your coding agent. Paste a prompt, install the skill, or plug in the MCP server.', `<span class="glyph-lg">${GLYPH['agent-prompt']}</span>`)}
     <div class="dc-quick">
       <section class="dc-quick-card">
-        <header>${mark(CLAUDE_PATH, 'Claude')}<strong>Claude Code</strong></header>
+        <header>${mark(CLAUDE_PATH, 'Claude').replace('class="dc-mark"', 'class="dc-mark dc-claude"')}<strong>Claude Code</strong></header>
         <p class="dc-label">Install the skill</p>
         ${cmd(`mkdir -p ~/.claude/skills/react-native-dissolve && curl -fsSL ${url} -o ~/.claude/skills/react-native-dissolve/SKILL.md`)}
         <p class="dc-label">Add the MCP server</p>
@@ -241,7 +241,7 @@ export function agentPromptPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) {
 export function agentsStripHTML() {
   return `
   <aside class="dc-strip" aria-label="Works with your coding agent">
-    <div class="dc-strip-marks">${mark(CLAUDE_PATH, 'Claude')}${mark(OPENAI_PATH, 'OpenAI')}</div>
+    <div class="dc-strip-marks">${mark(CLAUDE_PATH, 'Claude').replace('class="dc-mark"', 'class="dc-mark dc-claude"')}${mark(OPENAI_PATH, 'OpenAI')}</div>
     <p class="dc-strip-title">Works with your coding agent</p>
     <nav class="dc-strip-links">
       <a href="#/agent-prompt">Claude skill</a>
