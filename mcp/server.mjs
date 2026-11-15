@@ -7,7 +7,7 @@
  * Tools: list_variants, get_variant, get_setup.
  *
  * Register it in Claude Code:
- *   claude mcp add dissolve -- npx -y -p react-native-dissolve react-native-dissolve-mcp
+ *   claude mcp add dissolve -- npx -y react-native-dissolve-mcp
  *
  * The data below is derived from README.md and src/dissolve (types.ts, hooks/, variants/).
  */
