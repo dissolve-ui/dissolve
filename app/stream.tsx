@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, FadeOut, useAnimatedStyle, useSharedValue, withSequence, withTiming, ZoomIn } from 'react-native-reanimated';
+import { Image } from 'expo-image';
+import { SymbolView } from 'expo-symbols';
 import { useAppear, useDissolve } from '@/dissolve';
 import { Button, C, Caption, Code, Section, Stage, layout, mono } from '@/ui';
 
 const MAILS = [
-  { id: 'a', from: 'Figma', subject: 'Your weekly digest is ready' },
-  { id: 'b', from: 'Linear', subject: '3 issues were assigned to you' },
-  { id: 'c', from: 'Stripe', subject: 'Payout of 1 240 € is on its way' },
-  { id: 'd', from: 'Vercel', subject: 'Deployment succeeded' },
+  { id: 'a', from: 'Léa, studio', subject: 'Léa wrote to you', body: 'The direction is up in your project.', img: require('../assets/paintings/pond.jpg'), tag: 'NEW MESSAGE', dot: '#E4572E' },
+  { id: 'b', from: 'Hannera', subject: 'Your order is paid', body: 'Brief received, we start Monday.', img: require('../assets/paintings/tuscany.jpg'), tag: 'PAID', dot: '#34C759' },
+  { id: 'c', from: 'Maya, design', subject: 'Ready for review', body: 'Three screens and the hero are in.', img: require('../assets/paintings/lake.jpg'), tag: 'IN REVIEW', dot: '#3D7BFF' },
+  { id: 'd', from: 'Hannera', subject: 'Delivered', body: 'Figma file and pull request attached.', img: require('../assets/paintings/valley.jpg'), tag: 'DELIVERED', dot: '#8B5E3C' },
 ];
 
 const REPLIES = ['On part à quelle heure ?', 'Je ramène le gâteau', 'Parfait, à demain', 'Envoie la photo'];
@@ -25,13 +27,15 @@ function Mail({ mail, trash, onArrive, onRemove }: { mail: (typeof MAILS)[number
         }}
       >
         <View ref={ref} collapsable={false} style={[st.mail, { opacity: dissolving ? 0 : 1 }]}>
-          <View style={st.avatar}>
-            <Text style={st.avatarText}>{mail.from[0]}</Text>
-          </View>
+          <Image source={mail.img} style={st.thumb} contentFit="cover" />
           <View style={{ flex: 1 }}>
-            <Text style={st.from}>{mail.from}</Text>
+            <View style={st.tagRow}>
+              <View style={[st.dot, { backgroundColor: mail.dot }]} />
+              <Text style={st.tag}>{mail.tag}</Text>
+            </View>
+            <Text style={st.from} numberOfLines={1}>{mail.subject}</Text>
             <Text style={st.subject} numberOfLines={1}>
-              {mail.subject}
+              {mail.from} · {mail.body}
             </Text>
           </View>
         </View>
@@ -55,6 +59,18 @@ function Bubble({ text, from }: { text: string; from: React.RefObject<View | nul
     </Animated.View>
   );
 }
+
+/** "+1" rises out of the bin and fades. */
+const PlusOne = () => {
+  'worklet';
+  return {
+    initialValues: { opacity: 1, transform: [{ translateY: 0 }] },
+    animations: {
+      opacity: withTiming(0, { duration: 900, easing: Easing.in(Easing.quad) }),
+      transform: [{ translateY: withTiming(-30, { duration: 900, easing: Easing.bezier(0.32, 0.72, 0, 1) }) }],
+    },
+  };
+};
 
 export default function Stream() {
   const [mails, setMails] = useState(MAILS);
@@ -80,15 +96,21 @@ export default function Stream() {
       <Stage style={{ gap: 8, minHeight: 330 }}>
         <View style={st.bar}>
           <Text style={st.barTitle}>Inbox</Text>
-          <Animated.View ref={trash} collapsable={false} style={[st.trash, bumpStyle]}>
-            <View style={st.lid} />
-            <View style={st.can} />
+          <View>
+            <Animated.View ref={trash} collapsable={false} style={[st.trash, bumpStyle]}>
+              <SymbolView name={count ? 'trash.fill' : 'trash'} size={20} tintColor={C.ink} weight="medium" />
+            </Animated.View>
             {count ? (
-              <View style={st.badge}>
+              <Animated.View key={`b${count}`} entering={ZoomIn.duration(220)} style={st.badge}>
                 <Text style={st.badgeText}>{count}</Text>
-              </View>
+              </Animated.View>
             ) : null}
-          </Animated.View>
+            {count ? (
+              <Animated.Text key={`p${count}`} entering={PlusOne} exiting={FadeOut.duration(1)} style={st.plus}>
+                +1
+              </Animated.Text>
+            ) : null}
+          </View>
         </View>
         {mails.map((m) => (
           <Mail key={m.id} mail={m} trash={trash} onArrive={arrive} onRemove={() => setMails((l) => l.filter((x) => x.id !== m.id))} />
@@ -132,15 +154,16 @@ export default function Stream() {
 const st = StyleSheet.create({
   bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4, paddingBottom: 6 },
   barTitle: { fontSize: 20, fontWeight: '700', color: C.ink },
-  trash: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' },
-  lid: { width: 16, height: 2, borderRadius: 1, backgroundColor: C.ink, marginBottom: 2 },
-  can: { width: 12, height: 13, borderBottomLeftRadius: 3, borderBottomRightRadius: 3, borderWidth: 1.6, borderTopWidth: 0, borderColor: C.ink },
-  badge: { position: 'absolute', top: -4, right: -4, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: C.dark, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  trash: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' },
+  badge: { position: 'absolute', top: -5, right: -5, minWidth: 20, height: 20, borderRadius: 10, backgroundColor: '#E4572E', borderWidth: 2, borderColor: C.surface, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  plus: { position: 'absolute', top: -18, alignSelf: 'center', fontFamily: mono, fontSize: 12, fontWeight: '600', color: '#E4572E' },
+  thumb: { width: 52, height: 52, borderRadius: 12 },
+  tagRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  dot: { width: 6, height: 6, borderRadius: 3 },
+  tag: { fontFamily: mono, fontSize: 10, color: C.text, letterSpacing: 0.4 },
   badgeText: { fontFamily: mono, fontSize: 10, color: 'white' },
-  mail: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: 'white' },
-  avatar: { width: 34, height: 34, borderRadius: 17, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontSize: 14, fontWeight: '600', color: C.ink },
-  from: { fontSize: 14, fontWeight: '600', color: C.ink },
+  mail: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, paddingRight: 14, borderRadius: 18, backgroundColor: 'white' },
+  from: { fontSize: 15, fontWeight: '600', color: C.ink, marginTop: 3 },
   subject: { fontSize: 13, color: C.text, marginTop: 1 },
   bubble: { backgroundColor: '#3D7BFF', borderRadius: 18, paddingHorizontal: 14, paddingVertical: 9, maxWidth: 240 },
   bubbleText: { color: 'white', fontSize: 15 },

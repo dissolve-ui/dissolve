@@ -35,6 +35,8 @@ export default function Layout() {
           <Stack.Screen name="shatter" options={{ title: 'Shatter' }} />
           <Stack.Screen name="pile" options={{ title: 'Pile' }} />
           <Stack.Screen name="morph" options={{ title: 'Morph' }} />
+          <Stack.Screen name="gallery" options={{ title: 'Gallery' }} />
+          <Stack.Screen name="glass" options={{ title: 'Liquid glass', headerTransparent: true, headerTintColor: 'white', headerStyle: { backgroundColor: 'transparent' } }} />
         </Stack>
       </DissolveProvider>
     </GestureHandlerRootView>
