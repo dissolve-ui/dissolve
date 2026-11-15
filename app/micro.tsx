@@ -6,7 +6,7 @@ import { C, mono } from '@/ui';
 export default function Micro() {
   return (
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: 16, paddingBottom: 60 }}>
-      <Text style={st.lead}>Nine mobile micro-interactions, each on its own screen.</Text>
+      <Text style={st.lead}>Eight mobile micro-interactions, each on its own screen.</Text>
       {DEMOS.map((d, i) => (
         <Link key={d.slug} href={`/demo/${d.slug}`} asChild>
           <Pressable style={st.row}>
