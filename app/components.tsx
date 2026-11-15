@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
 import Animated, { ZoomIn } from 'react-native-reanimated';
-import { GooeyMenu, LikeButton, MorphButton, SplitButton, SwipeToDelete, useToast } from '@/dissolve';
+import { GooeyMenu, LikeButton, MorphButton, SlideToConfirm, SplitButton, SwipeToDelete, useToast } from '@/dissolve';
 import { C, layout, mono } from '@/ui';
 
 const P = {
@@ -140,7 +140,10 @@ function Liquid() {
       <Header index="05" title="Split button" note="Divides in the middle like a drop of liquid metal." />
       <SplitButton label="Delete project" confirmLabel="Delete" onConfirm={() => toast.show({ title: 'Project deleted', tone: 'error' })} />
 
-      <Header index="06" title="Gooey menu" note="Actions pour out of the button as drops." />
+      <Header index="06" title="Slide to confirm" note="Slide the knob to the end to pay." />
+      <SlideToConfirm label="Slide to pay 42 €" doneLabel="Paid" onConfirm={() => new Promise((r) => setTimeout(r, 1200))} />
+
+      <Header index="07" title="Gooey menu" note="Actions pour out of the button as drops." />
       <View style={st.menuStage}>
         <Image source={P.lake} style={StyleSheet.absoluteFill} contentFit="cover" />
         <GooeyMenu

@@ -67,7 +67,7 @@ export function LikeButton({ liked, onChange, size = 26, color = '#FF2D55', idle
       if (haptics) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       onChange(true);
       // Tiny element: a short spring overshoot is fine here.
-      scale.value = withSequence(withTiming(0.86, { duration: 70 }), withSpring(1, { damping: 18, stiffness: 550 }));
+      scale.value = withSequence(withTiming(0.86, { duration: 70 }), withSpring(1, { damping: 30, stiffness: 500 }));
       burst.value = 0;
       burst.value = withTiming(1, { duration: 560, easing: Easing.out(Easing.cubic) }, () => {
         burst.value = 0;
