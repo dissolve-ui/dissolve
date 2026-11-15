@@ -6,8 +6,9 @@ import type { AtlasVariant } from '../types';
  *
  * Paper folding: an anchor point A on the border of the view is pulled to a point F. The fold
  * line is the perpendicular bisector of AF and every grain on A's side is mirrored across it,
- * so A lands exactly on F. The flap shows the back of the sticker (tint mode: plain paper,
- * darker near the curl) instead of a mirrored copy of the view.
+ * so A lands exactly on F. The flap shows the back of the sticker (tint mode: plain paper
+ * with a crease at the fold and a highlight on the curl) instead of a mirrored copy of the
+ * view, and it casts a soft shadow on the part still stuck.
  *
  * Draw order does not matter: a grain still stuck that sits under the flap (its mirror falls
  * inside the view, so a flap grain covers it) is hidden. Any corner or edge can be peeled.
@@ -28,8 +29,8 @@ const END = 1.2;
 const FOLD_END = 0.72;
 /** Lift off starts here (auto mode). */
 const LIFT = 0.62;
-/** Width of the curl shading band, points. */
-const CURL = 36;
+/** Width of the shadow the flap casts on the part still stuck, points. */
+const SHADOW = 26;
 
 export const peel: AtlasVariant = {
   kind: 'atlas',
@@ -73,18 +74,31 @@ export const peel: AtlasVariant = {
       if (sd < 0) {
         o.cx -= 2 * sd * nx;
         o.cy -= 2 * sd * ny;
-        const curl = -sd < CURL ? -sd / CURL : 1;
-        const shade = 0.78 + 0.16 * curl;
+        // Paper back: a thin crease right at the fold, a bright highlight where the sheet
+        // curls toward the light, then a soft matte grey toward the free edge.
+        const dd = -sd;
+        let shade: number;
+        if (dd < 6) shade = 0.82 + 0.15 * (dd / 6);
+        else if (dd < 40) shade = 0.97 - 0.09 * ((dd - 6) / 34);
+        else shade = 0.88;
         o.r = shade;
         o.g = shade;
-        o.b = shade + 0.03;
+        o.b = shade + 0.02 > 1 ? 1 : shade + 0.02;
         o.a = 1;
-        o.s = 1 + 0.06 * (1 - curl);
+        // Slight overlap so neighbouring grains never show a seam.
+        o.s = 1.04;
       } else {
-        // Still stuck: hidden when the flap lies on top of it.
+        // Still stuck: hidden when the flap lies on top of it, shadowed just ahead of the fold.
         const mx = lx - 2 * sd * nx;
         const my = ly - 2 * sd * ny;
         if (mx >= 0 && mx <= P.w && my >= 0 && my <= P.h) o.s = 0;
+        else if (sd < SHADOW) {
+          const k = 1 - sd / SHADOW;
+          o.r = 0;
+          o.g = 0;
+          o.b = 0;
+          o.a = 0.32 * k * k;
+        }
       }
     }
     if (hand) {
