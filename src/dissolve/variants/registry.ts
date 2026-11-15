@@ -9,6 +9,7 @@ import { cascadeField } from './cascade';
 import { shatter } from './shatter';
 import { pile } from './pile';
 import { morph } from './morph';
+import { peel } from './peel';
 
 /**
  * Static registry. Owned by the master agent: every builder export is already wired,
@@ -33,6 +34,7 @@ export const REGISTRY: Record<VariantName, Variant> = {
   shatter,
   pile,
   morph,
+  peel,
 };
 
 export const FIELDS: Record<FieldName, FieldFn> = {
