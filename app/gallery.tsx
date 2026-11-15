@@ -4,9 +4,8 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { Link } from 'expo-router';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { Easing, FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withSequence, withTiming, ZoomIn } from 'react-native-reanimated';
-import { scheduleOnRN } from 'react-native-worklets';
 import { DissolveIn, useDissolve, useDissolveHold, useDissolveMorph, useDissolveScrub, VARIANTS, type VariantName } from '@/dissolve';
 import { C, layout, mono } from '@/ui';
 
@@ -304,11 +303,11 @@ function ScrubCard({ onDone }: { onDone: () => void }) {
 }
 
 function HoldCard({ onDone }: { onDone: () => void }) {
-  const { ref, gesture, style, charge } = useDissolveHold({ holdMs: 1200, onCommit: onDone });
+  const { ref, pressHandlers, style, charge } = useDissolveHold({ holdMs: 1200, onCommit: onDone });
   const bar = useAnimatedStyle(() => ({ width: `${charge.value * 100}%` }));
   return (
     <View style={{ gap: 8 }}>
-      <GestureDetector gesture={gesture}>
+      <Pressable {...pressHandlers}>
         <Animated.View ref={ref} collapsable={false} style={[st.gCard, style]}>
           <Image source={P.aqueduct} style={st.gImg} contentFit="cover" />
           <View style={{ flex: 1 }}>
@@ -316,7 +315,7 @@ function HoldCard({ onDone }: { onDone: () => void }) {
             <Text style={st.gSub}>charge · hold to confirm, let go to cancel</Text>
           </View>
         </Animated.View>
-      </GestureDetector>
+      </Pressable>
       <View style={st.track}>
         <Animated.View style={[st.fill, bar]} />
       </View>
@@ -324,43 +323,11 @@ function HoldCard({ onDone }: { onDone: () => void }) {
   );
 }
 
-function SwipeCard({ onGone }: { onGone: () => void }) {
-  const { ref, dissolving, dissolve } = useDissolve();
-  const tx = useSharedValue(0);
-  const go = async (vx: number, vy: number) => {
-    await dissolve({ preset: 'fling', velocity: { x: vx, y: vy } });
-    onGone();
-  };
-  const pan = Gesture.Pan()
-    .activeOffsetX([-12, 12])
-    .onChange((e) => {
-      tx.value += e.changeX;
-    })
-    .onEnd((e) => {
-      if (Math.abs(tx.value) > 90 || Math.abs(e.velocityX) > 700) scheduleOnRN(go, e.velocityX, e.velocityY);
-      else tx.value = withTiming(0, { duration: 300, easing: calm });
-    });
-  const style = useAnimatedStyle(() => ({ transform: [{ translateX: tx.value }, { rotate: `${tx.value / 30}deg` }] }));
-  return (
-    <GestureDetector gesture={pan}>
-      <Animated.View style={style}>
-        <View ref={ref} collapsable={false} style={[st.gCard, { opacity: dissolving ? 0 : 1 }]}>
-          <Image source={P.temple} style={st.gImg} contentFit="cover" />
-          <View style={{ flex: 1 }}>
-            <Text style={st.gTitle}>Swipe me away</Text>
-            <Text style={st.gSub}>fling · the faster, the further</Text>
-          </View>
-        </View>
-      </Animated.View>
-    </GestureDetector>
-  );
-}
-
-type GKey = 's' | 'h' | 'f';
+type GKey = 's' | 'h';
 
 function Gestures() {
-  const [keys, setKeys] = useState({ s: 0, h: 0, f: 0 });
-  const [gone, setGone] = useState({ s: false, h: false, f: false });
+  const [keys, setKeys] = useState({ s: 0, h: 0 });
+  const [gone, setGone] = useState({ s: false, h: false });
   const done = (k: GKey) => {
     setGone((g) => ({ ...g, [k]: true }));
     setTimeout(() => {
@@ -380,7 +347,6 @@ function Gestures() {
   return (
     <View style={{ gap: 10 }}>
       {slot('s', <ScrubCard onDone={() => done('s')} />)}
-      {slot('f', <SwipeCard onGone={() => done('f')} />)}
       {slot('h', <HoldCard onDone={() => done('h')} />, 90)}
     </View>
   );
@@ -538,7 +504,7 @@ export default function Gallery() {
         <Header index="04" title="Arrivals" note="New content assembling into place." />
         <Arrivals />
 
-        <Header index="05" title="Gestures" note="Driven by your finger: scrub, fling, hold to destroy." />
+        <Header index="05" title="Gestures" note="Driven by your finger: scrub, and hold to destroy." />
         <Gestures />
 
         <Header index="06" title="Morph" note="One view rearranges into another." />

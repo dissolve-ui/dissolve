@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { FadeIn, useAnimatedStyle } from 'react-native-reanimated';
 import { useDissolveHold, useDissolveScrub, type VariantName } from '@/dissolve';
@@ -23,11 +23,11 @@ function ScrubCard({ preset, onDone }: { preset: VariantName; onDone: () => void
 }
 
 function HoldCard({ onDone }: { onDone: () => void }) {
-  const { ref, gesture, style, charge } = useDissolveHold({ holdMs: 1200, onCommit: onDone });
+  const { ref, pressHandlers, style, charge } = useDissolveHold({ holdMs: 1200, onCommit: onDone });
   const ring = useAnimatedStyle(() => ({ width: `${charge.value * 100}%` }));
   return (
     <View style={{ gap: 10 }}>
-      <GestureDetector gesture={gesture}>
+      <Pressable {...pressHandlers}>
         <Animated.View ref={ref} collapsable={false} style={[st.card, style]}>
           <View style={[st.thumb, { backgroundColor: '#E4572E' }]} />
           <View style={{ flex: 1 }}>
@@ -35,7 +35,7 @@ function HoldCard({ onDone }: { onDone: () => void }) {
             <Text style={st.sub}>Hold to confirm. Let go to cancel.</Text>
           </View>
         </Animated.View>
-      </GestureDetector>
+      </Pressable>
       <View style={st.track}>
         <Animated.View style={[st.fill, ring]} />
       </View>
@@ -95,7 +95,7 @@ export default function Gestures() {
             setHoldKey((n) => n + 1);
           }}
         />
-        <Code title="useDissolveHold">{`const { ref, gesture, style, charge } = useDissolveHold({\n  holdMs: 1200,\n  onCommit: deleteAccount,\n})`}</Code>
+        <Code title="useDissolveHold">{`const { ref, gesture, style, charge } = useDissolveHold({\n  holdMs: 1200,\n  onCommit: deleteAccount,\n})\n\n<Pressable {...pressHandlers}>\n  <Animated.View ref={ref} style={style} />\n</Pressable>`}</Code>
       </Section>
     </ScrollView>
   );

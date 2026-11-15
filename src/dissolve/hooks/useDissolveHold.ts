@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import type { View } from 'react-native';
+import type { GestureResponderEvent, View } from 'react-native';
 import { Gesture } from 'react-native-gesture-handler';
 import {
   cancelAnimation,
@@ -28,10 +28,10 @@ import type { BurstHandle, VariantName } from '../types';
  * finger. Released early: the charge calms down to 0 on a calm curve, the real view comes
  * back and the overlay is removed two frames later.
  *
- * const { ref, gesture, style, charge, reset } = useDissolveHold({ onCommit });
- * <GestureDetector gesture={gesture}>
+ * const { ref, pressHandlers, style, charge } = useDissolveHold({ onCommit });
+ * <Pressable {...pressHandlers}>
  *   <Animated.View ref={ref} style={[styles.card, style]} />
- * </GestureDetector>
+ * </Pressable>
  *
  * Any other variant can be passed as `then`: it only gets the burst (no shake or heat).
  */
@@ -244,7 +244,19 @@ export function useDissolveHold(opts: HoldOptions = {}) {
     [begin, release, maxDistance],
   );
 
+  /**
+   * Plain press handlers, the most reliable way to drive a hold (works inside ScrollViews
+   * and needs no GestureDetector): <Pressable {...pressHandlers}>.
+   */
+  const pressHandlers = useMemo(
+    () => ({
+      onPressIn: (e: GestureResponderEvent) => begin(e.nativeEvent.locationX, e.nativeEvent.locationY),
+      onPressOut: () => release(),
+    }),
+    [begin, release],
+  );
+
   const style = useAnimatedStyle(() => ({ opacity: hidden.value ? 0 : 1 }));
 
-  return { ref, gesture, charge, progress, style, reset };
+  return { ref, gesture, pressHandlers, charge, progress, style, reset };
 }

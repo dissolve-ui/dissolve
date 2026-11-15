@@ -182,7 +182,7 @@ export function Particles({ burst, variant, progress, field }: ParticlesProps) {
 
   return (
     <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Atlas image={image} sprites={sprites} transforms={transforms} colors={colors} colorBlendMode={tint ? 'srcATop' : 'modulate'} />
+      <Atlas image={image} sprites={sprites} transforms={transforms} colors={colors} colorBlendMode={tint ? 'dstATop' : 'modulate'} />
     </Canvas>
   );
 }
