@@ -539,7 +539,7 @@ const sortedCells = (lum) => Array.from(lum.keys()).sort((a, b) => lum[a] - lum[
 export function morph(a, b, { grain = 4, duration = 1100, reverse = false } = {}) {
   let resolveDone;
   const done = new Promise((r) => (resolveDone = r));
-  if (reduced.matches) { resolveDone(); return { done }; }
+  if (reduced.matches || !(a.w > 0 && a.h > 0 && b.w > 0 && b.h > 0)) { resolveDone(); return { done }; }
   const g = grain;
   const colsA = Math.ceil(a.w / g), rowsA = Math.ceil(a.h / g), colsB = Math.ceil(b.w / g), rowsB = Math.ceil(b.h / g);
   const nA = colsA * rowsA, nB = colsB * rowsB, N = Math.max(nA, nB);
@@ -595,11 +595,177 @@ export function morph(a, b, { grain = 4, duration = 1100, reverse = false } = {}
       }
     },
   };
-  bursts.add(burst);
-  if (!running) { running = true; requestAnimationFrame(frame); }
-  return { done };
+  const handle = { done, aux: burst.aux };
+  launch(burst, handle);
+  return handle;
 }
 VARIANTS.morph = { grain: 4, custom: true };
+
+/* ---------- shatter (src/dissolve/variants/shatter.tsx) ---------- */
+
+// Native draws the shards with Skia <Vertices>. Here every shard is one polygon filled with a
+// pattern of the snapshot, moved by the same per shard math (crack gap, launch, gravity,
+// spin, pseudo 3D flip with light and glint), plus the white impact flash for exits.
+const SHARDS = 220, GRAVITY_HALF = 450, PI3 = Math.PI * 3;
+
+/** Sutherland-Hodgman clip of a convex polygon against [0, w] x [0, h]. */
+function clipRect(poly, w, h) {
+  const planes = [(p) => p.x, (p) => w - p.x, (p) => p.y, (p) => h - p.y];
+  let out = poly;
+  for (const f of planes) {
+    if (!out.length) break;
+    const inp = out;
+    out = [];
+    for (let i = 0; i < inp.length; i++) {
+      const a = inp[i], b = inp[(i + 1) % inp.length], fa = f(a), fb = f(b);
+      if (fa >= 0) out.push(a);
+      if (fa >= 0 !== fb >= 0) { const u = fa / (fa - fb); out.push({ x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u }); }
+    }
+  }
+  return out;
+}
+
+function centroid(poly) {
+  let A = 0, cx = 0, cy = 0;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length], c = a.x * b.y - b.x * a.y;
+    A += c; cx += (a.x + b.x) * c; cy += (a.y + b.y) * c;
+  }
+  A /= 2;
+  if (Math.abs(A) < 1e-9) return { A: 0, x: poly[0].x, y: poly[0].y };
+  return { A, x: cx / (6 * A), y: cy / (6 * A) };
+}
+
+/** Polar grid of jittered rays and geometric rings around (ox, oy), clipped to the rect. */
+function polarShards(w, h, ox, oy, maxD, q, S) {
+  const base = Math.random() * Math.PI * 2, sector = (Math.PI * 2) / S;
+  const rMin = Math.min(14, Math.max(8, maxD * 0.04)), rEnd = (maxD / Math.cos(sector / 2)) * 1.05;
+  const radii = [0];
+  for (let r = rMin; ; r *= q) { radii.push(r); if (r >= rEnd) break; }
+  const rings = radii.length, grid = [];
+  for (let k = 0; k < rings; k++) {
+    const row = [], last = k === rings - 1;
+    for (let j = 0; j < S; j++) {
+      if (k === 0) { row.push({ x: ox, y: oy }); continue; }
+      const th = base + j * sector + (last ? 0 : (Math.random() - 0.5) * 0.3 * sector);
+      const r = last ? radii[k] : radii[k] * (1 + (Math.random() - 0.5) * 0.12);
+      row.push({ x: ox + Math.cos(th) * r, y: oy + Math.sin(th) * r });
+    }
+    grid.push(row);
+  }
+  const out = [];
+  const keep = (tri) => { const c = clipRect(tri, w, h); if (c.length >= 3 && Math.abs(centroid(c).A) > 1e-4) out.push(c); };
+  const cross = (p, q2, r) => (q2.x - p.x) * (r.y - p.y) - (q2.y - p.y) * (r.x - p.x);
+  for (let k = 0; k < rings - 1; k++)
+    for (let j = 0; j < S; j++) {
+      const j2 = (j + 1) % S, A = grid[k][j], B = grid[k][j2], C = grid[k + 1][j2], D = grid[k + 1][j];
+      const acOk = cross(A, B, C) * cross(A, C, D) > 0, bdOk = cross(A, B, D) * cross(B, C, D) > 0;
+      if (k === 0) keep([A, C, D]);
+      else if (acOk && (!bdOk || Math.random() < 0.5)) { keep([A, B, C]); keep([A, C, D]); }
+      else { keep([A, B, D]); keep([B, C, D]); }
+    }
+  return out;
+}
+
+function shatterMesh(w, h, ox, oy, target, fvx, fvy) {
+  const cx = Math.min(w, Math.max(0, ox)), cy = Math.min(h, Math.max(0, oy));
+  const maxD = Math.max(Math.hypot(cx, cy), Math.hypot(w - cx, cy), Math.hypot(cx, h - cy), Math.hypot(w - cx, h - cy), 1);
+  let S = 10 + Math.floor(Math.random() * 5), q = 1.8;
+  let polys = polarShards(w, h, cx, cy, maxD, q, S);
+  for (let guard = 0; polys.length < target && guard < 80; guard++) {
+    if (q > 1.42) q -= 0.06; else if (S < 64) S += 2; else break;
+    polys = polarShards(w, h, cx, cy, maxD, q, S);
+  }
+  const shards = polys.map((poly) => {
+    const g = centroid(poly);
+    let ux = g.x - cx, uy = g.y - cy;
+    const len = Math.hypot(ux, uy);
+    if (len < 1e-3) { const a = Math.random() * Math.PI * 2; ux = Math.cos(a); uy = Math.sin(a); } else { ux /= len; uy /= len; }
+    const dn = Math.min(1, len / maxD), speed = (120 + Math.random() * 200) * (1 - 0.6 * dn);
+    // Vertices relative to the centroid, pushed out by half a pixel so neighbours overlap
+    // and no hairline crack shows while the glass is still whole.
+    const pts = new Float32Array(poly.length * 2);
+    poly.forEach((p, i) => {
+      const dx = p.x - g.x, dy = p.y - g.y, l = Math.hypot(dx, dy) || 1;
+      pts[i * 2] = dx + (dx / l) * 0.5; pts[i * 2 + 1] = dy + (dy / l) * 0.5;
+    });
+    return {
+      gx: g.x, gy: g.y, vx: ux * speed + fvx * 0.3, vy: uy * speed + fvy * 0.3, ux, uy,
+      spin: Math.random() - 0.5, flip: Math.random(), delay: dn * 0.15 + Math.random() * 0.05, life: 0.8, pts,
+    };
+  });
+  return { shards, ox: cx, oy: cy, flashR: Math.min(170, Math.max(60, maxD * 0.55)) };
+}
+
+VARIANTS.shatter = {
+  grain: 3, end: 1, custom: true,
+  start(opts, finish, aux) {
+    const { w, h, source } = opts;
+    const o = originPoint(opts.origin, w, h);
+    const n0 = opts.n?.[0] ?? 0;
+    const target = Math.round(Math.min(400, Math.max(60, n0 > 0 ? n0 : SHARDS)));
+    const M = shatterMesh(w, h, o.x, o.y, target, opts.velocity?.x ?? 0, opts.velocity?.y ?? 0);
+    const duration = opts.duration ?? 1500, sec = duration / 1000, rev = opts.direction === 'in';
+    const pattern = ctx.createPattern(source, 'no-repeat');
+    const path = (pts) => {
+      ctx.beginPath();
+      ctx.moveTo(pts[0], pts[1]);
+      for (let i = 2; i < pts.length; i += 2) ctx.lineTo(pts[i], pts[i + 1]);
+      ctx.closePath();
+    };
+    return {
+      v: VARIANTS.shatter, end: 1, rev, duration, start: opts.hold ? null : performance.now(),
+      sx0: scrollX, sy0: scrollY, aux, manual: null, finish,
+      draw(tn, offX, offY) {
+        const X = opts.x + offX, Y = opts.y + offY;
+        for (const s of M.shards) {
+          let t = (tn - s.delay) / s.life;
+          t = t < 0 ? 0 : t > 1 ? 1 : t;
+          let px = X + s.gx, py = Y + s.gy, ang = 0, fy = 1, a = 1, light = 1, gl = 0;
+          if (t > 0) {
+            const gap = t < 0.08 ? (1.5 * t) / 0.08 : 1.5, T = t * sec * s.life;
+            px += s.ux * gap + s.vx * T;
+            py += s.uy * gap + s.vy * T + GRAVITY_HALF * T * T;
+            ang = s.spin * 6 * t;
+            const phi = s.flip * PI3 * t;
+            fy = Math.cos(phi);
+            const f = t <= 0.6 ? 0 : (t - 0.6) / 0.4;
+            a = t >= 1 ? 0 : 1 - f * f * (3 - 2 * f);
+            light = 0.6 + 0.4 * Math.abs(fy);
+            const sp = Math.sin(phi), s2 = sp * sp;
+            gl = sp > 0 ? 0.55 * s2 * s2 * s2 * a : 0;
+          }
+          if (a <= 0.01 || Math.abs(fy) < 0.02) continue;
+          const ca = Math.cos(ang), sa = Math.sin(ang);
+          // shard space: translate to the centroid, rotate, squash y by the flip
+          ctx.setTransform(ca * DPR, sa * DPR, -sa * fy * DPR, ca * fy * DPR, px * DPR, py * DPR);
+          pattern.setTransform(new DOMMatrix([1 / DPR, 0, 0, 1 / DPR, -s.gx, -s.gy]));
+          path(s.pts);
+          ctx.globalAlpha = a;
+          ctx.fillStyle = pattern;
+          ctx.fill();
+          if (light < 0.99) { ctx.globalAlpha = (1 - light) * a; ctx.fillStyle = '#000'; ctx.fill(); }
+          if (gl > 0.01) { ctx.globalAlpha = gl; ctx.fillStyle = 'rgb(240, 247, 255)'; ctx.fill(); }
+        }
+        if (!rev && tn > 0) {
+          const g = Math.min(1, tn / 0.22), u = 1 - g, r = Math.max(0.5, M.flashR * (1 - u * u * u));
+          const fc = Math.min(1, tn / 0.3), op = 0.85 * (1 - fc * fc * (3 - 2 * fc)) * Math.min(1, tn / 0.015);
+          if (op > 0.01) {
+            const cx = X + M.ox, cy = Y + M.oy;
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+            grad.addColorStop(0, 'rgba(255,255,255,0.95)');
+            grad.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.globalAlpha = op;
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+        ctx.globalAlpha = 1;
+      },
+    };
+  },
+};
 
 export const PORTED = Object.keys(VARIANTS);
 
@@ -735,7 +901,13 @@ export function play(opts) {
   let resolveDone;
   const done = new Promise((r) => (resolveDone = r));
   const handle = { done, aux: { a0: 0, a1: 0 }, set() {}, release() {}, cancel() {} };
-  if (!v || v.custom || reduced.matches) { resolveDone(); return handle; }
+  // Detached or collapsed elements measure 0 x 0: nothing to draw.
+  if (!v || reduced.matches || !(opts.w > 0 && opts.h > 0)) { resolveDone(); return handle; }
+  if (v.custom) {
+    if (!v.start) { resolveDone(); return handle; }
+    launch(v.start(opts, resolveDone, handle.aux), handle);
+    return handle;
+  }
 
   let grain = opts.grain ?? v.grain;
   const min = Math.sqrt((opts.w * opts.h) / MAX_GRAINS);
@@ -752,6 +924,7 @@ export function play(opts) {
   const count = P.cols * P.rows;
   const d = new Float32Array(count * stride);
   const useOrigin = P.hasOrigin && !v.ownsOrigin;
+  const cascade = opts.field === 'cascade' ? cascadeField(P, opts.rows, end) : null;
   const spread = v.spread ?? 0.55, jitter = v.jitter ?? 0.08;
   for (let r = 0; r < P.rows; r++)
     for (let c = 0; c < P.cols; c++) {
@@ -759,7 +932,7 @@ export function play(opts) {
       const g = { i, col: c, row: r, lx: (c + 0.5) * grain, ly: (r + 0.5) * grain, r1: Math.random(), r2: Math.random(), r3: Math.random(), r4: Math.random() };
       const tm = v.timing(g, P);
       d[k] = g.lx; d[k + 1] = g.ly; d[k + 2] = g.r1; d[k + 3] = g.r2; d[k + 4] = g.r3; d[k + 5] = g.r4;
-      d[k + 6] = useOrigin ? originField(opts.origin, g.lx, g.ly, P) * spread + g.r1 * jitter : tm.delay;
+      d[k + 6] = cascade ? cascade(g, tm.life) : useOrigin ? originField(opts.origin, g.lx, g.ly, P) * spread + g.r1 * jitter : tm.delay;
       d[k + 7] = tm.life;
     }
   v.prepare?.(d, stride, count, P, opts);
@@ -771,17 +944,47 @@ export function play(opts) {
     start: opts.hold ? null : performance.now(),
     aux: handle.aux, finish: resolveDone, manual: null, opts,
   };
-  handle.set = (p) => { b.manual = Math.max(0, Math.min(end, p)); };
+  launch(b, handle);
+  return handle;
+}
+
+/** Adds a burst to the loop and wires the handle (scrub, hold, cancel). */
+function launch(b, handle) {
+  handle.set = (p) => { b.manual = Math.max(0, Math.min(b.end, p)); };
   handle.release = () => {
     if (b.start) return;
-    b.start = performance.now() - ((b.manual ?? 0) / end) * duration;
+    b.start = performance.now() - ((b.manual ?? 0) / b.end) * b.duration;
     b.manual = null;
   };
-  handle.end = end;
-  handle.cancel = () => { bursts.delete(b); resolveDone(); };
+  handle.end = b.end;
+  handle.cancel = () => { bursts.delete(b); b.finish(); };
   bursts.add(b);
   if (!running) { running = true; requestAnimationFrame(frame); }
-  return handle;
+}
+
+/** Drops every running burst at once (page change, re-render). Their promises resolve. */
+export function cancelAll() {
+  for (const b of bursts) b.finish();
+  bursts.clear();
+}
+
+/* ---------- cascade delay field (src/dissolve/variants/cascade.ts) ---------- */
+
+function cascadeField(P, rows, end) {
+  const bounds = (rows ?? []).filter(Number.isFinite).sort((a, b) => a - b);
+  const indexOf = (y) => { let lo = 0, hi = bounds.length; while (lo < hi) { const m = (lo + hi) >> 1; if (bounds[m] <= y) lo = m + 1; else hi = m; } return lo; };
+  const first = indexOf(0), span = Math.max(0, indexOf(Math.max(0, P.h - 0.5)) - first);
+  return (g, life) => {
+    const B = Math.max(0, end - life - 0.005);
+    const fx = Math.min(1, Math.max(0, g.lx / P.w));
+    if (bounds.length) {
+      const total = span * 0.06 + 0.3 + 0.08, k = total > B ? B / total : 1;
+      const idx = Math.min(span, Math.max(0, indexOf(g.ly) - first));
+      return (idx * 0.06 + fx * 0.3 + g.r1 * 0.08) * k;
+    }
+    const total = 0.78, k = total > B ? B / total : 1;
+    return ((g.ly / P.h) * 0.45 + fx * 0.25 + g.r1 * 0.08) * k;
+  };
 }
 
 const o = { cx: 0, cy: 0, s: 1, rot: 0, a: 1, k: 0, shade: 1 };
