@@ -330,15 +330,16 @@ VARIANTS.peel = {
       const lx = d[k], ly = d[k + 1];
       const sd = (lx - (ax + fx) / 2) * nx + (ly - (ay + fy) / 2) * ny;
       if (sd < 0) {
-        const curl = -sd < 36 ? -sd / 36 : 1;
+        const dd = -sd;
         o.cx -= 2 * sd * nx;
         o.cy -= 2 * sd * ny;
-        o.k = 1;
-        o.shade = 0.78 + 0.16 * curl;
-        o.s = 1 + 0.06 * (1 - curl);
+        // The flap is drawn in one piece by post() below (smooth paper, exact shape).
+        o.s = 0;
+        void dd;
       } else {
         const mx = lx - 2 * sd * nx, my = ly - 2 * sd * ny;
         if (mx >= 0 && mx <= P.w && my >= 0 && my <= P.h) o.s = 0; // under the flap
+        else if (sd < 26) { const q = 1 - sd / 26; o.dark = 0.32 * q * q; } // shadow cast by the flap
       }
     }
     if (hand) { if (t > 0.6) o.s *= 1 - ss((t - 0.6) / 0.4); return; }
@@ -350,6 +351,84 @@ VARIANTS.peel = {
       o.s *= 1 - ss(v);
     }
   },
+};
+
+/** Peel geometry at time t: anchor A, pulled point F (local coords), lift amount. */
+function peelGeom(P, t, a0, a1) {
+  const L = Math.sqrt(P.w * P.w + P.h * P.h);
+  if (P.n0 === 1) return { ax: P.n1, ay: P.n2, fx: a0, fy: a1, L, hand: true };
+  const q = t < 0.72 ? t / 0.72 : 1, f = ss(q) * L * 1.04;
+  return { ax: P.w, ay: P.h, fx: P.w - (P.w / L) * 2 * f, fy: P.h - (P.h / L) * 2 * f, L, hand: false };
+}
+
+const flapCanvas = document.createElement('canvas');
+const fctx = flapCanvas.getContext('2d');
+
+/**
+ * Draws the peeled flap in one piece: the view mirrored across the fold, clipped to the
+ * peeled half plane, then covered with a paper gradient (crease, curl highlight, matte).
+ * The view's own alpha shapes it, so rounded corners stay rounded.
+ */
+VARIANTS.peel.post = function (b, p, offX, offY) {
+  const { P } = b;
+  const t = Math.min(1, Math.max(0, p / 1.2));
+  const G = peelGeom(P, t, b.aux.a0, b.aux.a1);
+  let nx = G.fx - G.ax, ny = G.fy - G.ay;
+  const len = Math.sqrt(nx * nx + ny * ny);
+  if (len < 0.5) return;
+  nx /= len; ny /= len;
+  const mx = (G.ax + G.fx) / 2, my = (G.ay + G.fy) / 2;
+  const c0 = mx * nx + my * ny; // fold line: x . n = c0
+  // Lift (auto mode) or final shrink (hand mode), around the flap centre.
+  let tx = 0, ty = 0, rot = 0, sc = 1;
+  if (G.hand) { if (t > 0.6) sc = 1 - ss((t - 0.6) / 0.4); }
+  else if (t > 0.62) {
+    const v = (t - 0.62) / 0.38, e = v * v;
+    tx = -(P.w / G.L) * 160 * e; ty = -(P.h / G.L) * 160 * e - 40 * e; rot = -0.6 * e; sc = 1 - ss(v);
+  }
+  if (sc <= 0.01) return;
+  if (flapCanvas.width !== overlay.width || flapCanvas.height !== overlay.height) { flapCanvas.width = overlay.width; flapCanvas.height = overlay.height; }
+  fctx.setTransform(1, 0, 0, 1, 0, 0);
+  fctx.clearRect(0, 0, flapCanvas.width, flapCanvas.height);
+  // world = DPR * T(P.x + off) * [lift about the reflected fold midpoint] * Reflect
+  const cx = mx, cy = my; // pivot: the fold midpoint stays put on the flap
+  fctx.translate((P.x + offX) * DPR, (P.y + offY) * DPR);
+  fctx.scale(DPR, DPR);
+  fctx.translate(cx + tx, cy + ty);
+  fctx.rotate(rot);
+  fctx.scale(sc, sc);
+  fctx.translate(-cx, -cy);
+  fctx.transform(1 - 2 * nx * nx, -2 * nx * ny, -2 * nx * ny, 1 - 2 * ny * ny, 2 * c0 * nx, 2 * c0 * ny);
+  // Peeled half plane of the view, in local (pre reflection) coords.
+  const big = 4 * G.L + P.w + P.h;
+  const ux = -ny, uy = nx; // along the fold
+  fctx.beginPath();
+  fctx.moveTo(mx + ux * big, my + uy * big);
+  fctx.lineTo(mx - ux * big, my - uy * big);
+  fctx.lineTo(mx - ux * big - nx * big, my - uy * big - ny * big);
+  fctx.lineTo(mx + ux * big - nx * big, my + uy * big - ny * big);
+  fctx.closePath();
+  // Mirror the view, then keep only the flap side with an exact mask (a clip leaked hairlines).
+  fctx.drawImage(b.source, 0, 0, P.w, P.h);
+  fctx.globalCompositeOperation = 'destination-in';
+  fctx.fillStyle = '#000';
+  fctx.fill();
+  // Paper over the view's shape: gradient from the fold into the flap.
+  fctx.globalCompositeOperation = 'source-atop';
+  const gr = fctx.createLinearGradient(mx, my, mx - nx * G.L, my - ny * G.L);
+  const stop = (px, shade) => {
+    const v = Math.round(shade * 246);
+    gr.addColorStop(Math.min(1, px / G.L), `rgb(${v - 5}, ${v - 3}, ${v})`);
+  };
+  stop(0, 0.8); stop(6, 0.97); stop(40, 0.88); stop(G.L, 0.86);
+  fctx.fillStyle = gr;
+  fctx.fillRect(-big, -big, big * 2 + P.w, big * 2 + P.h);
+  fctx.globalCompositeOperation = 'source-over';
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.drawImage(flapCanvas, 0, 0);
+  ctx.restore();
 };
 
 VARIANTS.melt = {
@@ -557,11 +636,11 @@ export function morph(a, b, { grain = 4, duration = 1100, reverse = false } = {}
     const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy);
     let px, py;
     if (len > 1e-3) { px = -dy / len; py = dx / len; } else { const an = Math.random() * Math.PI * 2; px = Math.cos(an); py = Math.sin(an); }
-    const off = (Math.random() - 0.5) * Math.min(80, 24 + len * 0.6);
+    const off = (Math.random() - 0.5) * Math.min(48, 10 + len * 0.3); // gentle arcs
     const j = k * MS;
     d[j] = ax; d[j + 1] = ay; d[j + 2] = bx; d[j + 3] = by;
     d[j + 4] = (ax + bx) / 2 + px * off; d[j + 5] = (ay + by) / 2 + py * off;
-    d[j + 6] = Math.random() * 0.3 + (k / N) * 0.2; d[j + 7] = MORPH_LIFE;
+    d[j + 6] = ((ia % colsA) / Math.max(1, colsA - 1)) * 0.3 + Math.random() * 0.08; d[j + 7] = MORPH_LIFE; // left to right sweep
     d[j + 8] = ra !== lastA ? 1 : 0; d[j + 9] = rb !== lastB ? 1 : 0;
     lastA = ra; lastB = rb;
   }
@@ -577,7 +656,7 @@ export function morph(a, b, { grain = 4, duration = 1100, reverse = false } = {}
         const u = ss(t), v = 1 - u;
         const cx = v * v * d[j] + 2 * v * u * d[j + 4] + u * u * d[j + 2] + offX;
         const cy = v * v * d[j + 1] + 2 * v * u * d[j + 5] + u * u * d[j + 3] + offY;
-        const s = t === 0 || t === 1 ? 1 : 1 + 0.3 * Math.sin(Math.PI * t);
+        const s = t === 0 || t === 1 ? 1 : 1 + 0.18 * Math.sin(Math.PI * t);
         const cross = ss(Math.min(1, Math.max(0, (t - 0.3) / 0.4)));
         const hw = (g * s) / 2;
         const alA = d[j + 8] * (1 - cross), alB = d[j + 9] * cross;
@@ -987,7 +1066,7 @@ function cascadeField(P, rows, end) {
   };
 }
 
-const o = { cx: 0, cy: 0, s: 1, rot: 0, a: 1, k: 0, shade: 1 };
+const o = { cx: 0, cy: 0, s: 1, rot: 0, a: 1, k: 0, shade: 1, dark: 0, paper: 0 };
 
 function frame(now) {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1006,7 +1085,7 @@ function frame(now) {
       const k = i * stride;
       let t = (p - d[k + 6]) / d[k + 7];
       t = t < 0 ? 0 : t > 1 ? 1 : t;
-      o.cx = P.x + d[k]; o.cy = P.y + d[k + 1]; o.s = 1; o.rot = 0; o.k = 0; o.shade = 1;
+      o.cx = P.x + d[k]; o.cy = P.y + d[k + 1]; o.s = 1; o.rot = 0; o.k = 0; o.shade = 1; o.dark = 0; o.paper = 0;
       o.a = 1 - t * t * (3 - 2 * t);
       v.step(t, d, k, P, a0, a1, o);
       if (o.a <= 0.01 || o.s <= 0) continue;
@@ -1014,7 +1093,18 @@ function frame(now) {
       x.setTransform(cs, sn, -sn, cs, (o.cx + offX) * DPR, (o.cy + offY) * DPR);
       x.globalAlpha = o.a > 1 ? 1 : o.a;
       const sx = d[k] * DPR - sg / 2, sy = d[k + 1] * DPR - sg / 2;
+      if (o.paper > 0) {
+        const v = Math.round(o.paper * 246);
+        x.fillStyle = `rgb(${v - 5}, ${v - 3}, ${v})`;
+        x.fillRect(-g / 2, -g / 2, g, g);
+        continue;
+      }
       x.drawImage(b.source, sx, sy, sg, sg, -g / 2, -g / 2, g, g);
+      if (o.dark > 0.005) {
+        x.globalAlpha = o.dark;
+        x.fillStyle = '#000';
+        x.fillRect(-g / 2, -g / 2, g, g);
+      }
       if (o.k > 0.01 && b.tinted) {
         x.globalAlpha = (o.a > 1 ? 1 : o.a) * (o.k > 1 ? 1 : o.k);
         x.drawImage(b.tinted, sx, sy, sg, sg, -g / 2, -g / 2, g, g);
@@ -1025,6 +1115,7 @@ function frame(now) {
         }
       }
     }
+    v.post?.(b, p, offX, offY);
     if (v.goo) {
       // Blur grows from 0 so the first frame is the exact view.
       const r = Math.min(1, raw / 0.25) * v.goo * DPR;
