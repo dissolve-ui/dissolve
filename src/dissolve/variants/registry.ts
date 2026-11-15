@@ -10,6 +10,7 @@ import { shatter } from './shatter';
 import { pile } from './pile';
 import { morph } from './morph';
 import { peel } from './peel';
+import { melt } from './melt';
 
 /**
  * Static registry. Owned by the master agent: every builder export is already wired,
@@ -35,6 +36,7 @@ export const REGISTRY: Record<VariantName, Variant> = {
   pile,
   morph,
   peel,
+  melt,
 };
 
 export const FIELDS: Record<FieldName, FieldFn> = {

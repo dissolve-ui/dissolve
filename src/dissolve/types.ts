@@ -35,7 +35,8 @@ export type VariantName =
   | 'pile'
   | 'morph'
   // casual
-  | 'peel';
+  | 'peel'
+  | 'melt';
 
 /** Delay fields that can replace the native delay of any atlas variant. */
 export type FieldName = 'cascade';
