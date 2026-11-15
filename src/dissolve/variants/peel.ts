@@ -86,7 +86,7 @@ export const peel: AtlasVariant = {
         o.b = shade + 0.02 > 1 ? 1 : shade + 0.02;
         o.a = 1;
         // Slight overlap so neighbouring grains never show a seam.
-        o.s = 1.04;
+        o.s = 1.12;
       } else {
         // Still stuck: hidden when the flap lies on top of it, shadowed just ahead of the fold.
         const mx = lx - 2 * sd * nx;
