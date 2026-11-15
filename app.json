@@ -6,6 +6,18 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "ios": { "supportsTablet": false }
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.rselmi.dissolve",
+      "appleTeamId": "765NQBZQN2"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-image"
+    ],
+    "scheme": "dissolve",
+    "experiments": {
+      "typedRoutes": false
+    }
   }
 }

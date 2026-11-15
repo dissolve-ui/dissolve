@@ -39,3 +39,27 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+.impeccable/
+
+# logs
+*.log
+logs/
+
+# env files
+.env
+.env.*
+!.env.example
+
+# native build output
+build/
+*.ipa
+*.apk
+*.aab
+
+# editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# coverage
+coverage/
