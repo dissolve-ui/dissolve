@@ -98,7 +98,7 @@ export const rain: AtlasVariant = {
 export const print: AtlasVariant = {
   kind: 'atlas',
   name: 'print',
-  info: 'Printed line by line from the top, fresh ink glows cyan.',
+  info: 'Printed line by line from the top, fresh ink starts black.',
   defaultGrain: 3,
   natural: 'in',
   // Rows are quantised so the head prints whole lines. max 0.8 + 0.03 + 0.3 = 1.13
@@ -114,10 +114,11 @@ export const print: AtlasVariant = {
     // Dropped by the head from a few points above, slightly bled, then settles.
     o.cy -= 8 * v;
     o.s = 1 + 0.45 * v;
-    // Fresh ink tint (modulate can only darken, so the glow reads as a cool tint).
+        // Fresh ink is black, then fades to the real colors as it dries.
     const fresh = 1 - ss(t);
-    o.r = 1 - 0.5 * fresh;
-    o.g = 1 - 0.12 * fresh;
+    o.r = 1 - 0.9 * fresh;
+    o.g = 1 - 0.9 * fresh;
+    o.b = 1 - 0.9 * fresh;
     const f = t * 2.5 < 1 ? t * 2.5 : 1;
     o.a = ss(f);
   },
