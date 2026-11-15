@@ -25,6 +25,8 @@ export default function Layout() {
         >
           <Stack.Screen name="index" options={{ title: 'dissolve' }} />
           <Stack.Screen name="components" options={{ title: 'Components' }} />
+          <Stack.Screen name="micro" options={{ title: 'Micro-interactions' }} />
+          <Stack.Screen name="demo/[name]" options={{ title: '' }} />
           <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
           <Stack.Screen name="chat" options={{ title: 'Chat' }} />
           <Stack.Screen name="photos" options={{ title: 'Photos' }} />
