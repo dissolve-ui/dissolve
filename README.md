@@ -156,8 +156,8 @@ pile, morph).
   `list_variants`, `get_variant`, `get_setup`. Register it with:
 
   ```sh
-  claude mcp add dissolve -- npx -y -p react-native-dissolve react-native-dissolve-mcp
-  codex mcp add dissolve -- npx -y -p react-native-dissolve react-native-dissolve-mcp
+  claude mcp add dissolve -- npx -y react-native-dissolve-mcp
+  codex mcp add dissolve -- npx -y react-native-dissolve-mcp
   ```
 
   More clients in [mcp/README.md](mcp/README.md).

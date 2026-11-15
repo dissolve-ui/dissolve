@@ -157,19 +157,19 @@ const MCP_TOOLS = [
   ['get_setup', 'Install command, provider snippet, first effect and picking rules.'],
 ];
 
-// Shipped inside the npm package as the react-native-dissolve-mcp bin.
-const SERVER_CMD = 'npx -y -p react-native-dissolve react-native-dissolve-mcp';
+// Published as its own dependency free npm package, react-native-dissolve-mcp.
+const SERVER_CMD = 'npx -y react-native-dissolve-mcp';
 const DESKTOP = `{
   "mcpServers": {
     "dissolve": {
       "command": "npx",
-      "args": ["-y", "-p", "react-native-dissolve", "react-native-dissolve-mcp"]
+      "args": ["-y", "react-native-dissolve-mcp"]
     }
   }
 }`;
 const CODEX = `[mcp_servers.dissolve]
 command = "npx"
-args = ["-y", "-p", "react-native-dissolve", "react-native-dissolve-mcp"]`;
+args = ["-y", "react-native-dissolve-mcp"]`;
 
 export function agentPromptPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) {
   const url = skillURL();
