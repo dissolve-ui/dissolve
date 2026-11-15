@@ -18,7 +18,7 @@ export type SplitButtonProps = {
   height?: number;
   /** Space between the two halves once split. Default 28. */
   gap?: number;
-  /** Split duration, ms. Default 900. */
+  /** Split duration, ms. Default 620. */
   duration?: number;
   haptics?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -31,7 +31,7 @@ export type SplitButtonProps = {
  *
  * <SplitButton label="Delete project" confirmLabel="Delete" onConfirm={remove} />
  */
-export function SplitButton({ label, cancelLabel = 'Cancel', confirmLabel = 'Confirm', onConfirm, color = '#FF3B30', cancelColor = '#E9E9EB', cancelTextColor = '#1C1C1E', confirmColor = '#FF3B30', height = 52, gap = 28, duration = 900, haptics = true, style }: SplitButtonProps) {
+export function SplitButton({ label, cancelLabel = 'Cancel', confirmLabel = 'Confirm', onConfirm, color = '#FF3B30', cancelColor = '#E9E9EB', cancelTextColor = '#1C1C1E', confirmColor = '#FF3B30', height = 52, gap = 28, duration = 620, haptics = true, style }: SplitButtonProps) {
   const [W, setW] = useState(0);
   const [open, setOpen] = useState(false);
   const p = useSharedValue(0);
@@ -40,7 +40,7 @@ export function SplitButton({ label, cancelLabel = 'Cancel', confirmLabel = 'Con
 
   useEffect(() => {
     p.value = withTiming(open ? 1 : 0, { duration, easing: SOFT });
-    tone.value = open ? withDelay(duration * 0.78, withTiming(1, { duration: 320 })) : withTiming(0, { duration: 180 });
+    tone.value = open ? withDelay(duration * 0.78, withTiming(1, { duration: 220 })) : withTiming(0, { duration: 180 });
   }, [open, p, tone, duration]);
 
   const R = height / 2;
