@@ -141,7 +141,7 @@ removeItem()`}
         </View>
       </Section>
 
-      <Text style={st.footer}>v0.1.0 · MIT licensed · by RSLAB</Text>
+      <Text style={st.footer}>v0.0.1 · MIT licensed</Text>
     </ScrollView>
   );
 }

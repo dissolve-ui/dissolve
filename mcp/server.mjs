@@ -14,7 +14,7 @@
 import { createInterface } from 'node:readline';
 
 const PKG = 'react-native-dissolve';
-const VERSION = '0.1.0';
+const VERSION = '0.0.1';
 const PROTOCOL = '2025-06-18';
 
 /* ---------- Data ---------- */
