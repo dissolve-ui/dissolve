@@ -1,0 +1,110 @@
+/* Docs pages (Introduction, Installation, Agent prompt) and the coding agent strip. */
+
+.dc-lead { margin: 4px 0 0; font-size: 15px; line-height: 1.65; color: var(--text-2); max-width: 640px; }
+.dc-text { margin: 0 0 12px; font-size: 14px; line-height: 1.65; color: var(--text-2); max-width: 680px; }
+.dc-note { margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: var(--muted); max-width: 680px; }
+.dc-label { margin: 18px 0 8px; font-size: 12px; font-weight: 500; color: var(--muted); }
+.dc-lead code, .dc-text code, .dc-note code, .dc-how code, .dc-table td code {
+  font: 12.5px var(--mono); padding: 1px 5px; border-radius: 6px;
+  background: var(--wash); color: var(--text);
+}
+.dc-link { color: var(--accent); text-decoration: none; }
+.dc-link:hover { text-decoration: underline; }
+
+/* Numbered steps */
+.dc-step { display: flex; align-items: center; gap: 10px; scroll-margin-top: calc(var(--top-h) + 16px); }
+.dc-num {
+  flex: none; width: 22px; height: 22px; border-radius: 50%;
+  display: inline-grid; place-items: center;
+  font: 500 11px/1 var(--mono); color: var(--text-2);
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-2);
+}
+
+/* How it works */
+.dc-how { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.dc-how li {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 16px 18px; border-radius: var(--r-md);
+  background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 14px; line-height: 1.6; color: var(--text-2);
+}
+.dc-how strong { color: var(--text); font-weight: 500; }
+.dc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+.dc-actions .btn { text-decoration: none; color: var(--text); }
+
+/* Tables */
+.dc-table-wrap { overflow-x: auto; margin-top: var(--gap); border-radius: var(--r-md); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.dc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.dc-table th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 12px 18px 10px; border-bottom: 1px solid var(--line); }
+.dc-table td { padding: 11px 18px; color: var(--text-2); border-bottom: 1px solid var(--line); vertical-align: top; }
+.dc-table tr:last-child td { border-bottom: 0; }
+.dc-table td:first-child { white-space: nowrap; }
+
+/* Three ways */
+.dc-ways { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); margin-top: 8px; }
+.dc-way {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left;
+  padding: 16px 18px; border-radius: var(--r-md);
+  background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+  transition: background .2s, box-shadow .2s, transform .3s var(--spring);
+}
+.dc-way:hover { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-2); }
+.dc-way:active { transform: scale(0.98); }
+.dc-way-icon { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; margin-bottom: 8px; background: var(--wash); color: var(--text-2); }
+.dc-way-title { font-size: 14px; font-weight: 500; color: var(--text); }
+.dc-way-desc { font-size: 12.5px; color: var(--muted); }
+
+/* Prompt */
+.prompt-body:has(.dc-prompt) { padding: 0; }
+.dc-prompt {
+  margin: 0; padding: 16px 18px 18px; max-height: 420px; overflow: auto;
+  white-space: pre-wrap; word-break: break-word;
+  font: 400 12.5px/1.7 var(--mono); color: var(--text-2);
+}
+
+/* Skill file row */
+.dc-file {
+  display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 14px;
+  border-radius: var(--r-md); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+}
+.dc-file-icon { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--wash); color: var(--text-2); flex: none; }
+.dc-file-meta { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.dc-file-name { font: 500 13px var(--mono); color: var(--text); }
+.dc-file-path { font-size: 12px; color: var(--muted); }
+.dc-file .btn { text-decoration: none; color: var(--text); }
+
+/* Coding agent strip (bottom of the gallery) */
+.dc-strip {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin: 64px 0 8px; padding: 18px 0 0; border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+.dc-strip-marks { display: flex; gap: 12px; color: var(--muted); }
+.dc-mark { display: block; opacity: .8; }
+.dc-strip-title { margin: 0; font-size: 13px; color: var(--text-2); }
+.dc-strip-links { display: flex; gap: 6px; margin-left: auto; }
+.dc-strip-links a {
+  height: 26px; padding: 0 10px; border-radius: var(--pill);
+  display: inline-flex; align-items: center;
+  font-size: 12px; font-weight: 500; color: var(--muted); text-decoration: none;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  transition: color .2s, background .2s;
+}
+.dc-strip-links a:hover { color: var(--text); background: var(--wash); }
+
+@media (max-width: 860px) {
+  .dc-ways { grid-template-columns: 1fr; }
+  .dc-way { flex-direction: row; align-items: center; gap: 12px; }
+  .dc-way-icon { margin: 0; }
+  .dc-way-desc { margin-left: auto; }
+  .dc-file { flex-wrap: wrap; }
+  .dc-strip-links { margin-left: 0; width: 100%; }
+}
+
+/* Claude Code and Codex quick start */
+.dc-quick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; }
+.dc-quick-card { min-width: 0; border-radius: var(--r-lg); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); padding: 16px 16px 4px; }
+.dc-quick-card header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 15px; }
+.dc-quick-card header svg { width: 22px; height: 22px; color: var(--text); }
+.dc-quick-card .cmd { font-size: 12px; }
+@media (max-width: 860px) { .dc-quick { grid-template-columns: 1fr; } }
