@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactElement } from 'react';
 import { StyleSheet } from 'react-native';
-import { Atlas, Canvas, rect, Skia } from '@shopify/react-native-skia';
+import { Atlas, Canvas, Group, rect, Skia } from '@shopify/react-native-skia';
 import { makeMutable, useAnimatedReaction, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { DEFAULT_END, originField } from './core';
 import type { AtlasVariant, Burst, FieldFn, GrainOut } from './types';
@@ -15,6 +15,8 @@ export type ParticlesProps = {
   progress: SharedValue<number>;
   /** Optional delay field override (cascade). */
   field?: FieldFn;
+  /** Optional layer paint the grains are drawn through (e.g. a gooey Blur + ColorMatrix). */
+  layer?: ReactElement;
 };
 
 /**
@@ -23,7 +25,7 @@ export type ParticlesProps = {
  * aux value changed). Variant math is a worklet captured in the closure, so dispatch
  * is a direct call: the variant is chosen on the JS side when the component mounts.
  */
-export function Particles({ burst, variant, progress, field }: ParticlesProps) {
+export function Particles({ burst, variant, progress, field, layer }: ParticlesProps) {
   const { image, params: P, origin } = burst;
   const { grain, pr, cols, rows, x, y } = P;
   const count = cols * rows;
@@ -182,7 +184,13 @@ export function Particles({ burst, variant, progress, field }: ParticlesProps) {
 
   return (
     <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Atlas image={image} sprites={sprites} transforms={transforms} colors={colors} colorBlendMode={tint ? 'dstATop' : 'modulate'} />
+      {layer ? (
+        <Group layer={layer}>
+          <Atlas image={image} sprites={sprites} transforms={transforms} colors={colors} colorBlendMode={tint ? 'dstATop' : 'modulate'} />
+        </Group>
+      ) : (
+        <Atlas image={image} sprites={sprites} transforms={transforms} colors={colors} colorBlendMode={tint ? 'dstATop' : 'modulate'} />
+      )}
     </Canvas>
   );
 }
