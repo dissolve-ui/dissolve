@@ -7,7 +7,9 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.rselmi.dissolve",
+      "appleTeamId": "765NQBZQN2"
     },
     "plugins": [
       "expo-router",
