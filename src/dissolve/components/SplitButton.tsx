@@ -28,28 +28,36 @@ export type SplitButtonProps = {
  *
  * <SplitButton label="Delete project" confirmLabel="Delete" onConfirm={remove} />
  */
-export function SplitButton({ label, cancelLabel = 'Cancel', confirmLabel = 'Confirm', onConfirm, color = '#FF3B30', cancelColor = '#E5E5EA', confirmColor = '#FF3B30', height = 52, gap = 10, haptics = true, style }: SplitButtonProps) {
+export function SplitButton({ label, cancelLabel = 'Cancel', confirmLabel = 'Confirm', onConfirm, color = '#FF3B30', cancelColor = '#E5E5EA', confirmColor = '#FF3B30', height = 52, gap = 24, haptics = true, style }: SplitButtonProps) {
   const [W, setW] = useState(0);
   const [open, setOpen] = useState(false);
   const p = useSharedValue(0);
 
   useEffect(() => {
-    p.value = withTiming(open ? 1 : 0, { duration: 900, easing: SOFT });
+    p.value = withTiming(open ? 1 : 0, { duration: 1050, easing: SOFT });
   }, [open, p]);
 
   const half = (W - gap) / 2;
-  // The halves shrink early so a gap opens mid way; a waist in the middle holds them together,
-  // pinches, then snaps, like a drop dividing in two.
-  const k = useDerivedValue(() => Math.min(1, p.value * 1.35));
-  const width = useDerivedValue(() => W + (half - W) * k.value);
+  // Liquid metal: the halves pull apart while a neck of drops between their inner ends thins
+  // out as the gap grows, then snaps near the end. Closing runs it backwards and they fuse.
+  const cy = PAD + height / 2;
+  const width = useDerivedValue(() => W + (half - W) * p.value);
   const rightX = useDerivedValue(() => PAD + W - width.value);
-  const waistR = useDerivedValue(() => {
-    const t = p.value;
-    const v = t < 0.35 ? 1 : t > 0.8 ? 0 : 1 - (t - 0.35) / 0.45;
-    return (height / 2) * (0.25 + 0.55 * v) * (t > 0.8 ? 0 : 1);
+  const open01 = useDerivedValue(() => {
+    const g = W - 2 * width.value; // current gap between the halves (negative while overlapping)
+    return g <= 0 ? 0 : Math.min(1, g / gap);
   });
-  const waistColor = useDerivedValue(() => interpolateColor(p.value, [0, 1], [color, confirmColor]));
-  const leftColor = useDerivedValue(() => interpolateColor(p.value, [0, 0.6, 1], [color, color, cancelColor]));
+  const neck = useDerivedValue(() => {
+    const o = open01.value;
+    if (o > 0.78) return 0; // snapped
+    return (height / 2) * (0.92 - 0.72 * o);
+  });
+  const side = useDerivedValue(() => (open01.value > 0.78 ? 0 : (height / 2) * (0.98 - 0.4 * open01.value)));
+  const innerL = useDerivedValue(() => PAD + width.value - height / 2);
+  const innerR = useDerivedValue(() => PAD + W - width.value + height / 2);
+  const q1 = useDerivedValue(() => innerL.value + (PAD + W / 2 - innerL.value) * 0.55);
+  const q3 = useDerivedValue(() => innerR.value - (innerR.value - PAD - W / 2) * 0.55);
+  const leftColor = useDerivedValue(() => interpolateColor(p.value, [0, 0.55, 1], [color, color, cancelColor]));
   const rightColor = useDerivedValue(() => interpolateColor(p.value, [0, 1], [color, confirmColor]));
 
   const closedStyle = useAnimatedStyle(() => ({ opacity: 1 - Math.min(1, p.value * 2.5) }));
@@ -64,10 +72,17 @@ export function SplitButton({ label, cancelLabel = 'Cancel', confirmLabel = 'Con
     <View onLayout={(e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width)} style={[{ height }, style]}>
       {W ? (
         <Canvas style={{ position: 'absolute', left: -PAD, top: -PAD, width: W + PAD * 2, height: height + PAD * 2 }} pointerEvents="none">
-          <Group layer={gooLayer(8)}>
-            <RoundedRect x={PAD} y={PAD} width={width} height={height} r={height / 2} color={leftColor} />
+          {/* One liquid layer per half: the shapes melt into each other, but each color stays
+              crisp instead of the blur bleeding red into gray. */}
+          <Group layer={gooLayer(7)}>
             <RoundedRect x={rightX} y={PAD} width={width} height={height} r={height / 2} color={rightColor} />
-            <Circle cx={PAD + W / 2} cy={PAD + height / 2} r={waistR} color={waistColor} />
+            <Circle cx={q3} cy={cy} r={side} color={rightColor} />
+            <Circle cx={PAD + W / 2} cy={cy} r={neck} color={rightColor} />
+          </Group>
+          <Group layer={gooLayer(7)}>
+            <RoundedRect x={PAD} y={PAD} width={width} height={height} r={height / 2} color={leftColor} />
+            <Circle cx={q1} cy={cy} r={side} color={leftColor} />
+            <Circle cx={PAD + W / 2 - 1} cy={cy} r={neck} color={leftColor} />
           </Group>
         </Canvas>
       ) : null}

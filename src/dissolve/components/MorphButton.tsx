@@ -47,8 +47,8 @@ export function MorphButton({ label, doneLabel = 'Done', onPress, color = '#1C1C
     // Shrinking: the body pours in first and the end drops trail behind, joined by a strand.
     // Growing: the drops shoot out first and the body follows them.
     const shrinking = target < w.value;
-    w.value = withTiming(target, { duration: shrinking ? 620 : 980, easing: SOFT });
-    tail.value = withTiming(target, { duration: shrinking ? 1100 : 600, easing: SOFT });
+    w.value = withTiming(target, { duration: shrinking ? 650 : 950, easing: SOFT });
+    tail.value = withTiming(target, { duration: shrinking ? 1050 : 620, easing: SOFT });
     tone.value = withTiming(phase === 'done' ? 1 : 0, { duration: 320 });
     show.value = withTiming(phase === 'idle' ? 0 : phase === 'loading' ? 1 : 2, { duration: 220 });
     if (phase === 'loading') spin.value = withRepeat(withTiming(spin.value + 1, { duration: 800, easing: Easing.linear }), -1);
@@ -80,20 +80,23 @@ export function MorphButton({ label, doneLabel = 'Done', onPress, color = '#1C1C
 
   const cy = PAD + height / 2;
   const x = useDerivedValue(() => PAD + (W - w.value) / 2);
-  const dropR = height * 0.4;
-  const strandR = height * 0.22;
+  // Viscous ends: each end of the pill is a bulb that trails (shrinking) or leads (growing)
+  // the body by at most ~half its height, so the liquid stretches but never breaks.
   const mid = PAD + W / 2;
-  // Drop centers at the ends of the lagging width, body edges at the ends of the body.
-  const rightX = useDerivedValue(() => mid + Math.max(0, tail.value / 2 - height / 2));
-  const leftX = useDerivedValue(() => mid - Math.max(0, tail.value / 2 - height / 2));
+  const bulbR = height * 0.47;
+  const neckR = height * 0.36;
   const edge = useDerivedValue(() => Math.max(0, w.value / 2 - height / 2));
-  // A strand between each body edge and its drop, thinner in the middle so it pinches.
-  const r1 = useDerivedValue(() => mid + edge.value + (rightX.value - mid - edge.value) * 0.5);
-  const l1 = useDerivedValue(() => mid - edge.value - (mid - leftX.value - edge.value) * 0.5);
-  const r2 = useDerivedValue(() => mid + edge.value + (rightX.value - mid - edge.value) * 0.25);
-  const l2 = useDerivedValue(() => mid - edge.value - (mid - leftX.value - edge.value) * 0.25);
-  const r3 = useDerivedValue(() => mid + edge.value + (rightX.value - mid - edge.value) * 0.75);
-  const l3 = useDerivedValue(() => mid - edge.value - (mid - leftX.value - edge.value) * 0.75);
+  const lag = useDerivedValue(() => {
+    const d = (tail.value - w.value) / 2;
+    const m = height * 0.55;
+    return d > m ? m : d < -m ? -m : d;
+  });
+  const rightX = useDerivedValue(() => mid + edge.value + lag.value);
+  const leftX = useDerivedValue(() => mid - edge.value - lag.value);
+  const rNeck = useDerivedValue(() => mid + edge.value + lag.value * 0.5);
+  const lNeck = useDerivedValue(() => mid - edge.value - lag.value * 0.5);
+  // The bulbs swell a little with the stretch, like surface tension pulling the liquid in.
+  const bulb = useDerivedValue(() => bulbR * (1 + 0.12 * Math.abs(lag.value) / (height * 0.55)));
   const fill = useDerivedValue(() => interpolateColor(tone.value, [0, 1], [color, doneColor]));
 
   const labelStyle = useAnimatedStyle(() => ({ opacity: 1 - Math.min(1, show.value) }));
@@ -104,16 +107,12 @@ export function MorphButton({ label, doneLabel = 'Done', onPress, color = '#1C1C
     <Pressable onPress={press} onLayout={onLayout} accessibilityRole="button" accessibilityState={{ busy: phase === 'loading' }} style={[{ height }, style]}>
       {W ? (
         <Canvas style={{ position: 'absolute', left: -PAD, top: -PAD, width: W + PAD * 2, height: height + PAD * 2 }}>
-          <Group layer={gooLayer(7)}>
+          <Group layer={gooLayer(6)}>
             <RoundedRect x={x} y={PAD} width={w} height={height} r={height / 2} color={fill} />
-            <Circle cx={l2} cy={cy} r={strandR * 1.25} color={fill} />
-            <Circle cx={l1} cy={cy} r={strandR} color={fill} />
-            <Circle cx={l3} cy={cy} r={strandR * 1.25} color={fill} />
-            <Circle cx={leftX} cy={cy} r={dropR} color={fill} />
-            <Circle cx={r2} cy={cy} r={strandR * 1.25} color={fill} />
-            <Circle cx={r1} cy={cy} r={strandR} color={fill} />
-            <Circle cx={r3} cy={cy} r={strandR * 1.25} color={fill} />
-            <Circle cx={rightX} cy={cy} r={dropR} color={fill} />
+            <Circle cx={lNeck} cy={cy} r={neckR} color={fill} />
+            <Circle cx={leftX} cy={cy} r={bulb} color={fill} />
+            <Circle cx={rNeck} cy={cy} r={neckR} color={fill} />
+            <Circle cx={rightX} cy={cy} r={bulb} color={fill} />
           </Group>
         </Canvas>
       ) : null}
