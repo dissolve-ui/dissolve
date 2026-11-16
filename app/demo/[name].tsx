@@ -52,7 +52,7 @@ const st = StyleSheet.create({
   scroll: { flexGrow: 1, padding: 16, paddingBottom: 40 },
   stage: { flexGrow: 1, minHeight: 420, justifyContent: 'center', paddingVertical: 16 },
   full: { flex: 1, paddingBottom: 34 },
-  fullStage: { flex: 1, padding: 16 },
+  fullStage: { flex: 1, padding: 16, overflow: 'hidden' },
   footer: { gap: 12, paddingTop: 16 },
   hint: { fontSize: 14, lineHeight: 20, textAlign: 'center', paddingHorizontal: 12 },
 });

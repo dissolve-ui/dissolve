@@ -210,11 +210,7 @@ export default function CardStackDemo() {
               </TwView>
             ))}
           </Tw.View>
-        ) : (
-          <Tw.Text key="hint" entering={FadeIn.duration(300).delay(200)} exiting={FadeOut.duration(120)} className="text-dissolve-muted" style={st.hint}>
-            tap a card · swipe to flip · drag down to close
-          </Tw.Text>
-        )}
+        ) : null}
       </View>
     </TwView>
   );
