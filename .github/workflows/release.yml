@@ -1,0 +1,69 @@
+name: Release
+
+# Publishes react-native-dissolve to npm with provenance.
+# Runs on a v* tag (for example v0.1.0) or by hand from the Actions tab.
+#
+# Maintainer setup (once): add an npm automation token as the repository secret NPM_TOKEN
+# (Settings > Secrets and variables > Actions > New repository secret). No secret lives in this repo.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Pack and validate without publishing
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write # npm provenance
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Tests
+        run: npm test
+
+      - name: Tag matches the package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version="$(node -p "require('./packages/react-native-dissolve/package.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match packages/react-native-dissolve version $version"
+            exit 1
+          fi
+
+      - name: Build the package
+        run: npm run build:package
+
+      - name: Pack (dry run)
+        working-directory: packages/react-native-dissolve
+        run: npm pack --dry-run --ignore-scripts
+
+      - name: Publish to npm
+        if: github.event_name == 'push' || inputs.dry-run == false
+        working-directory: packages/react-native-dissolve
+        run: npm publish --provenance --access public --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

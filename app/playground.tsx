@@ -5,7 +5,6 @@ import {
   REGISTRY,
   useAppear,
   useDissolve,
-  usePile,
   VARIANT_GRAIN,
   VARIANT_INFO,
   VARIANTS,
@@ -31,7 +30,6 @@ const FLINGS = [
 const KNOB: Partial<Record<VariantName, { title: string; values: number[]; fmt: (v: number) => string }>> = {
   snap: { title: 'Push', values: [0.6, 1, 1.6], fmt: (v) => `${v}x` },
   shatter: { title: 'Shards', values: [120, 220, 400], fmt: (v) => `${v}` },
-  pile: { title: 'Kept in the heap', values: [0.2, 0.35, 0.6], fmt: (v) => `${Math.round(v * 100)}%` },
 };
 
 /** Variants that take an origin (touch point or edge). */
@@ -52,7 +50,6 @@ export default function Playground() {
 
   const out = useDissolve();
   const inn = useAppear();
-  const { sweepPile, clearPile } = usePile();
   const target = useRef<View>(null);
 
   const g = grain ?? VARIANT_GRAIN[variant];
@@ -62,9 +59,6 @@ export default function Playground() {
   const dir: Direction = isMorph ? 'out' : direction;
   const atlas = REGISTRY[variant].kind === 'atlas';
   const showOrigin = usesOrigin(variant);
-
-  // The pile heap lives in the global overlay: drop it when leaving the playground.
-  useEffect(() => () => clearPile(), [clearPile]);
 
   // The entrance card mounts hidden (useAppear), show it until the next play.
   const showIn = inn.reset;
@@ -92,7 +86,6 @@ export default function Playground() {
       origin: o,
       velocity: variant === 'fling' ? FLINGS[fling].v : undefined,
       to: variant === 'stream' ? target : undefined,
-      floor: variant === 'pile' ? 'screen' : undefined,
       field: cascade ? 'cascade' : undefined,
       n: n0 !== undefined ? [n0] : undefined,
     };
@@ -241,14 +234,6 @@ export default function Playground() {
       </Section>
       <View style={{ height: 24 }} />
       <Button label="Play" onPress={() => play()} />
-      {variant === 'pile' ? (
-        <View style={st.pileRow}>
-          <Button label="Sweep the heap" onPress={() => sweepPile({ preset: 'dust', origin: 'left' })} />
-          <Pressable onPress={clearPile} hitSlop={8}>
-            <Text style={st.link}>clear</Text>
-          </Pressable>
-        </View>
-      ) : null}
     </ScrollView>
   );
 }
@@ -269,7 +254,6 @@ function snippet(
   else if (showOrigin && origin !== 'auto') lines.push(`  origin: '${origin}',`);
   if (v === 'fling') lines.push(`  velocity: { x: ${FLINGS[fling].v.x}, y: ${FLINGS[fling].v.y} },`);
   if (v === 'stream') lines.push(dir === 'in' ? '  from: sourceRef,' : '  to: trashRef,');
-  if (v === 'pile') lines.push("  floor: 'screen',");
   if (cascade) lines.push("  field: 'cascade',");
   if (n0 !== undefined) lines.push(`  n: [${n0}],`);
   if (dir === 'in') return `const { ref, appear, wrapStyle } = useAppear()\n\nawait appear({\n${lines.join('\n')}\n})`;
@@ -295,6 +279,4 @@ const st = StyleSheet.create({
     justifyContent: 'center',
   },
   targetText: { fontFamily: mono, fontSize: 10, color: C.onDark },
-  pileRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 14 },
-  link: { fontFamily: mono, fontSize: 12, color: C.muted },
 });

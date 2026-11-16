@@ -8,7 +8,7 @@ export const ready = Promise.all(NAMES.map((n) => new Promise((res) => {
   IMG[n] = im;
 })));
 
-export const FONT = 'Geist, system-ui, sans-serif';
+export const FONT = 'Allo, system-ui, sans-serif';
 
 /** Draws img to fill (x, y, w, h), cropped like object-fit: cover. */
 export function cover(ctx, img, x, y, w, h) {

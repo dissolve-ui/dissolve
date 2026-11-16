@@ -28,13 +28,11 @@ export { useDissolveHold, type HoldOptions } from './hooks/useDissolveHold';
 export { useDissolvePeel, type PeelOptions } from './hooks/useDissolvePeel';
 // Group D: full screen
 export { useDissolveScreen, type ScreenOptions } from './hooks/useDissolveScreen';
-// Group F: morph and pile
+// Group F: morph
 export { useDissolveMorph, type MorphOptions, type MorphPhase } from './hooks/useDissolveMorph';
-export { usePile } from './hooks/usePile';
 
 export function DissolveProvider({ children }: { children: ReactNode }) {
   const [bursts, setBursts] = useState<Burst[]>([]);
-  const [layers, setLayers] = useState<Record<string, ReactNode>>({});
   const reduced = useReducedMotion();
 
   const remove = useCallback((key: string) => {
@@ -50,15 +48,6 @@ export function DissolveProvider({ children }: { children: ReactNode }) {
     [remove],
   );
 
-  const setLayer = useCallback((id: string, node: ReactNode | null) => {
-    setLayers((all) => {
-      const next = { ...all };
-      if (node == null) delete next[id];
-      else next[id] = node;
-      return next;
-    });
-  }, []);
-
   // Internally driven bursts end here: notify the owner first (an entrance reveals the
   // real view), then drop the overlay two frames later so there is never a flash.
   const finish = useCallback(
@@ -69,18 +58,13 @@ export function DissolveProvider({ children }: { children: ReactNode }) {
     [remove],
   );
 
-  const value = useMemo<DissolveCtx>(() => ({ add, remove, setLayer, reduced }), [add, remove, setLayer, reduced]);
+  const value = useMemo<DissolveCtx>(() => ({ add, remove, reduced }), [add, remove, reduced]);
 
   return (
     <DissolveContext.Provider value={value}>
       <View style={{ flex: 1 }}>
         {children}
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          {Object.entries(layers).map(([id, node]) => (
-            <View key={id} style={StyleSheet.absoluteFill} pointerEvents="none">
-              {node}
-            </View>
-          ))}
           {bursts.map((b) => (
             <BurstHost key={b.key} burst={b} onDone={() => finish(b)} />
           ))}

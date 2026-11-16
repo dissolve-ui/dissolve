@@ -1,0 +1,149 @@
+/* Ready-made components: gallery section, component pages, grid tiles, and the web ports. */
+
+/* ---------- Gallery section ---------- */
+
+.cp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+.cp-panel {
+  display: flex; flex-direction: column; min-width: 0;
+  border-radius: var(--r-lg); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+}
+.cp-panel-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 16px 14px 0 18px; border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+.cp-panel-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cp-name { font-size: 16px; line-height: 1.3; font-weight: 700; letter-spacing: -0.015em; color: var(--text); font-variation-settings: var(--round-mid); }
+.cp-note { font-size: 13px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
+.cp-go {
+  flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  color: var(--faint); transition: color .2s, background .2s;
+}
+.cp-panel-head:hover .cp-go { color: var(--text); background: var(--wash); }
+.cp-panel-head:hover .cp-name { color: var(--text); }
+.cp-panel-body { flex: 1; min-height: 190px; padding: 20px 18px 22px; }
+
+/* Every mounted demo body centers its component. */
+.cp-body { display: grid; place-items: center; }
+.cp-mode-stage { width: 100%; max-width: 440px; }
+.cp-stage { height: auto; min-height: 360px; }
+.cp-stage .stage-slot { padding: 44px 24px 68px; }
+
+/* ---------- Grid tiles ---------- */
+
+.g-thumb-cp .stage-slot { padding: 16px; }
+
+/* ---------- Toast ---------- */
+
+.cp-toasts { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 2; display: flex; flex-direction: column; pointer-events: none; }
+.cp-toasts-fixed {
+  position: fixed; top: calc(var(--top-h) + 10px); left: 50%; right: auto; z-index: 33;
+  width: min(380px, calc(100vw - 24px)); transform: translateX(-50%);
+}
+.cp-toast-slot { margin-bottom: 8px; transition: height .32s cubic-bezier(0.32, 0.72, 0, 1), margin .32s cubic-bezier(0.32, 0.72, 0, 1); }
+.cp-toast-slot.gone { height: 0 !important; margin-bottom: 0; }
+.cp-toast { display: block; border-radius: 18px; cursor: pointer; pointer-events: auto; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18); user-select: none; -webkit-user-select: none; }
+.cp-btn {
+  height: 44px; padding: 0 22px; border-radius: var(--pill);
+  background: var(--text); color: var(--bg); font-size: 15px; font-weight: 600;
+  transition: transform .2s cubic-bezier(0.32, 0.72, 0, 1), opacity .2s;
+}
+.cp-btn:hover { opacity: .88; }
+.cp-btn:active { transform: scale(0.97); opacity: .75; }
+.cp-mode-tile.cp-is-toast { align-items: end; }
+.cp-mode-tile.cp-is-toast .cp-btn { margin-bottom: 4px; }
+.cp-mode-tile .cp-btn { height: 36px; padding: 0 18px; font-size: 13.5px; }
+
+/* ---------- SwipeToDelete ---------- */
+
+.cp-inbox { width: 100%; max-width: 440px; }
+.cp-swipe {
+  margin-bottom: 8px; overflow: hidden;
+  transition: height .28s cubic-bezier(0.32, 0.72, 0, 1), margin-bottom .28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.cp-swipe:last-child { margin-bottom: 0; }
+.cp-swipe.gone { height: 0 !important; margin-bottom: 0; }
+.cp-swipe-clip {
+  position: relative; border-radius: 18px; overflow: hidden; isolation: isolate;
+  cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none;
+}
+.cp-swipe-clip::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--line); pointer-events: none; }
+.cp-swipe-clip.dragging { cursor: grabbing; }
+.cp-swipe-action {
+  position: absolute; inset: 0; background: #FF3B30; visibility: hidden;
+  display: flex; align-items: center; justify-content: flex-end; padding-right: 26px;
+}
+.cp-trash { display: block; width: 20px; height: 24px; transform-origin: 50% 50%; opacity: 0; }
+.cp-trash svg { display: block; }
+.cp-swipe-row { display: block; position: relative; will-change: transform; }
+.cp-reset {
+  display: block; margin: 12px auto 0; height: 32px; padding: 0 16px; border-radius: var(--pill);
+  background: var(--wash); color: var(--text); font-size: 13px; font-weight: 600;
+  transition: background .2s;
+}
+.cp-reset:hover { background: var(--wash-2); }
+.cp-reset[hidden] { display: none; }
+.cp-mode-tile .cp-swipe-clip { border-radius: 18px; }
+
+/* ---------- LikeButton ---------- */
+
+.cp-like { display: inline-flex; align-items: center; gap: 6px; padding: 4px; margin: -4px; border-radius: 10px; -webkit-tap-highlight-color: transparent; }
+.cp-heart { position: relative; display: grid; place-items: center; flex: none; }
+.cp-heart-pop { display: grid; place-items: center; will-change: transform; }
+.cp-heart-pop > * { grid-area: 1 / 1; display: block; }
+.cp-heart-pop > [hidden] { display: none; }
+.cp-heart svg { display: block; overflow: visible; }
+.cp-heart-under { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; pointer-events: none; }
+.cp-spark { position: absolute; left: 50%; top: 50%; border-radius: 50%; pointer-events: none; will-change: transform, opacity; }
+.cp-count { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: left; }
+.cp-like-lg { gap: 10px; }
+.cp-like-lg .cp-count { font-size: 20px; }
+
+/* ---------- MorphButton ---------- */
+
+.cp-morph { position: relative; width: 100%; max-width: 320px; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.cp-morph:focus-visible { border-radius: 26px; }
+.cp-morph-pill { position: absolute; top: 0; overflow: hidden; }
+.cp-morph-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 16px; font-weight: 600; white-space: nowrap; will-change: transform, opacity; }
+.cp-morph-layer svg { display: block; }
+.cp-spinner { display: block; width: 20px; height: 20px; border-radius: 50%; border: 2.2px solid; }
+
+/* ---------- SplitButton ---------- */
+
+.cp-split { position: relative; width: 100%; max-width: 340px; user-select: none; -webkit-user-select: none; }
+.cp-split-svg { position: absolute; inset: 0; display: block; overflow: visible; }
+.cp-split-closed, .cp-split-half {
+  position: absolute; top: 0; bottom: 0; display: grid; place-items: center;
+  font-size: 16px; font-weight: 600; border-radius: 26px; -webkit-tap-highlight-color: transparent;
+}
+.cp-split-closed { left: 0; right: 0; color: #fff; }
+.cp-split-half { left: 0; }
+.cp-split-right { left: auto; right: 0; color: #fff; }
+.cp-split-closed span, .cp-split-half span { display: inline-block; white-space: nowrap; }
+.cp-split.open .cp-split-closed, .cp-split:not(.open) .cp-split-half { pointer-events: none; }
+
+/* ---------- GooeyMenu ---------- */
+
+.cp-goo-stage { position: relative; display: grid; place-items: center; width: 100%; }
+.cp-goo { position: relative; flex: none; }
+.cp-mode-tile .cp-goo { transform: scale(0.92); }
+.cp-goo-svg { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.cp-goo-action { position: absolute; left: 0; top: 0; display: grid; place-items: center; border-radius: 50%; opacity: 0; pointer-events: none; -webkit-tap-highlight-color: transparent; }
+.cp-goo.open .cp-goo-action { pointer-events: auto; }
+.cp-goo-action svg { display: block; }
+.cp-goo-main { position: absolute; display: grid; place-items: center; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
+.cp-goo-main span { position: absolute; width: 20px; height: 2.6px; border-radius: 2px; background: var(--goo-ink, #fff); }
+.cp-goo-main span + span { transform: rotate(90deg); }
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 860px) {
+  .cp-grid { grid-template-columns: 1fr; }
+  .cp-stage { min-height: 320px; }
+}
+
+@media (max-width: 600px) {
+  .cp-panel { border-radius: var(--r-md); }
+  .cp-panel-head { padding: 14px 12px 0 16px; }
+  .cp-panel-body { padding: 18px 14px 18px; min-height: 160px; }
+  .cp-stage .stage-slot { padding: 36px 16px 64px; }
+}

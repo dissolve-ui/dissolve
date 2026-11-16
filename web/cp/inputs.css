@@ -1,0 +1,64 @@
+/* Inputs: SlideToConfirm, OTPInput, NumberTicker (cp/inputs.js). */
+
+/* ---------- SlideToConfirm ---------- */
+
+.cp-slide {
+  position: relative; width: 100%; max-width: 340px; overflow: hidden; isolation: isolate;
+  cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.cp-slide.dragging { cursor: grabbing; }
+.cp-slide:focus-visible { border-radius: 30px; }
+.cp-slide-fill { position: absolute; left: 0; top: 0; bottom: 0; }
+.cp-slide-label {
+  position: absolute; inset: 0; margin: auto; width: fit-content; height: fit-content;
+  font-size: 16px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; pointer-events: none;
+}
+.cp-slide-label:not(.cp-slide-done) {
+  background-repeat: no-repeat; background-size: 80px 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.cp-slide-done { color: #fff; opacity: 0; }
+.cp-slide-knob {
+  position: absolute; display: grid; place-items: center; border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18); will-change: transform;
+}
+.cp-slide-ic { grid-area: 1 / 1; display: grid; place-items: center; }
+.cp-slide-ic svg { display: block; }
+.cp-slide-spinner { display: block; width: 20px; height: 20px; border-radius: 50%; border: 2.2px solid; }
+
+/* ---------- OTPInput ---------- */
+
+.cp-otp { width: 100%; max-width: 340px; }
+.cp-otp-shake { position: relative; will-change: transform; }
+.cp-otp-row { display: flex; }
+.cp-otp-box { flex: 1; min-width: 0; display: grid; place-items: center; }
+.cp-otp-digits { position: absolute; inset: 0; pointer-events: none; }
+.cp-otp-cell { flex: 1; min-width: 0; display: grid; place-items: center; }
+.cp-otp-glyph { font-weight: 600; line-height: 1; opacity: 0; }
+.cp-otp-caret { display: block; width: 2px; border-radius: 1px; animation: cp-caret 1.12s infinite; }
+@keyframes cp-caret {
+  0%, 42.8% { opacity: 1; animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1); }
+  57.1%, 85.7% { opacity: 0; animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1); }
+  100% { opacity: 1; }
+}
+/* Covers the row: a tap focuses it, paste and SMS autofill work. Nearly invisible, not 0. */
+.cp-otp-input {
+  position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0;
+  opacity: 0.011; color: transparent; caret-color: transparent; background: transparent;
+  font-size: 16px; cursor: text; outline: none;
+}
+.cp-otp-reset { margin-top: 14px; }
+
+/* ---------- NumberTicker ---------- */
+
+.cp-ticker {
+  display: flex; align-items: center; color: var(--text); font-weight: 700;
+  white-space: nowrap;
+}
+.cp-ticker-col { display: block; overflow: hidden; flex: none; }
+.cp-ticker-roll { display: block; will-change: transform; }
+.cp-ticker-cell { display: block; text-align: center; }
+.cp-ticker-probe { position: absolute; visibility: hidden; }
+.cp-ticker-affix { flex: none; }
+.cp-ticker-btn { margin-top: 18px; }
+.cp-mode-tile .cp-ticker { margin-top: 0; }

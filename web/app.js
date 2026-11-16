@@ -6,7 +6,8 @@ import { playgroundHTML, mountPlayground } from './playground.js';
 import { OPTIONS, PRACTICES, PEERS, INSTALL, PROVIDER, PKG } from './variants-content.js';
 import { showcaseHTML, mountShowcase } from './showcase.js';
 import { ready } from './images.js';
-import { introductionPage, installationPage, agentPromptPage, agentsStripHTML } from './docs.js';
+import { introductionPage, installationPage, cliPage, themingPage, agentPromptPage, agentsStripHTML } from './docs.js';
+import { COMPONENTS, COMPONENT_ORDER, COMPONENT_GLYPH, mountComponent, componentsSectionHTML, mountComponentsSection, propsTable, componentPrompt, clearToasts } from './components.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -17,12 +18,46 @@ function link(id, title, badge) {
   return `<a class="side-link" href="#/${id}" data-id="${id}"><span>${title}</span>${badge ? `<span class="badge">${badge}</span>` : ''}</a>`;
 }
 
+/** GitHub stars of the repo, cached for an hour, shown in the sidebar. */
+async function loadStars() {
+  const el = document.getElementById('star-count');
+  if (!el) return;
+  const show = (n) => { el.textContent = n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n); el.hidden = false; };
+  try {
+    const cached = JSON.parse(localStorage.getItem('stars') || 'null');
+    if (cached && Date.now() - cached.t < 3600e3) return show(cached.n);
+    const r = await fetch('https://api.github.com/repos/rs-4/dissolve');
+    if (!r.ok) return;
+    const n = (await r.json()).stargazers_count;
+    if (typeof n !== 'number') return;
+    localStorage.setItem('stars', JSON.stringify({ n, t: Date.now() }));
+    show(n);
+  } catch {}
+}
+
 function renderSidebar() {
   $('#side').innerHTML = `
+    <div class="side-head">
+      <a href="#/gallery" class="brand"><span class="brand-name">dissolve</span></a>
+      <div class="side-actions">
+        <button id="theme" class="icon-btn theme-btn" aria-label="Toggle light and dark theme">
+            <svg class="i-sun" width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9" cy="9" r="3.2"/><path d="M9 1.8v1.6M9 14.6v1.6M1.8 9h1.6M14.6 9h1.6M3.9 3.9l1.1 1.1M13 13l1.1 1.1M3.9 14.1 5 13M13 5l1.1-1.1"/></svg>
+            <svg class="i-moon" width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M15 10.6A6.2 6.2 0 0 1 7.4 3a6.2 6.2 0 1 0 7.6 7.6Z"/></svg>
+          </button>
+      <a class="side-star" href="https://github.com/rs-4/dissolve" target="_blank" rel="noopener" aria-label="Star dissolve on GitHub">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span class="star-count" id="star-count" hidden></span>
+      </a>
+      </div>
+    </div>
     <div class="side-group">
       <p class="side-label">Getting started</p>
       ${link('gallery', 'Gallery')}
       ${GETTING_STARTED.map((p) => link(p.id, p.title, p.badge)).join('')}
+    </div>
+    <div class="side-group">
+      <p class="side-label">Components</p>
+      ${COMPONENT_ORDER.map((id) => link(id, COMPONENTS[id].title)).join('')}
     </div>
     ${GROUPS.map((g) => `
       <div class="side-group">
@@ -31,14 +66,11 @@ function renderSidebar() {
       </div>`).join('')}
     <div class="side-foot">
       <div class="socials">
-        <a class="social" href="https://github.com/rs-4/dissolve" target="_blank" rel="noopener" aria-label="dissolve on GitHub">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        </a>
         <a class="social" href="https://x.com/rsStats_" target="_blank" rel="noopener" aria-label="X (Twitter)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
         </a>
       </div>
-      <p>v0.0.1 · MIT</p>
+      <p>v0.0.4 · MIT</p>
     </div>`;
 }
 
@@ -66,15 +98,19 @@ const cmd = (c) => `<div class="cmd"><span class="cmd-dollar">$</span><code>${es
 
 const arrow = (dir) => `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${dir === 'l' ? '<path d="M13 8H3M7 4 3 8l4 4"/>' : '<path d="M3 8h10M9 4l4 4-4 4"/>'}</svg>`;
 
-function pageHead(id, title, desc, glyph) {
-  const i = ORDER.indexOf(id);
-  const prev = i > 0 ? ORDER[i - 1] : null, next = i >= 0 && i < ORDER.length - 1 ? ORDER[i + 1] : null;
+const VARIANT_NAV = { order: ORDER, title: (k) => VARIANTS[k].title, noun: 'variant' };
+const COMPONENT_NAV = { order: COMPONENT_ORDER, title: (k) => COMPONENTS[k].title, noun: 'component' };
+
+function pageHead(id, title, desc, glyph, nav = VARIANT_NAV) {
+  const order = nav.order;
+  const i = order.indexOf(id);
+  const prev = i > 0 ? order[i - 1] : null, next = i >= 0 && i < order.length - 1 ? order[i + 1] : null;
   return `<header class="head">
     <div class="head-top">
       <div class="head-icon">${glyph}</div>
       ${i >= 0 ? `<div class="head-nav">
-        <a class="round" ${prev ? `href="#/${prev}" title="${VARIANTS[prev].title}"` : 'aria-disabled="true"'} aria-label="Previous variant">${arrow('l')}</a>
-        <a class="round" ${next ? `href="#/${next}" title="${VARIANTS[next].title}"` : 'aria-disabled="true"'} aria-label="Next variant">${arrow('r')}</a>
+        <a class="round" ${prev ? `href="#/${prev}" title="${nav.title(prev)}"` : 'aria-disabled="true"'} aria-label="Previous ${nav.noun}">${arrow('l')}</a>
+        <a class="round" ${next ? `href="#/${next}" title="${nav.title(next)}"` : 'aria-disabled="true"'} aria-label="Next ${nav.noun}">${arrow('r')}</a>
       </div>` : ''}
     </div>
     <h1>${title}</h1>
@@ -139,7 +175,13 @@ function variantPage(id) {
   </div>
 
   <div class="tab-panel" data-panel="install" hidden>
-    <p class="dc-text">Install the package and its peers. ${v.title} needs nothing more than the provider.</p>
+    ${installPanel(`${v.title} needs nothing more than the provider.`)}
+  </div>`;
+}
+
+function installPanel(extra) {
+  return `
+    <p class="dc-text">Install the package and its peers. ${extra}</p>
     ${cmd(INSTALL)}
     <div class="dc-table-wrap">
       <table class="dc-table">
@@ -150,7 +192,76 @@ function variantPage(id) {
     <p class="dc-note">Expo's Babel preset already adds the worklets plugin. In a bare React Native app, add <code>'react-native-worklets/plugin'</code> to <code>babel.config.js</code>.</p>
     <h2 class="section-title">Provider</h2>
     <p class="dc-text">Wrap the app once, above the navigator, so effects survive a screen pop. Grains are drawn in a full screen overlay that ignores touches.</p>
-    ${codeBlock(PROVIDER, { title: 'app/_layout.tsx' })}
+    ${codeBlock(PROVIDER, { title: 'app/_layout.tsx' })}`;
+}
+
+/* ---------- Component page ---------- */
+
+const TOAST_LAYOUT = `import { Stack } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { DissolveProvider } from 'react-native-dissolve';
+import { ToastProvider } from '@/components/dissolve/toast';
+
+export default function Layout() {
+  const insets = useSafeAreaInsets();
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <DissolveProvider>
+        <ToastProvider top={insets.top + 8}>
+          <Stack />
+        </ToastProvider>
+      </DissolveProvider>
+    </GestureHandlerRootView>
+  );
+}`;
+
+/** Splits the leading "// npx react-native-dissolve add ..." line off a snippet. */
+function splitAdd(code, id) {
+  const m = code.match(/^\/\/\s*(npx [^\n]+)\n+/);
+  return m ? { add: m[1].trim(), code: code.slice(m[0].length) } : { add: `npx ${PKG} add ${id}`, code };
+}
+
+function componentPage(id) {
+  const c = COMPONENTS[id];
+  const needsToast = id === 'toast';
+  const snip = splitAdd(c.code, id);
+  return `
+  ${pageHead(id, c.title, c.desc, `<span class="glyph-lg">${COMPONENT_GLYPH[id]}</span>`, COMPONENT_NAV)}
+
+  <div class="toolbar">
+    <div class="seg" role="tablist">
+      <button class="seg-btn on" data-tab="preview" role="tab">Preview</button>
+      <button class="seg-btn" data-tab="install" role="tab">Install</button>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn" data-copy-prompt>${copyIcon}Copy prompt</button>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-panel="preview">
+    <section class="stage cp-stage" id="cp-stage">
+      <div class="stage-slot"><div class="cp-stage-body" data-cp-stage="${id}"></div></div>
+      <p class="stage-hint">${c.hint}</p>
+      <button class="btn btn-sm stage-replay" data-replay>Play demo</button>
+    </section>
+
+    <h2 class="section-title">Usage</h2>
+    ${cmd(snip.add)}
+    ${codeBlock(snip.code, { title: `${c.title}.tsx` })}
+
+    <h2 class="section-title">Props</h2>
+    ${propsTable(id)}
+  </div>
+
+  <div class="tab-panel" data-panel="install" hidden>
+    <h2 class="section-title">Add the component</h2>
+    ${cmd(snip.add)}
+    <p class="dc-text">Copies <code>${id}.tsx</code> into <code>components/dissolve</code> (or <code>src/components/dissolve</code>), with any component it builds on. The first run also writes <code>tw.tsx</code> and the theme tokens. The file is yours: restyle it with the className props, or change the tokens on the <a class="dc-link" href="#/theming">Theming</a> page.</p>
+    <p class="dc-note">First time? Components need the engine, the provider and NativeWind v5 with <code>tailwind-merge</code>. The quickest way is to paste the <a class="dc-link" href="#/agent-prompt">agent prompt</a>, or follow <a class="dc-link" href="#/installation">Installation</a>. The engine part is below.</p>
+    <h2 class="section-title">Engine</h2>
+    ${installPanel('Skip it if dissolve already runs in your app.')}
+    ${needsToast ? `<h2 class="section-title">Toast provider</h2><p class="dc-text">Toasts need a <code>ToastProvider</code> inside the <code>DissolveProvider</code>.</p>${codeBlock(TOAST_LAYOUT, { title: 'app/_layout.tsx' })}` : ''}
   </div>`;
 }
 
@@ -173,16 +284,26 @@ const DOC = { pageHead, codeBlock, cmd, copyIcon, icon, GLYPH };
 const PAGES = {
   introduction: () => introductionPage(DOC),
   installation: () => installationPage(DOC),
+  cli: () => cliPage(DOC),
+  theming: () => themingPage(DOC),
   'agent-prompt': () => agentPromptPage(DOC),
-  gallery: () => showcaseHTML() + agentsStripHTML(),
+  gallery: () => showcaseHTML({ components: componentsSectionHTML }) + agentsStripHTML(),
 };
 
+/** The "Every variant" grid: the principal exits and entrances, then the components. */
+const GRID = [
+  ...['dust', 'sand', 'ember', 'pixel', 'snap', 'stream'].map((id) => ({ id, group: 'Exits' })),
+  ...['gather', 'rain'].map((id) => ({ id, group: 'Entrances' })),
+  ...COMPONENT_ORDER.map((id) => ({ id, group: 'Components', component: true })),
+];
+
 function tiles() {
-  return ORDER.map((id) => {
-    const group = GROUPS.find((g) => g.ids.includes(id)).label;
+  return GRID.map(({ id, group, component }) => {
+    const title = component ? COMPONENTS[id].title : VARIANTS[id].title;
+    const hint = component ? COMPONENTS[id].tileHint : HINTS[id];
     return `<div class="g-tile" data-group="${group}">
-      <div class="g-thumb" data-demo="${id}"><div class="stage-slot"></div></div>
-      <a class="g-meta" href="#/${id}"><span class="g-name">${VARIANTS[id].title}<span class="g-group">${group}</span></span><span class="g-hint">${HINTS[id]}${arrow('r')}</span></a>
+      <div class="g-thumb${component ? ' g-thumb-cp' : ''}" ${component ? 'data-cp-tile' : 'data-demo'}="${id}"><div class="stage-slot"></div></div>
+      <a class="g-meta" href="#/${id}"><span class="g-name">${title}<span class="g-group">${component ? 'Component' : group}</span></span><span class="g-hint">${hint}${arrow('r')}</span></a>
     </div>`;
   }).join('');
 }
@@ -198,9 +319,11 @@ function route(keepScroll) {
   teardown.forEach((f) => f());
   teardown = [];
   cancelAll();
-  view.innerHTML = VARIANTS[id] ? variantPage(id) : (PAGES[id] ?? PAGES.gallery)();
+  clearToasts();
+  const comp = COMPONENTS[id];
+  view.innerHTML = VARIANTS[id] ? variantPage(id) : comp ? componentPage(id) : (PAGES[id] ?? PAGES.gallery)();
   document.querySelectorAll('.side-link').forEach((a) => a.classList.toggle('on', a.dataset.id === id));
-  document.title = `${VARIANTS[id]?.title ?? (GETTING_STARTED.find((p) => p.id === id)?.title || (id === 'gallery' ? 'Gallery' : 'Introduction'))} · dissolve`;
+  document.title = `${VARIANTS[id]?.title ?? comp?.title ?? (GETTING_STARTED.find((p) => p.id === id)?.title || (id === 'gallery' ? 'Gallery' : 'Introduction'))} · dissolve`;
   document.body.classList.remove('side-open');
   if (keepScroll !== true) window.scrollTo(0, 0);
   wire(view);
@@ -214,12 +337,29 @@ function route(keepScroll) {
       setTimeout(() => cp.classList.remove('done'), 900);
     });
   }
-  if (id === 'gallery' || !(VARIANTS[id] || PAGES[id])) {
+  if (comp) {
+    const stage = mountComponent(id, view.querySelector('[data-cp-stage]'), { mode: 'stage' });
+    teardown.push(stage.dispose);
+    view.querySelector('[data-replay]').addEventListener('click', () => stage.run());
+    const cp = view.querySelector('[data-copy-prompt]');
+    cp.addEventListener('click', () => {
+      navigator.clipboard?.writeText(componentPrompt(id)).catch(() => {});
+      cp.classList.add('done');
+      setTimeout(() => cp.classList.remove('done'), 900);
+    });
+  }
+  if (id === 'gallery' || !(VARIANTS[id] || PAGES[id] || comp)) {
     document.body.classList.add('is-showcase');
     $('#sc-all').innerHTML = tiles();
-    const demos = [...view.querySelectorAll('#sc-all [data-demo]')].map((el) => ({ el, api: mountDemo(el, el.dataset.demo, { size: 'sm', autoplay: false }) }));
+    const demos = [...view.querySelectorAll('#sc-all [data-demo], #sc-all [data-cp-tile]')].map((el) => {
+      if (el.dataset.demo) return { el, api: mountDemo(el, el.dataset.demo, { size: 'sm', autoplay: false }) };
+      const api = mountComponent(el.dataset.cpTile, el.querySelector('.stage-slot'), { mode: 'tile' });
+      teardown.push(api.dispose);
+      return { el, api, component: true };
+    });
     sequence($('#sc-all'), demos);
     mountShowcase(view);
+    teardown.push(mountComponentsSection(view));
   } else document.body.classList.remove('is-showcase');
 }
 
@@ -244,8 +384,10 @@ function sequence(grid, demos, { gap = 700, rest = 1600 } = {}) {
       for (const d of demos) {
         if (!visible || !document.body.contains(grid)) break;
         if (!d.api?.run || d.el.dataset.demo === 'peel' || !onScreen(d.el)) continue;
-        d.api.run();
+        const r = d.api.run();
         played += 1;
+        // A component demo is a short story (press, wait, settle): let it finish before the next tile.
+        if (d.component) await Promise.race([r, wait(7000)]);
         await wait(gap);
       }
       await wait(played ? rest : 400);
@@ -289,6 +431,7 @@ function wire(root) {
 }
 
 renderSidebar();
+loadStars();
 const applyTheme = (t) => {
   document.documentElement.dataset.theme = t;
   document.querySelector('meta[name=theme-color]').content = t === 'light' ? '#F9FAFB' : '#121212';
@@ -309,5 +452,5 @@ addEventListener('resize', () => {
   clearTimeout(rt);
   rt = setTimeout(() => { lastW = innerWidth; route(true); }, 250);
 });
-await Promise.all([ready, document.fonts.load('400 14px Geist'), document.fonts.load('500 14px Geist'), document.fonts.load('600 14px Geist'), document.fonts.ready]);
+await Promise.all([ready, document.fonts.load('400 14px Allo'), document.fonts.load('500 14px Allo'), document.fonts.load('600 14px Allo'), document.fonts.ready]);
 route();

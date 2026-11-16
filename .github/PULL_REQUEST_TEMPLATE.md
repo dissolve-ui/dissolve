@@ -17,8 +17,10 @@ For anything visual, attach a short recording (iOS and Android if possible).
 
 ## Checklist
 
-- [ ] `npx tsc --noEmit` passes
+- [ ] `npm run typecheck` passes
+- [ ] `npm test` passes
 - [ ] Tested on a device or simulator
+- [ ] New component: registry file, `registry/index.json` entry, demo, web port
 - [ ] Commits follow [Conventional Commits](https://www.conventionalcommits.org/)
 - [ ] Docs updated if the public API changed (README, docs/, web/, mcp/)
 - [ ] CHANGELOG.md updated under `[Unreleased]`

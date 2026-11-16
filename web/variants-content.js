@@ -115,16 +115,6 @@ export const OPTIONS = {
     row('onCancel', '() => void', 'none', 'Called when released early, once the view has settled back.'),
     row('n', '[push]', '[1]', "With <code>dissolve({ preset: 'charge' })</code>: push multiplier of the burst."),
   ],
-  pile: [
-    preset('pile'),
-    row('floor', "number | 'screen' | RefObject&lt;View&gt;", `'screen'`, 'Where grains land: a window Y, the bottom of the screen, or the top of a view.'),
-    row('n', '[kept]', '[0.35]', 'Share of grains kept in the heap, the rest falls as dust and fades.'),
-    grain(2.5),
-    duration(2000, 'Pile defaults to 2000.'),
-    direction(`'out'`, "<code>'in'</code> plays the pour backwards without adding to the heap."),
-    row('sweepPile(opts)', 'usePile()', `{ preset: 'dust' }`, 'Dissolves the whole heap with any exit preset, then clears it.'),
-    row('clearPile()', 'usePile()', 'none', 'Drops the heap instantly.'),
-  ],
   morph: [
     row('refA, refB', 'RefObject&lt;View&gt;', 'none', 'The two views. Both stay mounted and laid out, stacked on top of each other.'),
     row('styleA, styleB', 'ViewStyle', 'none', 'Put them on a wrapper of each view: the hidden one sits at 0.01 opacity so it can be captured.'),
@@ -249,13 +239,6 @@ export const PRACTICES = {
     ['do', 'Keep holdMs between 800 and 1600. Shorter triggers by accident, longer feels broken.'],
     ['dont', 'Do not use it for frequent actions, a hold on every delete gets tedious.'],
     ['do', 'With reduced motion the hold still works, only the burst is skipped.'],
-  ],
-  pile: [
-    ['do', 'Use it where removed items should stay visible for a while: done tasks, inbox zero, a trash you empty later.'],
-    ['do', 'Sweep the heap with <code>usePile().sweepPile()</code> at a natural moment (leaving the screen, empty trash).'],
-    ['do', 'Keep 20 to 40 percent of the grains in the heap, more fills the floor too fast.'],
-    ['dont', 'Do not leave the heap forever, call <code>clearPile()</code> on unmount.'],
-    ['do', REDUCED],
   ],
   morph: [
     ['do', 'Use it for state changes of the same element: Follow to Following, Download to Open, Add to In cart.'],

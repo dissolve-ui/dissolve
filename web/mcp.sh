@@ -1,14 +1,11 @@
 #!/bin/sh
-# Installs the dissolve MCP server for Claude Code.
+# Adds the dissolve MCP server to Claude Code.
 # Usage: curl -fsSL https://dissolve.rselmi.com/mcp.sh | sh
+# The server is the npm package react-native-dissolve-mcp, run with npx, so it stays up to date.
 set -e
-BASE="${DISSOLVE_BASE:-https://dissolve.rselmi.com}"
-DIR="$HOME/.dissolve"
-mkdir -p "$DIR"
-curl -fsSL "$BASE/mcp/server.mjs" -o "$DIR/server.mjs"
 if command -v claude >/dev/null 2>&1; then
-  claude mcp add dissolve -- node "$DIR/server.mjs"
+  claude mcp add dissolve -- npx -y react-native-dissolve-mcp
   echo "dissolve MCP server added to Claude Code."
 else
-  echo "Saved to $DIR/server.mjs. Register it with: claude mcp add dissolve -- node $DIR/server.mjs"
+  echo "Claude Code not found. Register the server in your agent with: npx -y react-native-dissolve-mcp"
 fi

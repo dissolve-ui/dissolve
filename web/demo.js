@@ -1,5 +1,5 @@
 // Interactive demo card for one variant, used by the variant stage and the gallery tiles.
-import { play, snapshot, Heap, morph, VARIANTS as ENGINE } from './engine/atlas.js';
+import { play, snapshot, morph, VARIANTS as ENGINE } from './engine/atlas.js';
 
 import { IMG, FONT, cover } from './images.js';
 import { item, pal, rr, text, rectOf, hide, show, isLight } from './showcase.js';
@@ -10,7 +10,7 @@ const ENTRANCES = ['gather', 'rain', 'print'];
 export const HINTS = {
   dust: 'Tap', sand: 'Tap', ember: 'Tap', pixel: 'Tap', vortex: 'Tap',
   snap: 'Tap anywhere', fling: 'Swipe', stream: 'Tap', gather: 'Tap to replay', rain: 'Tap to replay',
-  print: 'Tap to replay', charge: 'Press and hold', peel: 'Drag any edge', melt: 'Tap', shatter: 'Tap where it breaks', pile: 'Tap, it piles up', morph: 'Tap to morph',
+  print: 'Tap to replay', charge: 'Press and hold', peel: 'Drag any edge', melt: 'Tap', shatter: 'Tap where it breaks', morph: 'Tap to morph',
 };
 
 // Realistic notifications, one per variant: [app, title, body, painting]
@@ -28,7 +28,6 @@ export const COPY = {
   snap: ['Mail', 'Weekly digest', 'This week in motion design.', 'lake'],
   fling: ['Messages', 'Camille', 'Sent you three photos from Rome.', 'pond'],
   charge: ['Settings', 'Delete project', 'Hold to confirm. This is final.', 'aqueduct'],
-  pile: ['Mail', 'Promo', 'Last chance, 40% off everything.', 'tuscany'],
   morph: ['Updates', 'Downloading', 'Version 2.4, 68 MB left.', 'lake'],
   peel: ['Stickers', 'New sticker pack', 'Twelve paintings to stick anywhere.', 'arch'],
   melt: ['Weather', 'Heat wave', '38° today, stay in the shade.', 'tuscany'],
@@ -97,7 +96,6 @@ export function mountDemo(host, id, { size = 'lg', autoplay = true } = {}) {
   slot.replaceChildren(...nodes);
 
   let busy = false;
-  if (id === 'pile') return mountPile(host, card);
   if (id === 'morph') return mountMorph(host, card, W, H);
   if (id === 'peel') return mountPeel(host, card);
   const show = (fade = true) => {
@@ -185,28 +183,6 @@ export function mountDemo(host, id, { size = 'lg', autoplay = true } = {}) {
     }, { threshold: 0.6 });
     io.observe(card);
   }
-  return { run };
-}
-
-/* ---------- pile: the card pours down and heaps on the stage floor; sweep after a few ---------- */
-function mountPile(host, card) {
-  const heap = new Heap(host, 120);
-  let busy = false, piles = 0;
-  const run = async () => {
-    if (busy) return;
-    busy = true;
-    const r = card.getBoundingClientRect();
-    card.style.transition = 'none'; card.style.opacity = '0';
-    await play({ source: card, x: r.left, y: r.top, w: r.width, h: r.height, preset: 'pile', heap }).done;
-    piles += 1;
-    setTimeout(async () => {
-      card.style.transition = ''; card.style.opacity = '1';
-      if (piles >= 3) { piles = 0; await new Promise((res) => setTimeout(res, 500)); await heap.sweep('dust'); }
-      busy = false;
-    }, 500);
-  };
-  card.addEventListener('click', run);
-  host.querySelector('[data-replay]')?.addEventListener('click', run);
   return { run };
 }
 
@@ -1226,47 +1202,6 @@ tile('charge',
       body.append(list);
     },
   });
-
-function pileScene({ title, hint, rows, h = 40, draw }) {
-  return {
-    title, hint,
-    mount(body, x) {
-      body.classList.add('tl-pile');
-      const list = div('tl-list');
-      const floor = div('tl-floor');
-      const sweep = btn('Sweep', 'tl-sweep');
-      body.append(list, floor);
-      floor.append(sweep);
-      const heap = new Heap(floor, 90);
-      const fill = () => list.replaceChildren(...rows.map((r) => {
-        const el = cv(x.W, h, (c, w, hh) => draw(c, w, hh, r));
-        const s = slot(el);
-        el.addEventListener('click', async () => {
-          if (el.dataset.busy) return;
-          el.dataset.busy = '1';
-          hide(el);
-          x.later(() => collapse(s), 900);
-          await x.track(play({ ...rectOf(el), preset: 'pile', heap, n: [0.3] })).done;
-          if (x.alive() && !list.querySelector('.tl-item')) x.later(fill, 400);
-        });
-        return s;
-      }));
-      sweep.addEventListener('click', async () => { if (!sweep.disabled) { sweep.disabled = true; await heap.sweep('dust'); sweep.disabled = false; } });
-      fill();
-      x.onDispose(() => heap.reset());
-    },
-  };
-}
-function drawTask(c, w, h, t) {
-  const p = pal();
-  c.fillStyle = p.card; rr(c, 0, 0, w, h, 10); c.fill();
-  c.strokeStyle = '#16A34A'; c.lineWidth = 1.6; c.beginPath(); c.arc(18, h / 2, 7, 0, Math.PI * 2); c.stroke();
-  c.beginPath(); c.moveTo(14.5, h / 2); c.lineTo(17, h / 2 + 2.5); c.lineTo(21.5, h / 2 - 2.5); c.stroke();
-  text(c, t, 34, h / 2 + 4.5, { size: 12.5, color: p.ink });
-}
-tile('pile',
-  pileScene({ title: 'Done tasks', hint: 'Tap a task, it piles up below', h: 32, draw: drawTask, rows: ['Book the venue', 'Send the invoices', 'Call the printer'] }),
-  pileScene({ title: 'Inbox zero', hint: 'Tap mails, sweep the heap when you are done', h: 36, draw: (c, w, h, r) => drawRow(c, w, h, r), rows: MAIL.slice(0, 3) }));
 
 function morphPair(body, x, wA, h, drawA, drawB, hint) {
   const a = cv(wA, h, drawA), b = cv(wA, h, drawB, 'demo-card-b');

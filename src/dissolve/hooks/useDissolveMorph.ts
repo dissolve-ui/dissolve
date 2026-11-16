@@ -8,7 +8,7 @@ import type { DissolveOptions } from '../types';
 import { runDissolve } from './useDissolve';
 
 /**
- * morph: view A rearranges its grains into view B (docs/VARIANTS.md section 10).
+ * morph: view A rearranges its grains into view B (docs/VARIANTS.md section 9).
  *
  * const { refA, refB, styleA, styleB, morph, phase } = useDissolveMorph();
  * <View style={[abs, styleA]}><View ref={refA} collapsable={false}>{follow}</View></View>

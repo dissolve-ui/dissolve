@@ -6,6 +6,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DissolveProvider } from '@/dissolve';
 import { ToastProvider } from '@registry/toast';
 import { useToken } from '@registry/tw';
+import { ThemeButton } from '@/theme';
+
+// Deep links (/demo/x, /effect/x) still get home underneath, so back always returns there.
+export const unstable_settings = { initialRouteName: 'index' };
+
+const headerRight = () => <ThemeButton />;
 
 export default function Layout() {
   const insets = useSafeAreaInsets();
@@ -15,40 +21,24 @@ export default function Layout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <DissolveProvider>
         <ToastProvider top={insets.top + 6}>
-        <StatusBar style="auto" />
-        <Stack
-          screenOptions={{
-            headerLargeTitleEnabled: false,
-            headerShadowVisible: false,
-            headerLargeTitleShadowVisible: false,
-            headerStyle: { backgroundColor: bg },
-            headerTintColor: ink,
-            headerTitleStyle: { color: ink },
-            contentStyle: { backgroundColor: bg },
-            headerBackButtonDisplayMode: 'minimal',
-          }}
-        >
-          <Stack.Screen name="index" options={{ title: 'dissolve' }} />
-          <Stack.Screen name="components" options={{ title: 'Components' }} />
-          <Stack.Screen name="micro" options={{ title: 'Micro-interactions' }} />
-          <Stack.Screen name="demo/[name]" options={{ title: '' }} />
-          <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
-          <Stack.Screen name="chat" options={{ title: 'Chat' }} />
-          <Stack.Screen name="photos" options={{ title: 'Photos' }} />
-          <Stack.Screen name="tasks" options={{ title: 'Tasks' }} />
-          <Stack.Screen name="playground" options={{ title: 'Playground' }} />
-          <Stack.Screen name="stream" options={{ title: 'Stream' }} />
-          <Stack.Screen name="appear" options={{ title: 'Entrances' }} />
-          <Stack.Screen name="fling" options={{ title: 'Fling and snap' }} />
-          <Stack.Screen name="gestures" options={{ title: 'Scrub and hold' }} />
-          <Stack.Screen name="cascade" options={{ title: 'Cascade' }} />
-          <Stack.Screen name="screen" options={{ headerShown: false, animation: 'none', gestureEnabled: false }} />
-          <Stack.Screen name="shatter" options={{ title: 'Shatter' }} />
-          <Stack.Screen name="pile" options={{ title: 'Pile' }} />
-          <Stack.Screen name="morph" options={{ title: 'Morph' }} />
-          <Stack.Screen name="gallery" options={{ title: 'Gallery' }} />
-          <Stack.Screen name="glass" options={{ headerShown: false }} />
-        </Stack>
+          <StatusBar style="auto" />
+          <Stack
+            screenOptions={{
+              headerShadowVisible: false,
+              headerLargeTitleShadowVisible: false,
+              headerStyle: { backgroundColor: bg },
+              headerTintColor: ink,
+              headerTitleStyle: { color: ink },
+              contentStyle: { backgroundColor: bg },
+              headerBackButtonDisplayMode: 'minimal',
+              headerRight,
+            }}
+          >
+            <Stack.Screen name="index" options={{ title: 'dissolve', headerLargeTitle: true, headerTransparent: true, headerLargeStyle: { backgroundColor: 'transparent' } }} />
+            <Stack.Screen name="demo/[name]" options={{ title: '' }} />
+            <Stack.Screen name="effect/[name]" options={{ title: '' }} />
+            <Stack.Screen name="playground" options={{ title: 'All options' }} />
+          </Stack>
         </ToastProvider>
       </DissolveProvider>
     </GestureHandlerRootView>

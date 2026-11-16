@@ -1,0 +1,88 @@
+name: Bug report
+description: Something in the engine, a hook or a component does not work as expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please search [existing issues](https://github.com/rs-4/dissolve/issues) first.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Engine or variant (react-native-dissolve)
+        - Hook (useDissolve, useAppear, useDissolvePeel, ...)
+        - Component installed with the CLI (registry)
+        - CLI (init, add, list)
+        - Website or docs
+        - MCP server
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and short description of what is wrong.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: The smallest code that shows the problem, and the steps to trigger it.
+      render: tsx
+      placeholder: |
+        const { ref, dissolve } = useDissolve();
+        // ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: recording
+    attributes:
+      label: Screen recording
+      description: If the bug is visual, a short recording helps a lot. Drag and drop it here.
+  - type: input
+    id: version
+    attributes:
+      label: react-native-dissolve version or commit
+      placeholder: 0.0.4
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      multiple: true
+      options:
+        - iOS device
+        - iOS simulator
+        - Android device
+        - Android emulator
+        - Web
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Paste the output of `npx expo-env-info` or fill in the versions.
+      value: |
+        - OS version:
+        - Expo SDK / React Native:
+        - @shopify/react-native-skia:
+        - react-native-reanimated / react-native-worklets:
+        - nativewind / react-native-css (components only):
+        - Expo Go or development build:
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

@@ -16,7 +16,7 @@ import type { Box, CustomVariant, RendererProps } from '../types';
 
 /**
  * GROUP F. morph: the grains of view A fly over and recompose view B
- * (docs/VARIANTS.md section 10).
+ * (docs/VARIANTS.md section 9).
  *
  * Pairing: both snapshots are reduced to one luminance value per grain cell, sorted, and
  * matched rank by rank. N = max(nA, nB) particles, particle k takes A cell

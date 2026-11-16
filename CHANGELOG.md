@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Components, shadcn style: `npx react-native-dissolve init` installs the `tw` primitives and theme
+  tokens, `add <name>` copies a component's source (and the registry files it imports) into your
+  project, `list` shows what is available. Components live in `registry/` with an `index.json`.
+- NativeWind v5 theme tokens (`registry/theme.css`): `--dissolve-*` colors for light and dark,
+  mapped to `bg-dissolve-*`, `text-dissolve-*` and `border-dissolve-*` utilities, and
+  `useToken()` for Skia and Reanimated values.
+- Automated tests with `node:test` (no new dependency): CLI against temp projects, registry
+  consistency (index, files, imports, exports, colors), theme tokens, engine presets and the npm
+  package contents.
+- CI runs the type check, tests and a package build on every push and pull request. A Release
+  workflow publishes to npm with provenance on `v*` tags. Dependabot keeps npm packages and
+  GitHub Actions up to date.
+- GitHub issue forms (bug, feature, component request), CODEOWNERS and `.nvmrc`.
+
+### Changed
+
+- The `react-native-dissolve` npm package is engine only: the engine, hooks, CLI and registry.
+  The app UI components are not bundled, they are installed as source with the CLI.
+- `scripts/build-package.sh` works with both BSD and GNU sed, so the package builds on Linux CI.
+
+### Removed
+
+- The `pile` variant and the `usePile` hook, with the `floor` option and the provider's persistent
+  layers that only the heap used.
+
 ## [0.0.1] - 2026-11-15
 
 First public release.

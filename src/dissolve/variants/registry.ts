@@ -7,7 +7,6 @@ import { gather, print, rain } from './assemble';
 import { charge } from './charge';
 import { cascadeField } from './cascade';
 import { shatter } from './shatter';
-import { pile } from './pile';
 import { morph } from './morph';
 import { peel } from './peel';
 import { melt } from './melt';
@@ -33,7 +32,6 @@ export const REGISTRY: Record<VariantName, Variant> = {
   print,
   charge,
   shatter,
-  pile,
   morph,
   peel,
   melt,

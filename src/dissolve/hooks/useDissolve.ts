@@ -29,9 +29,6 @@ export async function runDissolve(
   // Generic option resolution, before the variant hook.
   let target: Box | undefined;
   if (opts.to) target = isBox(opts.to) ? opts.to : ((await measure(opts.to)) ?? undefined);
-  let floorY: number | undefined;
-  if (typeof opts.floor === 'number') floorY = opts.floor;
-  else if (opts.floor && opts.floor !== 'screen') floorY = (await measure(opts.floor))?.y;
 
   const r = v.resolve ? await v.resolve({ opts, box: shot.box, image: shot.image, grain, duration }) : {};
   duration = r.duration ?? duration;
@@ -47,7 +44,6 @@ export async function runDissolve(
     origin: opts.origin,
     velocity: opts.velocity,
     target,
-    floorY,
     field: opts.field,
     rowBounds: opts.rows,
     n: opts.n,

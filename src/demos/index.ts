@@ -1,4 +1,12 @@
 import type { ComponentType } from 'react';
+import type { SFSymbol } from 'expo-symbols';
+import SwipeToDeleteDemo from './SwipeToDelete.demo';
+import ToastDemo from './Toast.demo';
+import LikeButtonDemo from './LikeButton.demo';
+import MorphButtonDemo from './MorphButton.demo';
+import SplitButtonDemo from './SplitButton.demo';
+import SlideToConfirmDemo from './SlideToConfirm.demo';
+import GooeyMenuDemo from './GooeyMenu.demo';
 import OTPInputDemo from './OTPInput.demo';
 import NumberTickerDemo from './NumberTicker.demo';
 import ReactionPickerDemo from './ReactionPicker.demo';
@@ -6,16 +14,45 @@ import VoiceNoteDemo from './VoiceNote.demo';
 import CardStackDemo from './CardStack.demo';
 import SignaturePadDemo from './SignaturePad.demo';
 import BeforeAfterDemo from './BeforeAfter.demo';
+import ThinkingOrbDemo from './ThinkingOrb.demo';
+import ImageRevealDemo from './ImageReveal.demo';
+import SweepTransitionDemo from './SweepTransition.demo';
+import UploadTileDemo from './UploadTile.demo';
+import TaskCheckDemo from './TaskCheck.demo';
+import QuantityStepperDemo from './QuantityStepper.demo';
+import RulerPickerDemo from './RulerPicker.demo';
+import BarChartDemo from './BarChart.demo';
+import MiniPlayerDemo from './MiniPlayer.demo';
 
-export type DemoEntry = { slug: string; title: string; note: string; Component: ComponentType; scroll: boolean };
+/**
+ * One demo per registry component, in registry/index.json order. The slug is the registry
+ * name, so the screen lives at /demo/<slug> and installs with `npx react-native-dissolve add <slug>`.
+ * Gesture heavy, full height demos (scroll: false) render outside a ScrollView.
+ */
+export type DemoEntry = { slug: string; title: string; note: string; icon: SFSymbol; Component: ComponentType; scroll: boolean };
 
-/** Micro-interaction demos. Gesture heavy ones (cards) render outside a ScrollView. */
 export const DEMOS: DemoEntry[] = [
-  { slug: 'otp', title: 'OTP input', note: 'SMS code. Wrong code shakes then turns to dust.', Component: OTPInputDemo, scroll: true },
-  { slug: 'ticker', title: 'Number ticker', note: 'Digits roll to the new value.', Component: NumberTickerDemo, scroll: true },
-  { slug: 'reactions', title: 'Reactions', note: 'Long press a message, slide to an emoji.', Component: ReactionPickerDemo, scroll: true },
-  { slug: 'voice', title: 'Voice note', note: 'Scrub the waveform, long press to unsend.', Component: VoiceNoteDemo, scroll: true },
-  { slug: 'cards', title: 'Card stack', note: 'Wallet style cards.', Component: CardStackDemo, scroll: false },
-  { slug: 'signature', title: 'Signature', note: 'Sign with your finger, clear to dust.', Component: SignaturePadDemo, scroll: true },
-  { slug: 'before-after', title: 'Before / after', note: 'Drag to compare two versions.', Component: BeforeAfterDemo, scroll: true },
+  { slug: 'swipe-to-delete', title: 'Swipe to delete', note: 'Swipe a row left. Past the line, it turns to dust.', icon: 'trash', Component: SwipeToDeleteDemo, scroll: true },
+  { slug: 'toast', title: 'Toast', note: 'Arrives in grains, leaves as dust. Tap to dismiss.', icon: 'bell', Component: ToastDemo, scroll: true },
+  { slug: 'like-button', title: 'Like button', note: 'Sparks on like, the heart snaps away on unlike.', icon: 'heart', Component: LikeButtonDemo, scroll: true },
+  { slug: 'morph-button', title: 'Morph button', note: 'Folds into a loader, opens back up as done.', icon: 'capsule', Component: MorphButtonDemo, scroll: true },
+  { slug: 'split-button', title: 'Split button', note: 'Divides in the middle like a drop of liquid metal.', icon: 'rectangle.split.2x1', Component: SplitButtonDemo, scroll: true },
+  { slug: 'slide-to-confirm', title: 'Slide to confirm', note: 'Slide the knob to the end to pay.', icon: 'arrow.right.circle', Component: SlideToConfirmDemo, scroll: true },
+  { slug: 'gooey-menu', title: 'Gooey menu', note: 'Tap the button, actions pour out as drops.', icon: 'plus.circle', Component: GooeyMenuDemo, scroll: true },
+  { slug: 'otp-input', title: 'OTP input', note: 'Wrong code shakes then turns to dust.', icon: 'ellipsis.rectangle', Component: OTPInputDemo, scroll: true },
+  { slug: 'number-ticker', title: 'Number ticker', note: 'Digits roll to the new value.', icon: 'textformat.123', Component: NumberTickerDemo, scroll: true },
+  { slug: 'reaction-picker', title: 'Reaction picker', note: 'Long press a message, slide to an emoji.', icon: 'face.smiling', Component: ReactionPickerDemo, scroll: true },
+  { slug: 'voice-note', title: 'Voice note', note: 'Scrub the waveform, long press to unsend.', icon: 'waveform', Component: VoiceNoteDemo, scroll: true },
+  { slug: 'card-stack', title: 'Card stack', note: 'Tap a card, swipe to flip, drag down to close.', icon: 'rectangle.stack', Component: CardStackDemo, scroll: false },
+  { slug: 'signature-pad', title: 'Signature pad', note: 'Sign with your finger, clear to dust.', icon: 'signature', Component: SignaturePadDemo, scroll: true },
+  { slug: 'before-after', title: 'Before after', note: 'Drag to compare two versions.', icon: 'rectangle.lefthalf.inset.filled', Component: BeforeAfterDemo, scroll: true },
+  { slug: 'thinking-orb', title: 'Thinking orb', note: 'Dots that show what the agent is doing.', icon: 'sparkles', Component: ThinkingOrbDemo, scroll: true },
+  { slug: 'image-reveal', title: 'Image reveal', note: 'Generate: the mosaic resolves into the image.', icon: 'photo', Component: ImageRevealDemo, scroll: true },
+  { slug: 'sweep-transition', title: 'Sweep transition', note: 'A liquid band swaps the content.', icon: 'water.waves', Component: SweepTransitionDemo, scroll: true },
+  { slug: 'upload-tile', title: 'Upload tile', note: 'Files assemble as they upload, a rejected one turns to dust.', icon: 'icloud.and.arrow.up', Component: UploadTileDemo, scroll: true },
+  { slug: 'task-check', title: 'Task check', note: 'Check, strike, then move or dissolve.', icon: 'checkmark.circle', Component: TaskCheckDemo, scroll: true },
+  { slug: 'quantity-stepper', title: 'Quantity stepper', note: 'Rolling digits, at 1 it becomes a trash.', icon: 'plus.forwardslash.minus', Component: QuantityStepperDemo, scroll: true },
+  { slug: 'ruler-picker', title: 'Ruler picker', note: 'Drag or fling the ruler, it snaps with ticks.', icon: 'ruler', Component: RulerPickerDemo, scroll: true },
+  { slug: 'bar-chart', title: 'Bar chart', note: 'Scrub the bars, switch the period.', icon: 'chart.bar', Component: BarChartDemo, scroll: true },
+  { slug: 'mini-player', title: 'Mini player', note: 'Tap or drag the pill up into the player.', icon: 'play.circle', Component: MiniPlayerDemo, scroll: false },
 ];

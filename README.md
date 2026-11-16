@@ -4,8 +4,9 @@ An animation library for React Native. Turn any view into dust: a Skia snapshot,
 animated by Reanimated 4 on the UI thread.
 
 [![npm](https://img.shields.io/npm/v/react-native-dissolve.svg)](https://www.npmjs.com/package/react-native-dissolve)
+[![CI](https://github.com/rs-4/dissolve/actions/workflows/ci.yml/badge.svg)](https://github.com/rs-4/dissolve/actions/workflows/ci.yml)
+[![npm downloads](https://img.shields.io/npm/dm/react-native-dissolve.svg)](https://www.npmjs.com/package/react-native-dissolve)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.0.1-brightgreen.svg)](CHANGELOG.md)
 [![Expo SDK 57](https://img.shields.io/badge/Expo%20SDK-57-000020.svg)](https://expo.dev)
 
 Put a ref on any component, call `dissolve()`, and it dissolves, melts, peels or rebuilds itself.
@@ -110,11 +111,10 @@ Common options for every atlas preset: `origin` (`'left' | 'right' | 'top' | 'bo
 | cascade | `dissolve({ preset: 'dust', field: 'cascade', rows: [0, 72, 144] })` list rows leave in a diagonal wave |
 | screen | `useDissolveScreen().dissolveScreen({ preset: 'sand', then: () => router.back() })` full screen |
 | `shatter` | `dissolve({ preset: 'shatter', origin: { x, y }, n: [220] })` glass shards from the impact |
-| `pile` | `dissolve({ preset: 'pile', floor: 'screen' })` then `usePile().sweepPile({ preset: 'dust' })` |
 | `morph` | `const { refA, refB, styleA, styleB, morph } = useDissolveMorph(); await morph()` A becomes B |
 
-Demo screens live in `app/` (playground, stream, appear, fling, gestures, cascade, screen, shatter,
-pile, morph).
+The example app in `app/` has one screen per effect (`app/effect/[name].tsx`), one per component
+(`app/demo/[name].tsx`) and a playground with every option.
 
 ## Components
 
@@ -133,7 +133,7 @@ Components land in `components/dissolve/` (or `src/components/dissolve/` with a 
 ```tsx
 import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
 
-<SlideToConfirm label="Slide to pay 42 €" doneLabel="Paid" onConfirm={pay} className="mx-4" knobClassName="bg-black" />
+<SlideToConfirm label="Slide to pay 42 €" doneLabel="Paid" onConfirm={pay} className="mx-4 bg-zinc-100" />
 ```
 
 They need NativeWind v5 (Tailwind v4, react-native-css) and `tailwind-merge`, like shadcn: later classes
@@ -157,7 +157,7 @@ win, so `className="bg-blue-500"` replaces the default background.
 | `before-after` | Before / after image comparison. |
 
 Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `muted`, `primary`,
-`primary-foreground`, `success`, `danger`, `danger-foreground`, `accent`, `border`) live in your
+`primary-foreground`, `success`, `danger`, `danger-foreground`, `accent`, `border`, `chart-1` to `chart-3`, `chart-1`, `chart-2`, `chart-3`) live in your
 `global.css` after `init`: change them once and every component follows.
 
 ## Hooks
@@ -171,7 +171,6 @@ Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `mu
 | `useDissolvePeel` | Peel a view by hand from any corner or edge, sticks back if released early |
 | `useDissolveScreen` | Full screen transitions |
 | `useDissolveMorph` | Turn view A into view B |
-| `usePile` | Sweep or clear the grains left by `pile` |
 
 ## Documentation
 
@@ -210,13 +209,19 @@ Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `mu
 
 ```sh
 npm install
-npm start        # then open in Expo Go
-npx tsc --noEmit # type check
+npm start          # then open in Expo Go
+npm run typecheck  # tsc --noEmit
+npm test           # CLI, registry, theme, engine and package tests (node:test)
 ```
+
+The tests live in `test/` and run in CI on every push and pull request. See
+[CONTRIBUTING.md](CONTRIBUTING.md#tests) for the individual suites.
 
 ## Contributing
 
-Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the
+Contributions are welcome, new components included: the
+[component workflow](CONTRIBUTING.md#adding-a-component) covers the registry file, the
+`index.json` entry, the demo, the web port and the tests. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the
 [Code of Conduct](CODE_OF_CONDUCT.md). Security issues: see [SECURITY.md](SECURITY.md).
 
 ## License

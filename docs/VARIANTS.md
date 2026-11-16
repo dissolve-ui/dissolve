@@ -8,7 +8,7 @@ Plusieurs variantes en dépendent. Il vaut mieux les faire avant de commencer.
 
 1. **Séparer le champ de délai et le mouvement.** Aujourd'hui `local()` (le délai) et le bloc de position sont liés par preset. Avec un `origin` à part (`'left' | 'right' | 'top' | 'bottom' | 'center' | 'touch' | {x,y}`), chaque preset existant gagne une direction. Exemple : `delay = dist(l, O) / maxD * 0.55 + r1 * 0.08`.
 2. **Accepter un `progress` externe dans `Particles`.** Il prend une `SharedValue` optionnelle au lieu de son `withTiming` interne. La position est déjà une fonction pure de `p`, sans état d'une frame à l'autre. Le scrub, le rembobinage et l'entrée deviennent donc presque gratuits.
-3. **Ajouter des champs libres au `Burst`** (`ox`, `oy`, `vx`, `vy`, `tx`, `ty`, `floorY`…). Le worklet les capture comme constantes.
+3. **Ajouter des champs libres au `Burst`** (`ox`, `oy`, `vx`, `vy`, `tx`, `ty`…). Le worklet les capture comme constantes.
 
 Note perf (le code actuel dit `pr = image.width() / w`, je l'écris `pr` ci-dessous) :
 - `local()` est calculé deux fois par grain et par frame : une fois pour les transforms, une fois pour les colors.
@@ -298,41 +298,7 @@ couleur sommet = 0.6 + 0.4*|fy| ; a = 1 - ss(max(0,(t-0.6)/0.4))
 
 ---
 
-## 9. `pile` : le sable tombe et s'entasse au sol
-
-**Pitch.** La carte supprimée tombe en sable et forme un vrai tas en bas de l'écran, avec un angle de talus. Chaque nouvelle suppression grossit le tas. Un geste le balaie.
-
-**Cas d'usage.** Todo ou focus app gamifiée (« le tas de tes tâches finies »), corbeille visible, sablier de pomodoro.
-
-**Maths : un empilement déterministe précalculé, sans physique par frame.**
-
-À l'init, en JS :
-1. Pour chaque grain : `xl = x+lx + (r2-0.3)*30`. La clé d'ordre est `delay + fallTime(floorY - y - ly)`.
-2. On trie les grains par cette clé.
-3. Pour chaque grain, dans l'ordre :
-   - bucket `b = floor(xl / grain)` ;
-   - talus : tant que `H[b] > H[b±1] + grain`, on glisse vers le voisin le plus bas (6 pas maximum) ;
-   - `yf = floorY - H[b] - grain/2` et `H[b] += grain*0.9`.
-4. On stocke `xf`, `yf` et `tl` (le t local d'atterrissage). Le stride passe à 9.
-
-Par frame :
-
-```
-if (t < tl) { q = t/tl; cx = x0 + (xf-x0)*q; cy = y0 + (yf-y0)*q*q; rot = (r4-0.5)*3*q }
-else { cx = xf; cy = yf - sin((t-tl)*40)*2*max(0, 1-(t-tl)*8); rot = 0 }   // micro rebond
-a = 1 (pas de fondu)
-```
-
-**API.** `dissolve({ preset: 'pile', floor: 'screen' | floorRef })` et `sweepPile({ preset: 'dust' })`
-
-**Faisabilité.**
-- Une fois posé, le tas se fige en une image (`drawAsImage`, soit un rendu Skia hors écran) pour libérer les buffers. Mille suppressions coûtent alors une seule image.
-- Ordre de grandeur : une carte de 350 × 80 avec un grain de 2.5 donne environ 4 500 grains, soit un tas d'environ 70 pt sur la largeur de l'écran. Le garder en ne conservant qu'un grain sur 2 (le reste en poussière).
-- Difficulté **M**.
-
----
-
-## 10. `morph` : une vue se réarrange en une autre
+## 9. `morph` : une vue se réarrange en une autre
 
 **Pitch.** Les grains de A s'envolent et se reposent pour composer B. L'appariement par luminance donne le fameux effet de pixel sorting.
 
@@ -372,8 +338,7 @@ Atlas A : alpha 1-cross ; Atlas B : mêmes transforms, sprites de B, alpha cross
 | 6 | `shatter` | 9 | 6 | 54 |
 | 7 | `fling` | 6 | 9 | 54 |
 | 8 | `charge` | 8 | 6 | 48 |
-| 9 | `pile` | 8 | 5 | 40 |
-| 10 | `morph` | 10 | 3 | 30 |
+| 9 | `morph` | 10 | 3 | 30 |
 
 ## Mes 3 à construire en premier
 

@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      expo:
+        patterns: ['expo', 'expo-*', '@expo/*', 'react-native', 'react-native-*', '@shopify/react-native-skia', 'react', '@types/react']
+      styling:
+        patterns: ['nativewind', 'react-native-css', 'tailwindcss', '@tailwindcss/*', 'tailwind-merge']
+      dev-dependencies:
+        dependency-type: development
+    # Expo SDK, React Native and NativeWind majors are upgraded by hand (npx expo install --fix).
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+    commit-message:
+      prefix: build
+      include: scope
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci
