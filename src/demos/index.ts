@@ -4,7 +4,6 @@ import NumberTickerDemo from './NumberTicker.demo';
 import ReactionPickerDemo from './ReactionPicker.demo';
 import VoiceNoteDemo from './VoiceNote.demo';
 import CardStackDemo from './CardStack.demo';
-import ReceiptDemo from './Receipt.demo';
 import SignaturePadDemo from './SignaturePad.demo';
 import BeforeAfterDemo from './BeforeAfter.demo';
 
@@ -17,7 +16,6 @@ export const DEMOS: DemoEntry[] = [
   { slug: 'reactions', title: 'Reactions', note: 'Long press a message, slide to an emoji.', Component: ReactionPickerDemo, scroll: true },
   { slug: 'voice', title: 'Voice note', note: 'Scrub the waveform, long press to unsend.', Component: VoiceNoteDemo, scroll: true },
   { slug: 'cards', title: 'Card stack', note: 'Wallet style cards.', Component: CardStackDemo, scroll: false },
-  { slug: 'receipt', title: 'Receipt', note: 'A paper receipt that unfolds.', Component: ReceiptDemo, scroll: true },
   { slug: 'signature', title: 'Signature', note: 'Sign with your finger, clear to dust.', Component: SignaturePadDemo, scroll: true },
   { slug: 'before-after', title: 'Before / after', note: 'Drag to compare two versions.', Component: BeforeAfterDemo, scroll: true },
 ];

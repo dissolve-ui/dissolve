@@ -44,7 +44,6 @@ export { NumberTicker, type NumberTickerProps } from './components/NumberTicker'
 export { ReactionPicker, DEFAULT_REACTIONS, type ReactionPickerProps } from './components/ReactionPicker';
 export { VoiceNote, voiceLevels, type VoiceNoteProps, type VoiceNoteColors } from './components/VoiceNote';
 export { CardStack, type CardStackProps } from './components/CardStack';
-export { Receipt, type ReceiptProps, type ReceiptHandle, type ReceiptItem, type ReceiptTax } from './components/Receipt';
 export { SignaturePad, type SignaturePadProps, type SignaturePadHandle, type SignatureExport } from './components/SignaturePad';
 export { BeforeAfter, type BeforeAfterProps, type BeforeAfterSize } from './components/BeforeAfter';
 
