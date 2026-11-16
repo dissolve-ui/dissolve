@@ -80,7 +80,7 @@ export function useDissolveHold(opts: HoldOptions = {}) {
   }).current;
 
   const ticker = useFrameCallback((f) => {
-    clock.value = f.timeSinceFirstFrame;
+    clock.value = f.timestamp;
   }, false);
 
   const stopTicks = useCallback(() => {

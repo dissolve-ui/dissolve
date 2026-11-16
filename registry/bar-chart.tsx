@@ -408,7 +408,8 @@ export function BarChart({
 
   useFrameCallback((info) => {
     'worklet';
-    const now = info.timeSinceFirstFrame;
+    // Absolute frame time: timeSinceFirstFrame restarts whenever React re-renders the callback.
+    const now = info.timestamp;
     const dt = Math.min(1 / 30, (info.timeSincePreviousFrame ?? 16) / 1000);
     const pl = plan.value;
     const P = pose.value;

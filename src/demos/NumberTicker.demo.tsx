@@ -39,15 +39,15 @@ export default function NumberTickerDemo() {
 
   return (
     <View className="bg-dissolve-surface" style={st.card}>
-      <Text className="text-dissolve-muted" style={st.kicker}>MAIN ACCOUNT · EUR</Text>
-      <NumberTicker value={balance} decimals={2} locale="fr-FR" suffix={'\u00A0€'} fontSize={44} textClassName="font-bold tracking-[-1px]" className="mt-2" />
+      <Text className="text-dissolve-muted" style={st.kicker}>MAIN ACCOUNT · USD</Text>
+      <NumberTicker value={balance} decimals={2} locale="en-US" prefix="$" fontSize={44} textClassName="font-bold tracking-[-1px]" className="mt-2" />
       <View style={st.sub}>
-        <NumberTicker value={balance * USD_PER_EUR} decimals={2} locale="en-US" prefix="≈ $" fontSize={15} textClassName="font-medium text-dissolve-muted" duration={600} />
+        <NumberTicker value={balance / USD_PER_EUR} decimals={2} locale="en-US" prefix="≈ €" fontSize={15} textClassName="font-medium text-dissolve-muted" duration={600} />
         {last ? (
           <View style={[st.delta, { backgroundColor: last > 0 ? (dark ? 'rgba(48,209,88,0.18)' : '#EAF9EE') : dark ? 'rgba(255,69,58,0.18)' : '#FFEFEE' }]}>
             <Text style={[st.deltaText, { color: last > 0 ? (dark ? '#30D158' : '#248A3D') : dark ? '#FF6961' : '#D70015' }]}>
               {last > 0 ? '+' : '−'}
-              {Math.abs(last).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €
+              ${Math.abs(last).toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </Text>
           </View>
         ) : null}

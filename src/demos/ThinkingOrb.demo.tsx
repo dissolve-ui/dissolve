@@ -85,7 +85,7 @@ export default function ThinkingOrbDemo() {
 
       <View className="border-dissolve-border bg-dissolve-background" style={st.composer}>
         <Text className="text-dissolve-foreground" style={st.prompt} numberOfLines={1}>
-          Plan 3 days in Lisbon under 600 €
+          Plan 3 days in Lisbon under $600
         </Text>
         <Pressable
           onPress={() => {

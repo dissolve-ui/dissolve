@@ -60,7 +60,7 @@ function CartRow({ line, onQty, onGone }: { line: Line; onQty: (qty: number) => 
             <Text className="text-dissolve-muted" style={st.detail}>
               {line.detail}
             </Text>
-            <NumberTicker value={line.price * line.qty} decimals={2} locale="fr-FR" suffix={' €'} fontSize={15} duration={420} textClassName="font-semibold" className="mt-[4px]" />
+            <NumberTicker value={line.price * line.qty} decimals={2} locale="en-US" prefix="$" fontSize={15} duration={420} textClassName="font-semibold" className="mt-[4px]" />
           </View>
           <QuantityStepper value={line.qty} onChange={onQty} max={9} onRemove={remove} />
         </View>
@@ -111,14 +111,14 @@ export default function QuantityStepperDemo() {
             Shipping
           </Text>
           <Text className="text-dissolve-muted" style={st.sumLabel}>
-            {shipping ? '4,90 €' : 'Free'}
+            {shipping ? '$4.90' : 'Free'}
           </Text>
         </View>
         <View style={st.sumRow}>
           <Text className="text-dissolve-foreground" style={st.totalLabel}>
             Total
           </Text>
-          <NumberTicker value={total + shipping} decimals={2} locale="fr-FR" suffix={' €'} fontSize={22} textClassName="font-bold tracking-[-0.4px]" />
+          <NumberTicker value={total + shipping} decimals={2} locale="en-US" prefix="$" fontSize={22} textClassName="font-bold tracking-[-0.4px]" />
         </View>
       </View>
 

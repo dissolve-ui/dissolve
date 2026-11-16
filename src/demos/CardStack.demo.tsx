@@ -23,9 +23,9 @@ const CARDS: Card[] = [
     kind: 'metal',
     title: 'Black',
     activity: [
-      { label: 'Septime', sub: 'Paris 11e · Yesterday', amount: '−148,00 €' },
-      { label: 'Air France', sub: 'CDG → LIS · Mon', amount: '−312,40 €' },
-      { label: 'Cashback', sub: 'October', amount: '+21,60 €' },
+      { label: 'Septime', sub: 'Paris · Yesterday', amount: '−$148.00' },
+      { label: 'Air France', sub: 'CDG → LIS · Mon', amount: '−$312.40' },
+      { label: 'Cashback', sub: 'October', amount: '+$21.60' },
     ],
   },
   {
@@ -33,9 +33,9 @@ const CARDS: Card[] = [
     kind: 'painting',
     title: 'Atelier',
     activity: [
-      { label: 'Musée d’Orsay', sub: 'Membership · Today', amount: '−65,00 €' },
-      { label: 'Shakespeare & Co', sub: 'Books · Sat', amount: '−32,90 €' },
-      { label: 'Café Kitsuné', sub: 'Coffee · Sat', amount: '−4,80 €' },
+      { label: 'Musée d’Orsay', sub: 'Membership · Today', amount: '−$65.00' },
+      { label: 'Shakespeare & Co', sub: 'Books · Sat', amount: '−$32.90' },
+      { label: 'Café Kitsuné', sub: 'Coffee · Sat', amount: '−$4.80' },
     ],
   },
   {
@@ -43,9 +43,9 @@ const CARDS: Card[] = [
     kind: 'gradient',
     title: 'Savings',
     activity: [
-      { label: 'Round ups', sub: 'This week', amount: '+6,42 €' },
-      { label: 'Monthly transfer', sub: 'Nov 1', amount: '+400,00 €' },
-      { label: 'Interest', sub: '3,1 % · October', amount: '+18,07 €' },
+      { label: 'Round ups', sub: 'This week', amount: '+$6.42' },
+      { label: 'Monthly transfer', sub: 'Nov 1', amount: '+$400.00' },
+      { label: 'Interest', sub: '3.1% · October', amount: '+$18.07' },
     ],
   },
   {
@@ -55,7 +55,7 @@ const CARDS: Card[] = [
     activity: [
       { label: 'Bastille', sub: 'Line 1 · 08:47', amount: 'Tap in' },
       { label: 'Châtelet', sub: 'Line 4 · Yesterday', amount: 'Tap in' },
-      { label: 'Weekly renewal', sub: 'Mon', amount: '−30,75 €' },
+      { label: 'Weekly renewal', sub: 'Mon', amount: '−$30.75' },
     ],
   },
 ];
@@ -133,7 +133,7 @@ function CardFace({ card }: { card: Card }) {
         <Strip title="Savings" tag="POCKET" color="#FFFFFF" right={<SymbolView name="sparkles" size={20} tintColor="#FFFFFF" weight="semibold" />} />
         <View style={cs.bottom}>
           <Text style={cs.small2}>BALANCE</Text>
-          <Text style={cs.balance}>12 480,36 €</Text>
+          <Text style={cs.balance}>$12,480.36</Text>
           <View style={cs.track}>
             <View style={[cs.fill, { width: '62%' }]} />
           </View>

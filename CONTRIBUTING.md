@@ -57,7 +57,7 @@ app code. They are styled with NativeWind v5 classes and the `dissolve-*` theme 
    (`View`, `Text`, `Pressable`, `Animated`, `cn`, `useToken`), never from your app. Allowed
    packages: `react`, `react-native`, `react-native-dissolve`, `@shopify/react-native-skia`,
    `react-native-reanimated`, `react-native-worklets`, `react-native-gesture-handler`,
-   `expo-haptics`, `expo-symbols`, `expo-image`, `expo-glass-effect`, plus other registry files as `./<file>` (the CLI
+   `expo-haptics`, `expo-symbols`, `expo-image`, `expo-glass-effect`, `expo-blur`, plus other registry files as `./<file>` (the CLI
    copies those along). Colors come from tokens: `bg-dissolve-surface`, `text-dissolve-muted`, or
    `useToken('accent')` for Skia and Reanimated values. No hex colors in class names.
 2. **Index entry.** Add it to `registry/index.json`:

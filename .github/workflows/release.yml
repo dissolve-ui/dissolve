@@ -48,31 +48,40 @@ jobs:
       - name: Tests
         run: npm test
 
-      - name: Tag matches the package version
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Version checks
+        id: version
         run: |
           version="$(node -p "require('./packages/react-native-dissolve/package.json').version")"
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
-            echo "Tag $GITHUB_REF_NAME does not match packages/react-native-dissolve version $version"
-            exit 1
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          # A tag for another version (an older release tagged after the fact) publishes nothing.
+          if [ "${{ startsWith(github.ref, 'refs/tags/v') }}" = "true" ] && [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::notice::Tag $GITHUB_REF_NAME is not the package version ($version): nothing to publish."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+          # Already on npm (published by hand): skip npm, still mirror and release.
+          if npm view "react-native-dissolve@$version" version >/dev/null 2>&1; then
+            echo "::notice::react-native-dissolve@$version is already on npm."
+            echo "on_npm=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build the package
+        if: steps.version.outputs.skip != 'true'
         run: npm run build:package
 
       - name: Pack (dry run)
+        if: steps.version.outputs.skip != 'true'
         working-directory: packages/react-native-dissolve
         run: npm pack --dry-run --ignore-scripts
 
       - name: Publish to npm
-        if: github.event_name == 'push' || inputs.dry-run == false
+        if: steps.version.outputs.skip != 'true' && steps.version.outputs.on_npm != 'true' && (github.event_name == 'push' || inputs.dry-run == false)
         working-directory: packages/react-native-dissolve
         run: npm publish --provenance --access public --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Mirror to GitHub Packages
-        if: github.event_name == 'push' || inputs.dry-run == false
+        if: steps.version.outputs.skip != 'true' && (github.event_name == 'push' || inputs.dry-run == false)
         working-directory: packages/react-native-dissolve
         run: |
           npm pkg set name=@rs-4/react-native-dissolve
@@ -84,7 +93,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: steps.version.outputs.skip != 'true' && startsWith(github.ref, 'refs/tags/v')
         run: |
           version="${GITHUB_REF_NAME#v}"
           # Notes: the CHANGELOG section of this version, or Unreleased if it was not renamed yet.
