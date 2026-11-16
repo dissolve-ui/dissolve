@@ -6,16 +6,28 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
-      expo:
-        patterns: ['expo', 'expo-*', '@expo/*', 'react-native', 'react-native-*', '@shopify/react-native-skia', 'react', '@types/react']
       styling:
-        patterns: ['nativewind', 'react-native-css', 'tailwindcss', '@tailwindcss/*', 'tailwind-merge']
+        patterns: ['tailwindcss', '@tailwindcss/*', 'tailwind-merge']
       dev-dependencies:
         dependency-type: development
-    # Expo SDK, React Native and NativeWind majors are upgraded by hand (npx expo install --fix).
+    # The Expo SDK pins React Native and its native modules: they move together with
+    # `npx expo install --fix` when the SDK is upgraded, never one by one. NativeWind is a pinned
+    # preview. Everything else gets minor and patch updates.
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-major']
+      - dependency-name: 'expo'
+      - dependency-name: 'expo-*'
+      - dependency-name: '@expo/*'
+      - dependency-name: 'react'
+      - dependency-name: 'react-dom'
+      - dependency-name: '@types/react'
+      - dependency-name: 'react-native'
+      - dependency-name: 'react-native-*'
+      - dependency-name: '@shopify/react-native-skia'
+      - dependency-name: 'nativewind'
+      - dependency-name: 'react-native-css'
+      - dependency-name: 'lightningcss'
     commit-message:
       prefix: build
       include: scope
