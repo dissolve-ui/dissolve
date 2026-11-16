@@ -1,12 +1,39 @@
+/**
+ * GooeyMenu, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * classNames, change the timings, the arc, anything. Colors come from the dissolve theme tokens
+ * (global.css), so it follows light and dark mode out of the box.
+ *
+ * A floating button whose actions pour out of it as drops and melt back in when it closes.
+ * Place it absolutely (it reserves room for the arc above and to the left of the button).
+ *
+ * <GooeyMenu className="absolute bottom-2 right-2" items={[
+ *   { icon: <CameraIcon />, onPress: openCamera, label: 'Camera' },
+ * ]} />
+ */
 import { useState, type ReactNode } from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { Canvas, Circle, Group } from '@shopify/react-native-skia';
-import Animated, { Easing, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
+import { StyleSheet } from 'react-native';
+import { Blur, Canvas, Circle, ColorMatrix, Group, Paint } from '@shopify/react-native-skia';
+import { Easing, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { gooLayer } from './goo';
+import { Animated, Pressable, View, cn, useToken } from './tw';
 
 const SOFT = Easing.inOut(Easing.cubic);
 const PAD = 16;
+
+/**
+ * The liquid look: shapes are blurred together, then the alpha is pushed back to a hard edge
+ * (alpha * 20 - 9). Close shapes melt into one blob with a neck between them, colors stay untouched.
+ */
+const GOO_MATRIX = [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 20, -9];
+
+function gooLayer(blur = 7) {
+  return (
+    <Paint>
+      <Blur blur={blur} />
+      <ColorMatrix matrix={GOO_MATRIX} />
+    </Paint>
+  );
+}
 
 export type GooeyMenuItem = { icon: ReactNode; onPress: () => void; label?: string };
 
@@ -19,10 +46,11 @@ export type GooeyMenuProps = {
   /** Arc in degrees, 0 = right, -90 = up. Default from -90 (up) to -180 (left). */
   startAngle?: number;
   endAngle?: number;
-  color?: string;
-  iconColor?: string;
   haptics?: boolean;
-  style?: StyleProp<ViewStyle>;
+  /** Root classes (position, margins...). */
+  className?: string;
+  /** Classes of the two bars of the plus icon (their color). */
+  iconClassName?: string;
 };
 
 const local = (p: number, i: number, n: number) => {
@@ -32,7 +60,9 @@ const local = (p: number, i: number, n: number) => {
   return t < 0 ? 0 : t > 1 ? 1 : t;
 };
 
-function Blob({ i, n, p, c, dir, distance, r, color }: { i: number; n: number; p: SharedValue<number>; c: { x: number; y: number }; dir: { x: number; y: number }; distance: number; r: number; color: string }) {
+type Vec = { x: number; y: number };
+
+function Blob({ i, n, p, c, dir, distance, r, color }: { i: number; n: number; p: SharedValue<number>; c: Vec; dir: Vec; distance: number; r: number; color: string }) {
   const t = useDerivedValue(() => local(p.value, i, n));
   const cx = useDerivedValue(() => c.x + dir.x * distance * t.value);
   const cy = useDerivedValue(() => c.y + dir.y * distance * t.value);
@@ -49,7 +79,7 @@ function Blob({ i, n, p, c, dir, distance, r, color }: { i: number; n: number; p
   );
 }
 
-function Action({ item, i, n, p, c, dir, distance, size, close }: { item: GooeyMenuItem; i: number; n: number; p: SharedValue<number>; c: { x: number; y: number }; dir: { x: number; y: number }; distance: number; size: number; close: () => void }) {
+function Action({ item, i, n, p, c, dir, distance, size, close }: { item: GooeyMenuItem; i: number; n: number; p: SharedValue<number>; c: Vec; dir: Vec; distance: number; size: number; close: () => void }) {
   const style = useAnimatedStyle(() => {
     const t = local(p.value, i, n);
     return {
@@ -58,11 +88,11 @@ function Action({ item, i, n, p, c, dir, distance, size, close }: { item: GooeyM
     };
   });
   return (
-    <Animated.View style={[{ position: 'absolute', left: 0, top: 0, width: size, height: size }, style]}>
+    <Animated.View className="absolute left-0 top-0" style={[{ width: size, height: size }, style]}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={item.label}
-        style={s.fill}
+        className="flex-1 items-center justify-center"
         onPress={() => {
           item.onPress();
           close();
@@ -74,15 +104,9 @@ function Action({ item, i, n, p, c, dir, distance, size, close }: { item: GooeyM
   );
 }
 
-/**
- * A floating button whose actions pour out of it as drops and melt back in when it closes.
- * Place it absolutely (it reserves room for the arc above and to the left of the button).
- *
- * <GooeyMenu style={{ position: 'absolute', right: 8, bottom: 8 }} items={[
- *   { icon: <Icon name="camera" />, onPress: openCamera, label: 'Camera' },
- * ]} />
- */
-export function GooeyMenu({ items, size = 56, distance = 92, startAngle = -90, endAngle = -180, color = '#1C1C1E', iconColor = '#FFFFFF', haptics = true, style }: GooeyMenuProps) {
+export function GooeyMenu({ items, size = 56, distance = 92, startAngle = -90, endAngle = -180, haptics = true, className, iconClassName }: GooeyMenuProps) {
+  const color = useToken('primary');
+
   const [open, setOpen] = useState(false);
   const p = useSharedValue(0);
   const n = items.length;
@@ -103,9 +127,10 @@ export function GooeyMenu({ items, size = 56, distance = 92, startAngle = -90, e
   });
 
   const plus = useAnimatedStyle(() => ({ transform: [{ rotate: `${p.value * 45}deg` }] }));
+  const bar = cn('absolute h-[2.6px] w-5 rounded-[2px] bg-dissolve-primary-foreground', iconClassName);
 
   return (
-    <View style={[{ width: box, height: box }, style]} pointerEvents="box-none">
+    <View className={className} style={{ width: box, height: box }} pointerEvents="box-none">
       <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
         <Group layer={gooLayer(9)}>
           <Circle cx={c.x} cy={c.y} r={R} color={color} />
@@ -121,19 +146,14 @@ export function GooeyMenu({ items, size = 56, distance = 92, startAngle = -90, e
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
         onPress={() => toggle()}
-        style={{ position: 'absolute', left: c.x - R, top: c.y - R, width: size, height: size }}
+        className="absolute"
+        style={{ left: c.x - R, top: c.y - R, width: size, height: size }}
       >
-        <Animated.View style={[s.fill, plus]}>
-          <View style={[s.bar, { backgroundColor: iconColor }]} />
-          <View style={[s.bar, s.vbar, { backgroundColor: iconColor }]} />
+        <Animated.View className="flex-1 items-center justify-center" style={plus}>
+          <View className={bar} />
+          <View className={bar} style={{ transform: [{ rotate: '90deg' }] }} />
         </Animated.View>
       </Pressable>
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  fill: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  bar: { position: 'absolute', width: 20, height: 2.6, borderRadius: 2 },
-  vbar: { transform: [{ rotate: '90deg' }] },
-});

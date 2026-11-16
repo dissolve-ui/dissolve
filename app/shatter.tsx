@@ -68,7 +68,7 @@ export default function Shatter() {
 
 const st = StyleSheet.create({
   gone: { fontFamily: mono, fontSize: 11, color: C.muted, textAlign: 'center' },
-  paywall: { backgroundColor: C.dark, borderRadius: 26, padding: 22, gap: 10 },
+  paywall: { backgroundColor: '#1C1C1E', borderRadius: 26, padding: 22, gap: 10 },
   kicker: { fontFamily: mono, fontSize: 11, color: '#F4B860', letterSpacing: 1 },
   h1: { fontSize: 26, fontWeight: '700', color: 'white' },
   p: { fontSize: 15, lineHeight: 21, color: 'rgba(255,255,255,0.65)', marginBottom: 6 },
@@ -76,6 +76,6 @@ const st = StyleSheet.create({
   check: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#34C759' },
   featureText: { fontSize: 15, color: 'white' },
   cta: { marginTop: 14, backgroundColor: 'white', borderRadius: 999, paddingVertical: 14, alignItems: 'center' },
-  ctaText: { fontSize: 15, fontWeight: '600', color: C.dark },
+  ctaText: { fontSize: 15, fontWeight: '600', color: '#1C1C1E' },
   notNow: { fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginTop: 4 },
 });

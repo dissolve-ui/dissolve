@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable as RNPressable, ScrollView, StyleSheet, View as RNView } from 'react-native';
+import { Pressable, Text, View } from '@registry/tw';
 import { Link } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { PRESETS, useDissolve, type Preset } from '@/dissolve';
-import { C, Caption, Code, Section, Stage, mono, s } from '@/ui';
+import { Caption, Code, Section, Stage, mono, s } from '@/ui';
 
 const EXAMPLES = [
   { href: '/micro', title: 'Micro-interactions', note: 'OTP, ticker, reactions, voice, cards, signature, before/after.' },
@@ -48,16 +49,18 @@ function HeroCard() {
       }}
     >
       <Animated.View key={k} entering={k ? FadeIn.duration(500) : undefined}>
-        <View ref={ref} collapsable={false} style={[st.card, { opacity: dissolving ? 0 : 1 }]}>
-          <View style={[st.icon, { backgroundColor: '#34C759' }]}>
-            <Text style={st.iconText}>M</Text>
+        <RNView ref={ref} collapsable={false} style={{ opacity: dissolving ? 0 : 1 }}>
+          <View className="bg-dissolve-background" style={st.card}>
+            <View style={[st.icon, { backgroundColor: '#34C759' }]}>
+              <Text style={st.iconText}>M</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text className="text-dissolve-muted" style={st.app}>MESSAGES · now</Text>
+              <Text className="text-dissolve-foreground" style={st.title}>Lina</Text>
+              <Text className="text-dissolve-muted" style={st.body} numberOfLines={1}>On se retrouve à 19h devant le ciné ?</Text>
+            </View>
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={st.app}>MESSAGES · now</Text>
-            <Text style={st.title}>Lina</Text>
-            <Text style={st.body} numberOfLines={1}>On se retrouve à 19h devant le ciné ?</Text>
-          </View>
-        </View>
+        </RNView>
       </Animated.View>
     </Pressable>
   );
@@ -67,9 +70,9 @@ function PresetRow({ preset }: { preset: Preset }) {
   const { ref, dissolving, dissolve, reset } = useDissolve();
   const [k, setK] = useState(0);
   return (
-    <View style={st.presetRow}>
-      <Text style={st.presetName}>{preset}</Text>
-      <Pressable
+    <View className="border-dissolve-border" style={st.presetRow}>
+      <Text className="text-dissolve-foreground" style={st.presetName}>{preset}</Text>
+      <RNPressable
         style={{ flex: 1 }}
         disabled={dissolving}
         onPress={async () => {
@@ -81,11 +84,11 @@ function PresetRow({ preset }: { preset: Preset }) {
         }}
       >
         <Animated.View key={k} entering={k ? FadeIn.duration(450) : undefined}>
-          <View ref={ref} collapsable={false} style={[st.bar, { backgroundColor: SWATCH[preset], opacity: dissolving ? 0 : 1 }]}>
+          <RNView ref={ref} collapsable={false} style={[st.bar, { backgroundColor: SWATCH[preset], opacity: dissolving ? 0 : 1 }]}>
             <Text style={st.barText}>tap</Text>
-          </View>
+          </RNView>
         </Animated.View>
-      </Pressable>
+      </RNPressable>
     </View>
   );
 }
@@ -130,40 +133,39 @@ removeItem()`}
         <View style={{ marginTop: 2 }}>
           {EXAMPLES.map((e, i) => (
             <Link key={e.href} href={e.href} asChild>
-              <Pressable style={({ pressed }) => [st.row, pressed && { backgroundColor: C.surface }]}>
-                <Text style={st.rowIndex}>{String(i + 1).padStart(2, '0')}</Text>
+              <Pressable className="border-dissolve-border active:bg-dissolve-surface" style={st.row}>
+                <Text className="text-dissolve-muted" style={st.rowIndex}>{String(i + 1).padStart(2, '0')}</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={st.rowTitle}>{e.title}</Text>
-                  <Text style={st.rowNote}>{e.note}</Text>
+                  <Text className="text-dissolve-foreground" style={st.rowTitle}>{e.title}</Text>
+                  <Text className="text-dissolve-muted" style={st.rowNote}>{e.note}</Text>
                 </View>
-                <Text style={st.chevron}>›</Text>
+                <Text className="text-dissolve-muted" style={st.chevron}>›</Text>
               </Pressable>
             </Link>
           ))}
         </View>
       </Section>
 
-      <Text style={st.footer}>v0.0.1 · MIT licensed</Text>
+      <Text className="text-dissolve-muted" style={st.footer}>v0.0.1 · MIT licensed</Text>
     </ScrollView>
   );
 }
 
 const st = StyleSheet.create({
-  card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: 'white' },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18 },
   icon: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   iconText: { color: 'white', fontSize: 17, fontWeight: '700' },
-  app: { fontSize: 11, fontWeight: '600', color: C.muted, letterSpacing: 0.3 },
-  title: { fontSize: 15, fontWeight: '600', color: C.ink, marginTop: 1 },
-  body: { fontSize: 14, color: C.text },
+  app: { fontSize: 11, fontWeight: '600', letterSpacing: 0.3 },
+  title: { fontSize: 15, fontWeight: '600', marginTop: 1 },
+  body: { fontSize: 14 },
   presetRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
     paddingVertical: 9,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: C.line,
   },
-  presetName: { width: 62, fontSize: 14, color: C.ink },
+  presetName: { width: 62, fontSize: 14 },
   bar: { height: 26, borderRadius: 999, justifyContent: 'center', paddingHorizontal: 12 },
   barText: { fontFamily: mono, fontSize: 11, color: 'rgba(255,255,255,0.85)' },
   row: {
@@ -172,11 +174,10 @@ const st = StyleSheet.create({
     gap: 14,
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: C.line,
   },
-  rowIndex: { fontFamily: mono, fontSize: 11, color: C.muted },
-  rowTitle: { fontSize: 16, fontWeight: '500', color: C.ink },
-  rowNote: { fontSize: 13, color: C.text, marginTop: 2 },
-  chevron: { fontSize: 22, color: C.muted },
+  rowIndex: { fontFamily: mono, fontSize: 11 },
+  rowTitle: { fontSize: 16, fontWeight: '500' },
+  rowNote: { fontSize: 13, marginTop: 2 },
+  chevron: { fontSize: 22 },
   footer: { ...s.caption, marginTop: 36 },
 });

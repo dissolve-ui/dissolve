@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BeforeAfter } from '../dissolve/components/BeforeAfter';
-import { C, mono } from '../ui';
+import { BeforeAfter } from '@registry/before-after';
+import { Text, View as TwView } from '@registry/tw';
+import { mono } from '../ui';
 
 const PAINTING = require('../../assets/paintings/tuscany.jpg');
 
@@ -36,15 +37,15 @@ function Grade({ look }: { look: Look }) {
 export default function BeforeAfterDemo() {
   const [look, setLook] = useState<Look>('Vivid');
   return (
-    <View style={st.stage}>
+    <TwView className="bg-dissolve-surface" style={st.stage}>
       <View style={st.top}>
-        <Text style={st.label}>EDIT · TUSCANY.JPG</Text>
-        <Text style={st.label}>{look.toUpperCase()}</Text>
+        <Text className="text-dissolve-muted" style={st.label}>EDIT · TUSCANY.JPG</Text>
+        <Text className="text-dissolve-muted" style={st.label}>{look.toUpperCase()}</Text>
       </View>
 
       <BeforeAfter
         height={360}
-        radius={20}
+        className="rounded-[20px]"
         initial={0.42}
         afterLabel={look}
         renderBefore={({ width, height }) => <Image source={PAINTING} style={{ width, height }} contentFit="cover" />}
@@ -61,26 +62,25 @@ export default function BeforeAfterDemo() {
           const active = l === look;
           return (
             <Pressable key={l} onPress={() => setLook(l)} style={({ pressed }) => [st.look, pressed && { opacity: 0.7 }]}>
-              <View style={[st.thumb, active && st.thumbActive]}>
+              <TwView className={active ? 'border-dissolve-foreground' : 'border-transparent'} style={st.thumb}>
                 <Image source={PAINTING} style={StyleSheet.absoluteFill} contentFit="cover" />
                 <Grade look={l} />
-              </View>
-              <Text style={[st.lookText, active && { color: '#1C1C1E' }]}>{l}</Text>
+              </TwView>
+              <Text className={active ? 'text-dissolve-foreground' : 'text-dissolve-muted'} style={st.lookText}>{l}</Text>
             </Pressable>
           );
         })}
       </View>
-    </View>
+    </TwView>
   );
 }
 
 const st = StyleSheet.create({
-  stage: { backgroundColor: C.surface, borderRadius: 24, padding: 14, gap: 14 },
+  stage: { borderRadius: 24, padding: 14, gap: 14 },
   top: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 4 },
-  label: { fontFamily: mono, fontSize: 11, color: C.muted, letterSpacing: 0.4 },
+  label: { fontFamily: mono, fontSize: 11, letterSpacing: 0.4 },
   looks: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 4 },
   look: { alignItems: 'center', gap: 6 },
-  thumb: { width: 64, height: 64, borderRadius: 16, overflow: 'hidden', borderWidth: 2, borderColor: 'transparent' },
-  thumbActive: { borderColor: '#1C1C1E' },
-  lookText: { fontFamily: mono, fontSize: 11, color: C.muted, letterSpacing: 0.2 },
+  thumb: { width: 64, height: 64, borderRadius: 16, overflow: 'hidden', borderWidth: 2 },
+  lookText: { fontFamily: mono, fontSize: 11, letterSpacing: 0.2 },
 });

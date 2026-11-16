@@ -1,10 +1,18 @@
+/**
+ * SlideToConfirm, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * classNames, change the timings, the copy, anything. Colors come from the dissolve theme tokens
+ * (global.css), so it follows light and dark mode out of the box.
+ *
+ * <SlideToConfirm label="Slide to pay 42 €" doneLabel="Paid" onConfirm={pay} />
+ */
 import { useEffect, useMemo, useState } from 'react';
-import { Platform, StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Canvas, LinearGradient, Path, Skia, Text as SkText, matchFont, vec } from '@shopify/react-native-skia';
-import Animated, { Easing, interpolateColor, useAnimatedStyle, useDerivedValue, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { Easing, interpolateColor, useAnimatedStyle, useDerivedValue, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
+import { Animated, View, cn, useToken } from './tw';
 
 const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const CHEVRON = Skia.Path.MakeFromSVGString('M9 6l6 6-6 6')!;
@@ -15,43 +23,37 @@ export type SlideToConfirmProps = {
   /** Runs once the knob reaches the end. The knob shows a loader until the promise settles. */
   onConfirm: () => Promise<unknown> | void;
   doneLabel?: string;
+  /** Track height in points. Default 60. */
   height?: number;
-  trackColor?: string;
-  fillColor?: string;
-  knobColor?: string;
-  textColor?: string;
-  doneColor?: string;
   /** Fraction of the track to reach before release confirms. Default 0.88. */
   threshold?: number;
   /** Time on the done state before the slider resets, ms. 0 stays done. Default 1600. */
   resetAfter?: number;
   haptics?: boolean;
-  style?: StyleProp<ViewStyle>;
+  /** Track classes (background, radius, margins...). */
+  className?: string;
+  /** Knob classes. */
+  knobClassName?: string;
 };
 
 type Phase = 'idle' | 'loading' | 'done';
 
-/**
- * Slide to pay or confirm, like Apple Pay or power off. A light shimmer runs across the label,
- * the track fills behind the knob, and past the threshold it locks, loads, then confirms.
- *
- * <SlideToConfirm label="Slide to pay 42 €" doneLabel="Paid" onConfirm={pay} />
- */
 export function SlideToConfirm({
   label,
   onConfirm,
   doneLabel = 'Done',
   height = 60,
-  trackColor = '#F2F2F7',
-  fillColor = '#1C1C1E',
-  knobColor = '#1C1C1E',
-  textColor = '#8E8E93',
-  doneColor = '#34C759',
   threshold = 0.88,
   resetAfter = 1600,
   haptics = true,
-  style,
+  className,
+  knobClassName,
 }: SlideToConfirmProps) {
+  const fill = useToken('primary');
+  const onFill = useToken('primary-foreground');
+  const muted = useToken('muted');
+  const success = useToken('success');
+
   const [W, setW] = useState(0);
   const [phase, setPhase] = useState<Phase>('idle');
   const pad = 5;
@@ -106,7 +108,7 @@ export function SlideToConfirm({
     });
 
   const p = useDerivedValue(() => x.value / max);
-  // Label: shimmer gradient moving across, fading out as the knob covers it.
+  // Label: a shimmer moving across, fading out as the knob covers it.
   const textX = (W - textW) / 2;
   const baseY = height / 2 + 6;
   const g0 = useDerivedValue(() => vec(textX - 80 + (textW + 160) * sweep.value, 0));
@@ -116,12 +118,12 @@ export function SlideToConfirm({
 
   const fillStyle = useAnimatedStyle(() => ({
     width: x.value + knob + pad * 2,
-    backgroundColor: interpolateColor(tone.value, [0, 1], [fillColor, doneColor]),
+    backgroundColor: interpolateColor(tone.value, [0, 1], [fill, success]),
     opacity: phase === 'idle' ? Math.min(1, 0.15 + p.value) : 1,
   }));
   const knobStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: x.value }],
-    backgroundColor: interpolateColor(tone.value, [0, 1], [knobColor, '#FFFFFF']),
+    backgroundColor: interpolateColor(tone.value, [0, 1], [fill, onFill]),
   }));
   const chevronStyle = useAnimatedStyle(() => ({ opacity: phase === 'idle' ? 1 : 0 }));
   const spinStyle = useAnimatedStyle(() => ({ opacity: phase === 'loading' ? 1 : 0, transform: [{ rotate: `${spin.value * 360}deg` }] }));
@@ -131,31 +133,35 @@ export function SlideToConfirm({
     <GestureDetector gesture={pan}>
       <View
         onLayout={(e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width)}
-        style={[{ height, borderRadius: height / 2, backgroundColor: trackColor, overflow: 'hidden' }, style]}
+        className={cn('overflow-hidden rounded-full bg-dissolve-surface', className)}
+        style={{ height }}
         accessibilityRole="adjustable"
         accessibilityLabel={label}
       >
         {W ? (
           <>
-            <Animated.View style={[s.fill, { borderRadius: height / 2 }, fillStyle]} />
+            <Animated.View className="absolute bottom-0 left-0 top-0 rounded-full" style={fillStyle} />
             <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
               <SkText x={textX} y={baseY} text={label} font={font} opacity={labelOpacity}>
-                <LinearGradient start={g0} end={g1} colors={[textColor, '#FFFFFF', textColor]} positions={[0, 0.5, 1]} mode="clamp" />
+                <LinearGradient start={g0} end={g1} colors={[muted, onFill, muted]} positions={[0, 0.5, 1]} mode="clamp" />
               </SkText>
-              <SkText x={(W - doneW) / 2} y={baseY} text={doneLabel} font={font} color="#FFFFFF" opacity={doneOpacity} />
+              <SkText x={(W - doneW) / 2} y={baseY} text={doneLabel} font={font} color={onFill} opacity={doneOpacity} />
             </Canvas>
-            <Animated.View style={[s.knob, { left: pad, top: pad, width: knob, height: knob, borderRadius: knob / 2 }, knobStyle]}>
-              <Animated.View style={[s.center, chevronStyle]}>
+            <Animated.View
+              className={cn('absolute items-center justify-center rounded-full shadow-md', knobClassName)}
+              style={[{ left: pad, top: pad, width: knob, height: knob }, knobStyle]}
+            >
+              <Animated.View className="absolute" style={chevronStyle}>
                 <Canvas style={{ width: 22, height: 22 }}>
-                  <Path path={CHEVRON} color="#FFFFFF" style="stroke" strokeWidth={2.4} strokeCap="round" strokeJoin="round" transform={[{ scale: 22 / 24 }]} />
+                  <Path path={CHEVRON} color={onFill} style="stroke" strokeWidth={2.4} strokeCap="round" strokeJoin="round" transform={[{ scale: 22 / 24 }]} />
                 </Canvas>
               </Animated.View>
-              <Animated.View style={[s.center, spinStyle]}>
-                <View style={s.spinner} />
+              <Animated.View className="absolute" style={spinStyle}>
+                <View className="h-5 w-5 rounded-full border-2" style={{ borderColor: onFill, borderTopColor: 'transparent' }} />
               </Animated.View>
-              <Animated.View style={[s.center, checkStyle]}>
+              <Animated.View className="absolute" style={checkStyle}>
                 <Canvas style={{ width: 22, height: 22 }}>
-                  <Path path={CHECK} color={doneColor} style="stroke" strokeWidth={2.6} strokeCap="round" strokeJoin="round" transform={[{ scale: 22 / 24 }]} />
+                  <Path path={CHECK} color={success} style="stroke" strokeWidth={2.6} strokeCap="round" strokeJoin="round" transform={[{ scale: 22 / 24 }]} />
                 </Canvas>
               </Animated.View>
             </Animated.View>
@@ -165,10 +171,3 @@ export function SlideToConfirm({
     </GestureDetector>
   );
 }
-
-const s = StyleSheet.create({
-  fill: { position: 'absolute', left: 0, top: 0, bottom: 0 },
-  knob: { position: 'absolute', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
-  center: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
-  spinner: { width: 20, height: 20, borderRadius: 10, borderWidth: 2.2, borderColor: '#FFFFFF', borderTopColor: 'transparent' },
-});

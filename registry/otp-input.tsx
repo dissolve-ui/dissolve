@@ -1,6 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, StyleSheet, TextInput, View, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, {
+/**
+ * OTPInput, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * classNames, change the timings, the shake, anything. Colors come from the dissolve theme tokens
+ * (global.css), so it follows light and dark mode out of the box.
+ *
+ * One time code input. A hidden native field (SMS autofill, paste) drives the boxes; the active
+ * box blinks a calm caret, each digit lands crisply. A full code calls onComplete: a light sweep
+ * runs while it verifies, then the boxes turn green, or the row shakes and the digits blow away
+ * as dust before the input clears and asks again. Needs the DissolveProvider at the root.
+ *
+ * <OTPInput autoFocus onComplete={async (code) => (await api.verify(code)).ok} />
+ */
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Platform, StyleSheet, TextInput as RNTextInput, View as RNView, type ViewStyle } from 'react-native';
+import {
   cancelAnimation,
   Easing,
   interpolate,
@@ -14,10 +26,13 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { useDissolve } from '../hooks/useDissolve';
+import { useDissolve } from 'react-native-dissolve';
+import { Animated, View, cn, useToken } from './tw';
 
 const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const SOFT = Easing.bezier(0.45, 0, 0.2, 1);
+/** How much of the success or danger token tints a box fill. */
+const TINT = 0.12;
 
 export type OTPInputProps = {
   /** Number of digits. Default 6. */
@@ -38,24 +53,21 @@ export type OTPInputProps = {
   gap?: number;
   fontSize?: number;
   radius?: number;
-  color?: string;
-  boxColor?: string;
-  borderColor?: string;
-  activeColor?: string;
-  successColor?: string;
-  successFill?: string;
-  errorColor?: string;
-  errorFill?: string;
   /** Close the keyboard once the code is accepted. Default true. */
   blurOnSuccess?: boolean;
   haptics?: boolean;
-  style?: StyleProp<ViewStyle>;
+  /** Root classes (margins, width...). */
+  className?: string;
+  /** Box classes (shadow, extra layout). Box colors are animated from the tokens. */
+  boxClassName?: string;
+  /** Digit classes (font weight, family). Digit color is animated from the tokens. */
+  digitClassName?: string;
 };
 
 type Phase = 'idle' | 'pending' | 'success' | 'error';
 
 /** One caret, remounted on every keystroke so its blink restarts fully lit, like UIKit. */
-function Caret({ color, height }: { color: string; height: number }) {
+function Caret({ height }: { height: number }) {
   const o = useSharedValue(1);
   useEffect(() => {
     o.value = withRepeat(
@@ -65,21 +77,26 @@ function Caret({ color, height }: { color: string; height: number }) {
     return () => cancelAnimation(o);
   }, [o]);
   const st = useAnimatedStyle(() => ({ opacity: o.value }));
-  return <Animated.View style={[{ width: 2, height, borderRadius: 1, backgroundColor: color }, st]} />;
+  return <Animated.View className="w-0.5 rounded-[1px] bg-dissolve-foreground" style={[{ height }, st]} />;
 }
 
 /** A digit that lands with a short, crisp scale and fade. No bounce. */
-function Glyph({ char, size, tone, color, success, error }: { char: string; size: number; tone: SharedValue<number>; color: string; success: string; error: string }) {
+function Glyph({ char, size, tone, colors, className }: { char: string; size: number; tone: SharedValue<number>; colors: Colors; className?: string }) {
   const p = useSharedValue(0);
   useEffect(() => {
     p.value = withTiming(1, { duration: 220, easing: CALM });
   }, [p]);
+  const { text, success, error } = colors;
   const st = useAnimatedStyle(() => ({
     opacity: p.value,
-    color: interpolateColor(tone.value, [-1, 0, 1], [error, color, success]),
+    color: interpolateColor(tone.value, [-1, 0, 1], [error, text, success]),
     transform: [{ translateY: (1 - p.value) * 5 }, { scale: 0.72 + 0.28 * p.value }],
   }));
-  return <Animated.Text style={[s.glyph, { fontSize: size }, st]}>{char}</Animated.Text>;
+  return (
+    <Animated.Text className={cn('font-semibold', className)} style={[s.glyph, { fontSize: size }, st]}>
+      {char}
+    </Animated.Text>
+  );
 }
 
 /**
@@ -103,7 +120,7 @@ function useSlotMotion(phase: Phase, i: number) {
   return { tone, pop };
 }
 
-type Colors = { box: string; border: string; active: string; success: string; successFill: string; error: string; errorFill: string };
+type Colors = { text: string; box: string; glow: string; border: string; active: string; success: string; successFill: string; error: string; errorFill: string };
 
 type BoxProps = {
   i: number;
@@ -115,9 +132,10 @@ type BoxProps = {
   sweep: SharedValue<number>;
   style: ViewStyle;
   colors: Colors;
+  className?: string;
 };
 
-function Box({ i, length, phase, active, focused, caretHeight, sweep, style, colors }: BoxProps) {
+function Box({ i, length, phase, active, focused, caretHeight, sweep, style, colors, className }: BoxProps) {
   const { tone, pop } = useSlotMotion(phase, i);
   const a = useSharedValue(active ? 1 : 0);
   useEffect(() => {
@@ -131,7 +149,7 @@ function Box({ i, length, phase, active, focused, caretHeight, sweep, style, col
     const base = interpolateColor(a.value, [0, 1], [colors.border, colors.active]);
     const t = tone.value;
     const border = t < 0 ? interpolateColor(-t, [0, 1], [base, colors.error]) : interpolateColor(t, [0, 1], [base, colors.success]);
-    const fillBase = interpolateColor(glow, [0, 1], [colors.box, '#E6E6EA']);
+    const fillBase = interpolateColor(glow, [0, 1], [colors.box, colors.glow]);
     const fill = t < 0 ? interpolateColor(-t, [0, 1], [fillBase, colors.errorFill]) : interpolateColor(t, [0, 1], [fillBase, colors.successFill]);
     return {
       borderColor: border,
@@ -142,31 +160,23 @@ function Box({ i, length, phase, active, focused, caretHeight, sweep, style, col
   });
 
   return (
-    <Animated.View style={[s.box, style, st]}>
-      {active && focused ? <Caret color={colors.active} height={caretHeight} /> : null}
+    <Animated.View className={cn('items-center justify-center', className)} style={[style, st]}>
+      {active && focused ? <Caret height={caretHeight} /> : null}
     </Animated.View>
   );
 }
 
 /** Digit slot on the capturable layer: same footprint as its box, follows its lift. */
-function Digit({ i, char, phase, size, style, color, success, error }: { i: number; char?: string; phase: Phase; size: number; style: ViewStyle; color: string; success: string; error: string }) {
+function Digit({ i, char, phase, size, style, colors, className }: { i: number; char?: string; phase: Phase; size: number; style: ViewStyle; colors: Colors; className?: string }) {
   const { tone, pop } = useSlotMotion(phase, i);
   const st = useAnimatedStyle(() => ({ transform: [{ scale: 1 + pop.value * 0.05 }] }));
   return (
-    <Animated.View style={[style, s.center, st]}>
-      {char ? <Glyph key={char} char={char} size={size} tone={tone} color={color} success={success} error={error} /> : null}
+    <Animated.View className="items-center justify-center" style={[style, st]}>
+      {char ? <Glyph key={char} char={char} size={size} tone={tone} colors={colors} className={className} /> : null}
     </Animated.View>
   );
 }
 
-/**
- * One time code input. A hidden native field (SMS autofill, paste) drives the boxes; the active
- * box blinks a calm caret, each digit lands crisply. A full code calls onComplete: a light sweep
- * runs while it verifies, then the boxes turn green, or the row shakes and the digits blow away
- * as dust before the input clears and asks again.
- *
- * <OTPInput autoFocus onComplete={async (code) => (await api.verify(code)).ok} />
- */
 export function OTPInput({
   length = 6,
   value,
@@ -178,23 +188,39 @@ export function OTPInput({
   gap = 8,
   fontSize = 26,
   radius = 14,
-  color = '#1C1C1E',
-  boxColor = '#F5F5F5',
-  borderColor = '#E5E5EA',
-  activeColor = '#1C1C1E',
-  successColor = '#34C759',
-  successFill = '#EAF9EE',
-  errorColor = '#FF3B30',
-  errorFill = '#FFEFEE',
   blurOnSuccess = true,
   haptics = true,
-  style,
+  className,
+  boxClassName,
+  digitClassName,
 }: OTPInputProps) {
+  const text = useToken('foreground');
+  const box = useToken('surface');
+  const glow = useToken('surface-2');
+  const border = useToken('border');
+  const success = useToken('success');
+  const danger = useToken('danger');
+  // Tinted fills: a touch of success or danger over the box, right in light and dark.
+  const colors = useMemo<Colors>(
+    () => ({
+      text,
+      box,
+      glow,
+      border,
+      active: text,
+      success,
+      successFill: interpolateColor(TINT, [0, 1], [box, success]),
+      error: danger,
+      errorFill: interpolateColor(TINT, [0, 1], [box, danger]),
+    }),
+    [text, box, glow, border, success, danger],
+  );
+
   const [inner, setInner] = useState('');
   const code = (value ?? inner).replace(/\D/g, '').slice(0, length);
   const [phase, setPhase] = useState<Phase>('idle');
   const [focused, setFocused] = useState(false);
-  const input = useRef<TextInput>(null);
+  const input = useRef<RNTextInput>(null);
   const { ref, dissolving, dissolve, reset } = useDissolve();
   const sweep = useSharedValue(0);
   const shake = useSharedValue(0);
@@ -265,9 +291,9 @@ export function OTPInput({
     [onComplete, sweep, haptics, blurOnSuccess, shake, dissolve, setCode, reset],
   );
 
-  const onChangeText = (text: string) => {
+  const onChangeText = (next0: string) => {
     if (phase !== 'idle') return; // Keep the keyboard up while verifying, ignore keys.
-    const next = text.replace(/\D/g, '').slice(0, length);
+    const next = next0.replace(/\D/g, '').slice(0, length);
     if (next === code) return;
     setCode(next);
     if (next.length === length) verify(next);
@@ -277,12 +303,11 @@ export function OTPInput({
   const rowStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
   const active = Math.min(code.length, length - 1);
   const cell: ViewStyle = boxWidth ? { width: boxWidth, height, borderRadius: radius } : { flex: 1, height, borderRadius: radius };
-  const colors = { box: boxColor, border: borderColor, active: activeColor, success: successColor, successFill, error: errorColor, errorFill };
 
   return (
-    <View style={[{ alignSelf: boxWidth ? 'center' : 'stretch' }, style]}>
+    <View className={cn(boxWidth ? 'self-center' : 'self-stretch', className)}>
       <Animated.View style={rowStyle}>
-        <View style={[s.row, { gap }]}>
+        <View className="flex-row" style={{ gap }}>
           {slots.map((i) => (
             <Box
               key={i}
@@ -295,17 +320,19 @@ export function OTPInput({
               sweep={sweep}
               style={cell}
               colors={colors}
+              className={boxClassName}
             />
           ))}
         </View>
         {/* Digits live on their own transparent layer: only they turn to dust, the boxes stay. */}
-        <View ref={ref} collapsable={false} pointerEvents="none" style={[StyleSheet.absoluteFill, s.row, { gap, opacity: dissolving ? 0 : 1 }]}>
+        {/* Plain RN views where a ref is needed (capture, focus). */}
+        <RNView ref={ref} collapsable={false} pointerEvents="none" style={[StyleSheet.absoluteFill, s.row, { gap, opacity: dissolving ? 0 : 1 }]}>
           {slots.map((i) => (
-            <Digit key={i} i={i} char={code[i]} phase={phase} size={fontSize} style={cell} color={color} success={successColor} error={errorColor} />
+            <Digit key={i} i={i} char={code[i]} phase={phase} size={fontSize} style={cell} colors={colors} className={digitClassName} />
           ))}
-        </View>
+        </RNView>
       </Animated.View>
-      <TextInput
+      <RNTextInput
         ref={input}
         value={code}
         onChangeText={onChangeText}
@@ -330,9 +357,7 @@ export function OTPInput({
 
 const s = StyleSheet.create({
   row: { flexDirection: 'row' },
-  box: { alignItems: 'center', justifyContent: 'center' },
-  center: { alignItems: 'center', justifyContent: 'center' },
-  glyph: { fontWeight: '600', fontVariant: ['tabular-nums'], includeFontPadding: false },
+  glyph: { fontVariant: ['tabular-nums'], includeFontPadding: false },
   // Covers the row so a tap focuses it and a long press offers Paste. Nearly invisible
   // rather than opacity 0, so iOS keeps offering the SMS code above the keyboard.
   hidden: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, opacity: 0.011, color: 'transparent', fontSize: 1 },

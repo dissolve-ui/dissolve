@@ -1,12 +1,19 @@
+/**
+ * VoiceNote, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * classNames, change the timings, the waveform, anything. Colors come from the dissolve theme
+ * tokens (global.css), so it follows light and dark mode out of the box.
+ *
+ * <VoiceNote mine duration={14} seed="msg-42" onUnsend={() => remove(id)} />
+ */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { PixelRatio, Pressable, StyleSheet, Text, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
+import { PixelRatio, View as RNView, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Canvas, Group, Path, Skia, rect } from '@shopify/react-native-skia';
-import Animated, { cancelAnimation, Easing, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import { cancelAnimation, Easing, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { useDissolve } from '../hooks/useDissolve';
-import type { VariantName } from '../types';
+import { useDissolve, type VariantName } from 'react-native-dissolve';
+import { Animated, Pressable, Text, View, cn, useToken } from './tw';
 
 const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const BAR = 3;
@@ -23,30 +30,10 @@ const PAUSE = (() => {
   return p;
 })();
 
-export type VoiceNoteColors = {
-  bubble: string;
-  button: string;
-  icon: string;
-  played: string;
-  unplayed: string;
-  label: string;
-};
-
-const MINE: VoiceNoteColors = {
-  bubble: '#1C1C1E',
-  button: '#FFFFFF',
-  icon: '#1C1C1E',
-  played: '#FFFFFF',
-  unplayed: 'rgba(255,255,255,0.3)',
-  label: 'rgba(255,255,255,0.7)',
-};
-const THEIRS: VoiceNoteColors = {
-  bubble: '#EFEFF1',
-  button: '#1C1C1E',
-  icon: '#FFFFFF',
-  played: '#1C1C1E',
-  unplayed: 'rgba(28,28,30,0.22)',
-  label: '#8E8E93',
+/** Side presets. Bubble, button and label are classes; the Skia paints read tokens below. */
+const SIDE = {
+  mine: { bubble: 'bg-dissolve-accent', button: 'bg-white', label: 'text-white/70' },
+  theirs: { bubble: 'bg-dissolve-surface', button: 'bg-dissolve-foreground', label: 'text-dissolve-muted' },
 };
 
 export type VoiceNoteProps = {
@@ -56,10 +43,8 @@ export type VoiceNoteProps = {
   levels?: number[];
   /** Used to generate a deterministic waveform when `levels` is not given. */
   seed?: number | string;
-  /** Your own message: right side colors (dark bubble). Default false. */
+  /** Your own message: accent bubble with white content. Default false (surface bubble). */
   mine?: boolean;
-  /** Override any color of the side preset. */
-  colors?: Partial<VoiceNoteColors>;
   /** Bubble width. Default 248. */
   width?: number;
   onPlay?: () => void;
@@ -74,7 +59,12 @@ export type VoiceNoteProps = {
   /** Exit used when the note is unsent. Default 'dust'. */
   preset?: VariantName;
   haptics?: boolean;
-  style?: StyleProp<ViewStyle>;
+  /** Bubble classes (background, radius, padding...). */
+  className?: string;
+  /** Play / pause button classes. */
+  buttonClassName?: string;
+  /** Time label classes. */
+  labelClassName?: string;
 };
 
 /** Small deterministic PRNG (mulberry32). */
@@ -144,15 +134,12 @@ const fmt = (sec: number) => {
  * A voice message bubble. Play and pause, the played part of the waveform takes the ink,
  * drag along the waveform to seek (one tick per bar crossed). Unsent, it blows away as dust.
  * No audio dependency: playback is a timer, hook your player on onPlay / onPause.
- *
- * <VoiceNote mine duration={14} seed="msg-42" onUnsend={() => remove(id)} />
  */
 export function VoiceNote({
   duration,
   levels,
   seed = 1,
   mine = false,
-  colors,
   width = 248,
   onPlay,
   onPause,
@@ -162,9 +149,19 @@ export function VoiceNote({
   unsendOnLongPress,
   preset = 'dust',
   haptics = true,
-  style,
+  className,
+  buttonClassName,
+  labelClassName,
 }: VoiceNoteProps) {
-  const c = { ...(mine ? MINE : THEIRS), ...colors };
+  const side = mine ? SIDE.mine : SIDE.theirs;
+  const accent = useToken('accent');
+  const foreground = useToken('foreground');
+  const surface = useToken('surface');
+  // Skia paints: icon on the button, played and unplayed bars (unplayed is the same ink, faded).
+  const iconColor = mine ? accent : surface;
+  const ink = mine ? '#FFFFFF' : foreground;
+  const unplayedOpacity = mine ? 0.3 : 0.22;
+
   const { ref, dissolving, dissolve } = useDissolve();
   const [waveW, setWaveW] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -335,73 +332,62 @@ export function VoiceNote({
 
   return (
     <GestureDetector gesture={longPress}>
-      <Animated.View style={[bubbleStyle, style]}>
-        <View
-          ref={ref}
-          collapsable={false}
-          style={[s.bubble, { width, backgroundColor: c.bubble, opacity: dissolving ? 0 : 1 }]}
-          accessible
-          accessibilityRole="adjustable"
-          accessibilityLabel={`Voice message, ${fmt(duration)}`}
-          accessibilityValue={{ text: fmt(sec) }}
-          accessibilityActions={[{ name: 'activate' }, ...(onUnsend ? [{ name: 'unsend', label: 'Unsend' }] : [])]}
-          onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'unsend' ? unsend() : toggle())}
-        >
-          <Pressable
-            onPress={toggle}
-            onPressIn={() => (btn.value = withTiming(0.9, { duration: 120, easing: CALM }))}
-            onPressOut={() => (btn.value = withTiming(1, { duration: 260, easing: CALM }))}
-            hitSlop={8}
+      <Animated.View style={bubbleStyle}>
+        {/* Plain view for the dissolve snapshot; the bubble itself is styled with classes. */}
+        <RNView ref={ref} collapsable={false} style={{ opacity: dissolving ? 0 : 1 }}>
+          <View
+            className={cn('flex-row items-center gap-[10px] rounded-[25px] py-[8px] pl-[8px] pr-[14px]', side.bubble, className)}
+            style={{ width, borderCurve: 'continuous' }}
+            accessible
+            accessibilityRole="adjustable"
+            accessibilityLabel={`Voice message, ${fmt(duration)}`}
+            accessibilityValue={{ text: fmt(sec) }}
+            accessibilityActions={[{ name: 'activate' }, ...(onUnsend ? [{ name: 'unsend', label: 'Unsend' }] : [])]}
+            onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'unsend' ? unsend() : toggle())}
           >
-            <Animated.View style={[s.btn, { backgroundColor: c.button }, btnStyle]}>
-              <Canvas style={s.icon}>
-                <Group opacity={playOpacity} transform={playTransform} origin={{ x: BTN / 2, y: BTN / 2 }}>
-                  <Path path={PLAY} color={c.icon} />
-                </Group>
-                <Group opacity={pauseOpacity} transform={pauseTransform} origin={{ x: BTN / 2, y: BTN / 2 }}>
-                  <Path path={PAUSE} color={c.icon} />
-                </Group>
-              </Canvas>
-            </Animated.View>
-          </Pressable>
-
-          <GestureDetector gesture={wave}>
-            <View style={s.wave} onLayout={(e: LayoutChangeEvent) => setWaveW(Math.floor(e.nativeEvent.layout.width))}>
-              {waveW ? (
-                <Canvas style={{ width: waveW, height: WAVE_H }}>
-                  <Group transform={waveTransform} origin={{ x: waveW / 2, y: WAVE_H / 2 }}>
-                    <Path path={path} color={c.unplayed} />
-                    <Group clip={clip}>
-                      <Path path={path} color={c.played} />
-                    </Group>
+            <Pressable
+              onPress={toggle}
+              onPressIn={() => (btn.value = withTiming(0.9, { duration: 120, easing: CALM }))}
+              onPressOut={() => (btn.value = withTiming(1, { duration: 260, easing: CALM }))}
+              hitSlop={8}
+            >
+              <Animated.View className={cn('items-center justify-center rounded-full', side.button, buttonClassName)} style={[{ width: BTN, height: BTN }, btnStyle]}>
+                <Canvas style={{ width: BTN, height: BTN }}>
+                  <Group opacity={playOpacity} transform={playTransform} origin={{ x: BTN / 2, y: BTN / 2 }}>
+                    <Path path={PLAY} color={iconColor} />
+                  </Group>
+                  <Group opacity={pauseOpacity} transform={pauseTransform} origin={{ x: BTN / 2, y: BTN / 2 }}>
+                    <Path path={PAUSE} color={iconColor} />
                   </Group>
                 </Canvas>
-              ) : null}
-            </View>
-          </GestureDetector>
+              </Animated.View>
+            </Pressable>
 
-          <Text style={[s.time, { color: c.label }]} allowFontScaling={false}>
-            {label}
-          </Text>
-        </View>
+            <GestureDetector gesture={wave}>
+              <View className="flex-1 justify-center" style={{ height: WAVE_H }} onLayout={(e: LayoutChangeEvent) => setWaveW(Math.floor(e.nativeEvent.layout.width))}>
+                {waveW ? (
+                  <Canvas style={{ width: waveW, height: WAVE_H }}>
+                    <Group transform={waveTransform} origin={{ x: waveW / 2, y: WAVE_H / 2 }}>
+                      <Path path={path} color={ink} opacity={unplayedOpacity} />
+                      <Group clip={clip}>
+                        <Path path={path} color={ink} />
+                      </Group>
+                    </Group>
+                  </Canvas>
+                ) : null}
+              </View>
+            </GestureDetector>
+
+            <Text
+              className={cn('min-w-[30px] text-right text-[13px] font-medium', side.label, labelClassName)}
+              style={{ fontVariant: ['tabular-nums'] }}
+              allowFontScaling={false}
+            >
+              {label}
+            </Text>
+          </View>
+        </RNView>
       </Animated.View>
     </GestureDetector>
   );
 }
-
-const s = StyleSheet.create({
-  bubble: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingLeft: 8,
-    paddingRight: 14,
-    paddingVertical: 8,
-    borderRadius: 25,
-    borderCurve: 'continuous',
-  },
-  btn: { width: BTN, height: BTN, borderRadius: BTN / 2, alignItems: 'center', justifyContent: 'center' },
-  icon: { width: BTN, height: BTN },
-  wave: { flex: 1, height: WAVE_H, justifyContent: 'center' },
-  time: { fontSize: 13, fontWeight: '500', fontVariant: ['tabular-nums'], minWidth: 30, textAlign: 'right' },
-});

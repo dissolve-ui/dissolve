@@ -1,10 +1,21 @@
+/**
+ * BeforeAfter, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * classNames, change the timings, the labels, anything. Colors come from the dissolve theme tokens
+ * (global.css), so it follows light and dark mode out of the box.
+ *
+ * <BeforeAfter
+ *   renderBefore={({ width, height }) => <Image source={raw} style={{ width, height }} />}
+ *   renderAfter={({ width, height }) => <Image source={edited} style={{ width, height }} />}
+ * />
+ */
 import { useEffect, useState, type ReactNode } from 'react';
-import { StyleSheet, Text, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Canvas, Path, Skia } from '@shopify/react-native-skia';
-import Animated, { Easing, interpolate, useAnimatedReaction, useAnimatedStyle, useSharedValue, withTiming, Extrapolation } from 'react-native-reanimated';
+import { Easing, interpolate, useAnimatedReaction, useAnimatedStyle, useSharedValue, withTiming, Extrapolation } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
+import { Animated, Text, View, cn, useToken } from './tw';
 
 const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const ARROWS = Skia.Path.MakeFromSVGString('M9.5 7.5L5 12l4.5 4.5M14.5 7.5L19 12l-4.5 4.5')!;
@@ -20,28 +31,31 @@ export type BeforeAfterProps = {
   renderAfter?: (size: BeforeAfterSize) => ReactNode;
   /** Initial divider position, 0 (all after) to 1 (all before). Default 0.5. */
   initial?: number;
+  /** Frame height in points. Default 320. */
   height?: number;
-  radius?: number;
   beforeLabel?: string;
   afterLabel?: string;
   /** Hide the Before / After pills. */
   labels?: boolean;
-  handleColor?: string;
   /** Called with the divider position (0..1) when a drag or a tap settles. */
   onChange?: (value: number) => void;
   haptics?: boolean;
-  style?: StyleProp<ViewStyle>;
+  /** Frame classes (radius, placeholder background, margins...). */
+  className?: string;
+  /** Round handle classes. */
+  handleClassName?: string;
+  /** Divider line classes. */
+  dividerClassName?: string;
+  /** Before / After pill classes. */
+  pillClassName?: string;
+  /** Before / After label text classes. */
+  pillTextClassName?: string;
 };
 
 /**
  * Compare two versions of an image. Drag the round handle (or anywhere on the frame), or tap to
  * send the divider there. The before layer is clipped to the left of the divider, the pills fade
  * as the divider reaches them, and a light tick marks the middle and both edges.
- *
- * <BeforeAfter
- *   renderBefore={({ width, height }) => <Image source={raw} style={{ width, height }} />}
- *   renderAfter={({ width, height }) => <Image source={edited} style={{ width, height }} />}
- * />
  */
 export function BeforeAfter({
   before,
@@ -50,15 +64,18 @@ export function BeforeAfter({
   renderAfter,
   initial = 0.5,
   height = 320,
-  radius = 20,
   beforeLabel = 'Before',
   afterLabel = 'After',
   labels = true,
-  handleColor = '#FFFFFF',
   onChange,
   haptics = true,
-  style,
+  className,
+  handleClassName,
+  dividerClassName,
+  pillClassName,
+  pillTextClassName,
 }: BeforeAfterProps) {
+  const arrows = useToken('foreground');
   const [W, setW] = useState(0);
   const [pillB, setPillB] = useState(64);
   const [pillA, setPillA] = useState(56);
@@ -138,11 +155,15 @@ export function BeforeAfter({
   const beforeNode = renderBefore ? renderBefore(size) : before;
   const afterNode = renderAfter ? renderAfter(size) : after;
 
+  const pill = cn('absolute top-[14px] rounded-full bg-[rgba(0,0,0,0.38)] px-[10px] py-[5px]', pillClassName);
+  const pillText = cn('text-[12px] font-semibold tracking-[0.1px] text-white', pillTextClassName);
+
   return (
     <GestureDetector gesture={gesture}>
       <View
         onLayout={onLayout}
-        style={[{ height, borderRadius: radius, overflow: 'hidden', backgroundColor: '#E5E5EA' }, style]}
+        className={cn('overflow-hidden rounded-[20px] bg-dissolve-surface-2', className)}
+        style={{ height }}
         accessible
         accessibilityRole="adjustable"
         accessibilityLabel={`${beforeLabel} and ${afterLabel} comparison`}
@@ -158,25 +179,33 @@ export function BeforeAfter({
             <View style={StyleSheet.absoluteFill} pointerEvents="none">
               {afterNode}
             </View>
-            <Animated.View style={[s.clip, { width: W }, clip]} pointerEvents="none">
+            <Animated.View className="absolute bottom-0 left-0 top-0 overflow-hidden" style={[{ width: W }, clip]} pointerEvents="none">
               <Animated.View style={[{ width: W, height }, unclip]}>{beforeNode}</Animated.View>
             </Animated.View>
 
             {labels ? (
               <>
-                <Animated.View style={[s.pill, { left: 14 }, beforePill]} onLayout={(e) => setPillB(e.nativeEvent.layout.width)} pointerEvents="none">
-                  <Text style={s.pillText}>{beforeLabel}</Text>
+                <Animated.View className={pill} style={[{ left: 14 }, beforePill]} onLayout={(e: LayoutChangeEvent) => setPillB(e.nativeEvent.layout.width)} pointerEvents="none">
+                  <Text className={pillText}>{beforeLabel}</Text>
                 </Animated.View>
-                <Animated.View style={[s.pill, { right: 14 }, afterPill]} onLayout={(e) => setPillA(e.nativeEvent.layout.width)} pointerEvents="none">
-                  <Text style={s.pillText}>{afterLabel}</Text>
+                <Animated.View className={pill} style={[{ right: 14 }, afterPill]} onLayout={(e: LayoutChangeEvent) => setPillA(e.nativeEvent.layout.width)} pointerEvents="none">
+                  <Text className={pillText}>{afterLabel}</Text>
                 </Animated.View>
               </>
             ) : null}
 
-            <Animated.View style={[s.divider, { backgroundColor: handleColor }, divider]} pointerEvents="none" />
-            <Animated.View style={[s.knob, { top: height / 2 - KNOB / 2, backgroundColor: handleColor }, knob]} pointerEvents="none">
+            <Animated.View
+              className={cn('absolute bottom-0 left-0 top-0 w-[2px] bg-dissolve-background shadow-[0_0_8px_rgba(0,0,0,0.25)]', dividerClassName)}
+              style={divider}
+              pointerEvents="none"
+            />
+            <Animated.View
+              className={cn('absolute left-0 items-center justify-center rounded-full bg-dissolve-background shadow-[0_3px_20px_rgba(0,0,0,0.22)]', handleClassName)}
+              style={[{ top: height / 2 - KNOB / 2, width: KNOB, height: KNOB }, knob]}
+              pointerEvents="none"
+            >
               <Canvas style={{ width: 22, height: 22 }}>
-                <Path path={ARROWS} color="#1C1C1E" style="stroke" strokeWidth={2} strokeCap="round" strokeJoin="round" transform={[{ scale: 22 / 24 }]} />
+                <Path path={ARROWS} color={arrows} style="stroke" strokeWidth={2} strokeCap="round" strokeJoin="round" transform={[{ scale: 22 / 24 }]} />
               </Canvas>
             </Animated.View>
           </>
@@ -185,33 +214,3 @@ export function BeforeAfter({
     </GestureDetector>
   );
 }
-
-const s = StyleSheet.create({
-  clip: { position: 'absolute', top: 0, bottom: 0, left: 0, overflow: 'hidden' },
-  divider: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    width: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  knob: {
-    position: 'absolute',
-    left: 0,
-    width: KNOB,
-    height: KNOB,
-    borderRadius: KNOB / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.22,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
-  },
-  pill: { position: 'absolute', top: 14, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(0,0,0,0.38)' },
-  pillText: { color: '#FFFFFF', fontSize: 12, fontWeight: '600', letterSpacing: 0.1 },
-});

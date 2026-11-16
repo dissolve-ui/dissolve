@@ -279,7 +279,7 @@ function snippet(
 
 const st = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  card: { width: 240, padding: 12, borderRadius: 20, backgroundColor: 'white', flexDirection: 'row', gap: 12, alignItems: 'center' },
+  card: { width: 240, padding: 12, borderRadius: 20, backgroundColor: C.bg, flexDirection: 'row', gap: 12, alignItems: 'center' },
   art: { width: 64, height: 64, borderRadius: 14, backgroundColor: '#E4572E', borderWidth: 10, borderColor: '#F4B860' },
   title: { fontSize: 16, fontWeight: '600', color: C.ink },
   sub: { fontSize: 13, color: C.text, marginTop: 2 },
@@ -294,7 +294,7 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  targetText: { fontFamily: mono, fontSize: 10, color: 'white' },
+  targetText: { fontFamily: mono, fontSize: 10, color: C.onDark },
   pileRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 14 },
   link: { fontFamily: mono, fontSize: 12, color: C.muted },
 });

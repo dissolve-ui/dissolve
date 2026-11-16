@@ -121,7 +121,7 @@ export default function Fling() {
 }
 
 const st = StyleSheet.create({
-  profile: { flex: 1, backgroundColor: 'white', borderRadius: 24, padding: 14 },
+  profile: { flex: 1, backgroundColor: C.bg, borderRadius: 24, padding: 14 },
   photo: { flex: 1, borderRadius: 16 },
   name: { fontSize: 20, fontWeight: '700', color: C.ink, marginTop: 12 },
   line: { fontSize: 14, color: C.text, marginTop: 2 },

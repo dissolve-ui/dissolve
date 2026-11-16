@@ -1,10 +1,17 @@
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import { Pressable, Text, View } from '@registry/tw';
 import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
 import Animated, { ZoomIn } from 'react-native-reanimated';
-import { GooeyMenu, LikeButton, MorphButton, SlideToConfirm, SplitButton, SwipeToDelete, useToast } from '@/dissolve';
-import { C, layout, mono } from '@/ui';
+import { GooeyMenu } from '@registry/gooey-menu';
+import { LikeButton } from '@registry/like-button';
+import { MorphButton } from '@registry/morph-button';
+import { SplitButton } from '@registry/split-button';
+import { SwipeToDelete } from '@registry/swipe-to-delete';
+import { useToast } from '@registry/toast';
+import { SlideToConfirm } from '@registry/slide-to-confirm';
+import { layout, mono } from '@/ui';
 
 const P = {
   pond: require('../assets/paintings/pond.jpg'),
@@ -20,9 +27,9 @@ function Header({ index, title, note, right }: { index: string; title: string; n
   return (
     <View style={st.header}>
       <View style={{ flex: 1 }}>
-        <Text style={st.index}>{index}</Text>
-        <Text style={st.h2}>{title}</Text>
-        <Text style={st.note}>{note}</Text>
+        <Text className="text-dissolve-muted" style={st.index}>{index}</Text>
+        <Text className="text-dissolve-foreground" style={st.h2}>{title}</Text>
+        <Text className="text-dissolve-muted" style={st.note}>{note}</Text>
       </View>
       {right}
     </View>
@@ -46,7 +53,7 @@ function Inbox() {
       {mails.map((m) => (
         <Animated.View key={m.id} layout={layout}>
           <SwipeToDelete
-            radius={18}
+            rowClassName="rounded-[18px]"
             onDelete={() => {
               setMails((l) => l.filter((x) => x.id !== m.id));
               toast.show({
@@ -56,22 +63,22 @@ function Inbox() {
               });
             }}
           >
-            <View style={st.mail}>
+            <View className="bg-dissolve-surface" style={st.mail}>
               <Image source={m.img} style={st.mailImg} contentFit="cover" />
               <View style={{ flex: 1 }}>
                 <View style={st.mailTop}>
-                  <Text style={st.mailFrom}>{m.from}</Text>
-                  <Text style={st.mailTime}>{m.time}</Text>
+                  <Text className="text-dissolve-foreground" style={st.mailFrom}>{m.from}</Text>
+                  <Text className="text-dissolve-muted" style={st.mailTime}>{m.time}</Text>
                 </View>
-                <Text style={st.mailSubject} numberOfLines={1}>{m.subject}</Text>
+                <Text className="text-dissolve-muted" style={st.mailSubject} numberOfLines={1}>{m.subject}</Text>
               </View>
             </View>
           </SwipeToDelete>
         </Animated.View>
       ))}
       {mails.length < MAILS.length ? (
-        <Pressable onPress={() => setMails(MAILS)} style={st.reset}>
-          <Text style={st.resetText}>Reset</Text>
+        <Pressable onPress={() => setMails(MAILS)} className="bg-dissolve-surface active:opacity-70" style={st.reset}>
+          <Text className="text-dissolve-foreground" style={st.resetText}>Reset</Text>
         </Pressable>
       ) : null}
     </View>
@@ -90,8 +97,8 @@ function Toasts() {
   return (
     <View style={st.row}>
       {buttons.map((b) => (
-        <Pressable key={b.label} onPress={b.run} style={({ pressed }) => [st.btn, pressed && { opacity: 0.75 }]}>
-          <Text style={st.btnText}>{b.label}</Text>
+        <Pressable key={b.label} onPress={b.run} className="bg-dissolve-primary active:opacity-75" style={st.btn}>
+          <Text className="text-dissolve-primary-foreground" style={st.btnText}>{b.label}</Text>
         </Pressable>
       ))}
     </View>
@@ -104,12 +111,12 @@ function Post() {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(128);
   return (
-    <View style={st.post}>
+    <View className="bg-dissolve-surface" style={st.post}>
       <View style={st.postHead}>
         <Image source={P.pond} style={st.avatar} contentFit="cover" />
         <View style={{ flex: 1 }}>
-          <Text style={st.postName}>hannera.studio</Text>
-          <Text style={st.postMeta}>Lisbon</Text>
+          <Text className="text-dissolve-foreground" style={st.postName}>hannera.studio</Text>
+          <Text className="text-dissolve-muted" style={st.postMeta}>Lisbon</Text>
         </View>
       </View>
       <Image source={P.temple} style={st.postImg} contentFit="cover" />
@@ -123,7 +130,7 @@ function Post() {
           }}
         />
       </View>
-      <Text style={st.caption}>Tap the heart. Tap again to unlike.</Text>
+      <Text className="text-dissolve-muted" style={st.caption}>Tap the heart. Tap again to unlike.</Text>
     </View>
   );
 }
@@ -144,10 +151,10 @@ function Liquid() {
       <SlideToConfirm label="Slide to pay 42 €" doneLabel="Paid" onConfirm={() => new Promise((r) => setTimeout(r, 1200))} />
 
       <Header index="07" title="Gooey menu" note="Actions pour out of the button as drops." />
-      <View style={st.menuStage}>
+      <View className="bg-dissolve-surface" style={st.menuStage}>
         <Image source={P.lake} style={StyleSheet.absoluteFill} contentFit="cover" />
         <GooeyMenu
-          style={{ position: 'absolute', right: 4, bottom: 4 }}
+          className="absolute bottom-1 right-1"
           items={[
             { icon: <SymbolView name="camera.fill" size={20} tintColor="white" />, label: 'Camera', onPress: () => toast.show({ title: 'Camera' }) },
             { icon: <SymbolView name="photo.fill" size={20} tintColor="white" />, label: 'Photo', onPress: () => toast.show({ title: 'Photo library' }) },
@@ -162,7 +169,7 @@ function Liquid() {
 export default function Components() {
   return (
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}>
-      <Text style={st.lead}>Ready-made components built on the dissolve engine.</Text>
+      <Text className="text-dissolve-muted" style={st.lead}>Ready-made components built on the dissolve engine.</Text>
 
       <Header index="01" title="Swipe to delete" note="Swipe a row left. Past the line, it turns to dust." />
       <Inbox />
@@ -179,49 +186,33 @@ export default function Components() {
 }
 
 const st = StyleSheet.create({
-  lead: { fontSize: 15, lineHeight: 22, color: C.text, paddingTop: 12 },
+  lead: { fontSize: 15, lineHeight: 22, paddingTop: 12 },
   header: { flexDirection: 'row', alignItems: 'flex-end', paddingTop: 30, paddingBottom: 12, gap: 12 },
-  index: { fontFamily: mono, fontSize: 11, color: C.muted },
-  h2: { fontSize: 22, fontWeight: '600', color: C.ink, letterSpacing: -0.4, marginTop: 4 },
-  note: { fontSize: 14, color: C.text, marginTop: 3 },
+  index: { fontFamily: mono, fontSize: 11 },
+  h2: { fontSize: 22, fontWeight: '600', letterSpacing: -0.4, marginTop: 4 },
+  note: { fontSize: 14, marginTop: 3 },
   row: { flexDirection: 'row', gap: 8 },
 
-  mail: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, paddingRight: 14, backgroundColor: C.surface },
+  mail: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, paddingRight: 14 },
   mailImg: { width: 46, height: 46, borderRadius: 12 },
   mailTop: { flexDirection: 'row', justifyContent: 'space-between' },
-  mailFrom: { fontSize: 15, fontWeight: '600', color: C.ink },
-  mailTime: { fontSize: 12, color: C.muted },
-  mailSubject: { fontSize: 14, color: C.text, marginTop: 2 },
-  reset: { alignSelf: 'center', marginTop: 6, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 99, backgroundColor: C.surface },
-  resetText: { fontSize: 13, fontWeight: '600', color: C.ink },
+  mailFrom: { fontSize: 15, fontWeight: '600' },
+  mailTime: { fontSize: 12 },
+  mailSubject: { fontSize: 14, marginTop: 2 },
+  reset: { alignSelf: 'center', marginTop: 6, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 99 },
+  resetText: { fontSize: 13, fontWeight: '600' },
 
-  btn: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 14, backgroundColor: C.dark },
-  btnText: { color: 'white', fontSize: 15, fontWeight: '600' },
+  btn: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 14 },
+  btnText: { fontSize: 15, fontWeight: '600' },
 
-  bag: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' },
-  badge: { position: 'absolute', top: -4, right: -4, minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 5, backgroundColor: '#FF3B30', borderWidth: 2, borderColor: 'white', alignItems: 'center', justifyContent: 'center' },
-  badgeText: { color: 'white', fontSize: 10, fontWeight: '700' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  product: { width: '48%', flexGrow: 1, backgroundColor: C.surface, borderRadius: 18, padding: 8 },
-  productImg: { width: '100%', aspectRatio: 1, borderRadius: 12 },
-  productRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4, paddingTop: 8 },
-  productTitle: { fontSize: 14, fontWeight: '600', color: C.ink },
-  productPrice: { fontSize: 13, color: C.text },
-  add: { width: 30, height: 30, borderRadius: 15, backgroundColor: C.dark, alignItems: 'center', justifyContent: 'center' },
-  total: { fontFamily: mono, fontSize: 12, color: C.text, textAlign: 'center', marginTop: 10 },
-
-  post: { backgroundColor: C.surface, borderRadius: 22, overflow: 'hidden' },
+  post: { borderRadius: 22, overflow: 'hidden' },
   postHead: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 },
   avatar: { width: 34, height: 34, borderRadius: 17 },
-  postName: { fontSize: 14, fontWeight: '600', color: C.ink },
-  postMeta: { fontSize: 12, color: C.muted },
+  postName: { fontSize: 14, fontWeight: '600' },
+  postMeta: { fontSize: 12 },
   postImg: { width: '100%', aspectRatio: 4 / 3 },
   postActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingVertical: 12 },
-  caption: { fontSize: 13, color: C.text, paddingHorizontal: 14, paddingBottom: 14 },
+  caption: { fontSize: 13, paddingHorizontal: 14, paddingBottom: 14 },
 
-  settings: { backgroundColor: C.surface, borderRadius: 18, paddingHorizontal: 16 },
-  setting: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14 },
-  settingLine: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: C.line },
-  settingText: { fontSize: 16, color: C.ink },
-  menuStage: { height: 230, borderRadius: 22, overflow: 'hidden', backgroundColor: C.surface },
+  menuStage: { height: 230, borderRadius: 22, overflow: 'hidden' },
 });

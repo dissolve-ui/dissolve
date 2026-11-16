@@ -1,12 +1,20 @@
+/**
+ * ReactionPicker, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * classNames, change the timings, the emojis, anything. Colors come from the dissolve theme tokens
+ * (global.css), so it follows light and dark mode out of the box.
+ *
+ * <ReactionPicker selected={reaction} onReact={(e) => setReaction(e === reaction ? null : e)}>
+ *   <Bubble />
+ * </ReactionPicker>
+ */
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
+import { Modal, Platform, StyleSheet, View as RNView, useWindowDimensions, type TextStyle, type ViewStyle } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withSpring, withTiming, type SharedValue } from 'react-native-reanimated';
+import Reanimated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withSpring, withTiming, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { frames, measure } from '../core';
-import { useDissolve } from '../hooks/useDissolve';
-import type { Box, Point, ViewRef } from '../types';
+import { frames, measure, useDissolve, type Box, type Point, type ViewRef } from 'react-native-dissolve';
+import { Animated, Pressable, Text, View, cn } from './tw';
 
 const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 /** Critically damped lift, a hair of give so the bubble feels picked up. */
@@ -42,11 +50,16 @@ export type ReactionPickerProps = {
   corner?: 'top-left' | 'top-right';
   /** Space kept free at the top and bottom of the window (safe area). */
   insets?: { top?: number; bottom?: number };
-  /** Color laid over the screen while the picker is open. */
-  backdropColor?: string;
   disabled?: boolean;
   haptics?: boolean;
-  style?: StyleProp<ViewStyle>;
+  /** Wrapper classes (margins, alignment...). */
+  className?: string;
+  /** Emoji pill classes (background, border, shadow...). */
+  pillClassName?: string;
+  /** Badge disc classes (also used by the emoji flying to the bubble). */
+  badgeClassName?: string;
+  /** Layer over the screen while the picker is open. Transparent by default, e.g. 'bg-black/20' to dim. */
+  backdropClassName?: string;
 };
 
 type Open = {
@@ -54,6 +67,18 @@ type Open = {
   press: Point;
   pill: { x: number; y: number; w: number };
 };
+
+const PILL = 'border-dissolve-border bg-dissolve-background shadow-[0_10px_44px_rgba(0,0,0,0.14)]';
+const DISC = 'items-center justify-center rounded-full border-2 border-dissolve-background bg-dissolve-background shadow-[0_2px_12px_rgba(0,0,0,0.12)]';
+
+/** Emoji glyphs sit low with a lineHeight on iOS: let the font size the line, then center it. */
+const glyph = (size: number): TextStyle => ({
+  fontSize: size,
+  textAlign: 'center',
+  ...(Platform.OS === 'android' ? { includeFontPadding: false, textAlignVertical: 'center' as const } : null),
+});
+const EMOJI_TEXT = glyph(EMOJI);
+const BADGE_TEXT = glyph(EMOJI / 2);
 
 /** Weight of emoji i under a finger at local x (dock curve). */
 function weight(i: number, lx: number, hover: number) {
@@ -79,10 +104,10 @@ function Emoji({ i, emoji, open, lx, hover, chosen, active }: { i: number; emoji
     };
   });
   return (
-    <View style={s.slot}>
-      {active ? <View style={s.current} /> : null}
-      <Animated.View style={[s.emojiBox, style]}>
-        <Text style={s.emoji} allowFontScaling={false}>
+    <View className="items-center justify-center" style={{ width: SLOT, height: PILL_H }}>
+      {active ? <View className="absolute rounded-full bg-dissolve-surface" style={{ width: 38, height: 38 }} /> : null}
+      <Animated.View className="items-center justify-center" style={[{ width: SLOT, height: SLOT }, style]}>
+        <Text style={EMOJI_TEXT} allowFontScaling={false}>
           {emoji}
         </Text>
       </Animated.View>
@@ -91,7 +116,7 @@ function Emoji({ i, emoji, open, lx, hover, chosen, active }: { i: number; emoji
 }
 
 /** The badge on the bubble corner. Pops in, or snaps into dust when the reaction is removed. */
-function Badge({ emoji, corner, quiet, hidden }: { emoji: string | null | undefined; corner: 'top-left' | 'top-right'; quiet: RefObject<boolean>; hidden: boolean }) {
+function Badge({ emoji, corner, quiet, hidden, className }: { emoji: string | null | undefined; corner: 'top-left' | 'top-right'; quiet: RefObject<boolean>; hidden: boolean; className?: string }) {
   const { ref, dissolving, dissolve, reset } = useDissolve();
   const [shown, setShown] = useState(emoji ?? null);
   const scale = useSharedValue(emoji ? 1 : 0);
@@ -131,12 +156,14 @@ function Badge({ emoji, corner, quiet, hidden }: { emoji: string | null | undefi
   const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   if (!shown) return null;
   return (
-    <Animated.View pointerEvents="none" style={[s.badgeWrap, badgeOffset(corner), { opacity: hidden ? 0 : 1 }, style]}>
-      <View ref={ref} collapsable={false} style={[s.badge, { opacity: dissolving ? 0 : 1 }]}>
-        <Text style={s.badgeEmoji} allowFontScaling={false}>
-          {shown}
-        </Text>
-      </View>
+    <Animated.View pointerEvents="none" className="absolute" style={[{ width: BADGE, height: BADGE }, badgeOffset(corner), { opacity: hidden ? 0 : 1 }, style]}>
+      <RNView ref={ref} collapsable={false} style={{ opacity: dissolving ? 0 : 1 }}>
+        <View className={cn(DISC, className)} style={{ width: BADGE, height: BADGE }}>
+          <Text style={BADGE_TEXT} allowFontScaling={false}>
+            {shown}
+          </Text>
+        </View>
+      </RNView>
     </Animated.View>
   );
 }
@@ -146,10 +173,6 @@ function Badge({ emoji, corner, quiet, hidden }: { emoji: string | null | undefi
  * press point. Keep the finger down and slide across: the emoji under it magnifies like the
  * Dock, with a tick on each change. Release on one to pick it, it flies to the bubble corner.
  * Release elsewhere to cancel, or release without moving and tap an emoji.
- *
- * <ReactionPicker selected={reaction} onReact={(e) => setReaction(e === reaction ? null : e)}>
- *   <Bubble />
- * </ReactionPicker>
  */
 export function ReactionPicker({
   children,
@@ -158,10 +181,12 @@ export function ReactionPicker({
   selected,
   corner = 'top-right',
   insets,
-  backdropColor = 'rgba(16,16,20,0.16)',
   disabled,
   haptics = true,
-  style,
+  className,
+  pillClassName,
+  badgeClassName,
+  backdropClassName,
 }: ReactionPickerProps) {
   const { width: SW, height: SH } = useWindowDimensions();
   const ref = useRef<ViewRef>(null);
@@ -238,7 +263,7 @@ export function ReactionPicker({
       openRef.current = { box, press: { x: px, y: py }, pill: { x, y, w: pillW } };
       setOpen(openRef.current);
     },
-    [SH, SW, back, bottom, chosen, fly, haptics, lift, menu, pillW, pillX, pillY, ready, top],
+    [SH, SW, back, bottom, chosen, fly, haptics, lift, menu, pillW, pillX, pillY, ready, top, shiftX, shiftY],
   );
 
   // Runs once the modal is on screen: hide the original, animate the clone and the pill in.
@@ -417,32 +442,32 @@ export function ReactionPicker({
 
   return (
     <View
-      style={style}
+      className={className}
       accessible
       accessibilityHint="Long press to react"
       accessibilityActions={reactions.map((r) => ({ name: r, label: `React ${r}` }))}
       onAccessibilityAction={(e) => onReact(e.nativeEvent.actionName)}
     >
       <GestureDetector gesture={hold}>
-        <Animated.View ref={ref} collapsable={false} style={[originalStyle, { opacity: shown ? 0 : 1 }]}>
+        <Reanimated.View ref={ref} collapsable={false} style={[originalStyle, { opacity: shown ? 0 : 1 }]}>
           {children}
-        </Animated.View>
+        </Reanimated.View>
       </GestureDetector>
-      <Badge emoji={selected} corner={corner} quiet={quiet} hidden={!!open} />
+      <Badge emoji={selected} corner={corner} quiet={quiet} hidden={!!open} className={badgeClassName} />
 
       <Modal visible={!!open} transparent animationType="none" statusBarTranslucent navigationBarTranslucent onShow={onShow} onRequestClose={cancel}>
         {open ? (
           <GestureHandlerRootView style={StyleSheet.absoluteFill}>
-            <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: backdropColor }, backStyle]}>
+            <Animated.View className={backdropClassName} style={[StyleSheet.absoluteFill, backStyle]}>
               <Pressable style={StyleSheet.absoluteFill} onPress={cancel} accessibilityLabel="Close reactions" />
             </Animated.View>
 
             <Animated.View pointerEvents="none" style={[s.clone, { left: open.box.x, top: open.box.y, width: open.box.width, height: open.box.height }, cloneStyle]}>
               {children}
               {selected && !flying ? (
-                <View style={[s.badgeWrap, badgeOffset(corner)]}>
-                  <View style={s.badge}>
-                    <Text style={s.badgeEmoji} allowFontScaling={false}>
+                <View className="absolute" style={[{ width: BADGE, height: BADGE }, badgeOffset(corner)]}>
+                  <View className={cn(DISC, badgeClassName)} style={{ width: BADGE, height: BADGE }}>
+                    <Text style={BADGE_TEXT} allowFontScaling={false}>
                       {selected}
                     </Text>
                   </View>
@@ -451,7 +476,10 @@ export function ReactionPicker({
             </Animated.View>
 
             <GestureDetector gesture={pick}>
-              <Animated.View style={[s.pill, { left: open.pill.x, top: open.pill.y, width: pillW }, pillStyle]}>
+              <Animated.View
+                className={cn('absolute flex-row items-center rounded-full', PILL, pillClassName)}
+                style={[{ left: open.pill.x, top: open.pill.y, width: pillW, height: PILL_H, paddingHorizontal: PAD, borderWidth: StyleSheet.hairlineWidth }, pillStyle]}
+              >
                 {reactions.map((r, i) => (
                   <Emoji key={r + i} i={i} emoji={r} open={shown} lx={lx} hover={hover} chosen={chosen} active={r === selected} />
                 ))}
@@ -459,10 +487,10 @@ export function ReactionPicker({
             </GestureDetector>
 
             {flying ? (
-              <Animated.View pointerEvents="none" style={[s.fly, flyStyle]}>
-                <Animated.View style={[s.badge, StyleSheet.absoluteFill, flyDisc]} />
-                <Animated.View style={[s.flyEmoji, flyEmoji]}>
-                  <Text style={s.emoji} allowFontScaling={false}>
+              <Animated.View pointerEvents="none" className="absolute left-0 top-0" style={[{ width: BADGE, height: BADGE }, flyStyle]}>
+                <Animated.View className={cn(DISC, badgeClassName)} style={[StyleSheet.absoluteFill, flyDisc]} />
+                <Animated.View className="absolute items-center justify-center" style={[s.flyEmoji, flyEmoji]}>
+                  <Text style={EMOJI_TEXT} allowFontScaling={false}>
                     {flying.emoji}
                   </Text>
                 </Animated.View>
@@ -476,47 +504,12 @@ export function ReactionPicker({
 }
 
 const s = StyleSheet.create({
+  // Lift shadow animates its opacity, so it stays a plain style.
   clone: {
     position: 'absolute',
     shadowColor: '#000',
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 8 },
   },
-  pill: {
-    position: 'absolute',
-    height: PILL_H,
-    borderRadius: PILL_H / 2,
-    paddingHorizontal: PAD,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOpacity: 0.14,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 10 },
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(0,0,0,0.06)',
-  },
-  slot: { width: SLOT, height: PILL_H, alignItems: 'center', justifyContent: 'center' },
-  current: { position: 'absolute', width: 38, height: 38, borderRadius: 19, backgroundColor: '#EDEDF0' },
-  emojiBox: { width: SLOT, height: SLOT, alignItems: 'center', justifyContent: 'center' },
-  emoji: { fontSize: EMOJI, lineHeight: EMOJI * 1.2, textAlign: 'center' },
-  badgeWrap: { position: 'absolute', width: BADGE, height: BADGE },
-  badge: {
-    width: BADGE,
-    height: BADGE,
-    borderRadius: BADGE / 2,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  badgeEmoji: { fontSize: EMOJI / 2, lineHeight: (EMOJI / 2) * 1.2, textAlign: 'center' },
-  fly: { position: 'absolute', left: 0, top: 0, width: BADGE, height: BADGE },
-  flyEmoji: { position: 'absolute', left: (BADGE - SLOT) / 2, top: (BADGE - SLOT) / 2, width: SLOT, height: SLOT, alignItems: 'center', justifyContent: 'center' },
+  flyEmoji: { left: (BADGE - SLOT) / 2, top: (BADGE - SLOT) / 2, width: SLOT, height: SLOT },
 });

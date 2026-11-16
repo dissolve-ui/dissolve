@@ -53,10 +53,10 @@ export default function Tasks() {
 }
 
 const st = StyleSheet.create({
-  task: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16, backgroundColor: 'white' },
+  task: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16, backgroundColor: C.bg },
   check: { width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: '#C9C9C9', alignItems: 'center', justifyContent: 'center' },
   checked: { backgroundColor: C.dark, borderColor: C.dark },
-  tick: { color: 'white', fontSize: 13, fontWeight: '700' },
+  tick: { color: C.onDark, fontSize: 13, fontWeight: '700' },
   title: { flex: 1, fontSize: 15, color: C.ink },
   titleDone: { color: C.muted, textDecorationLine: 'line-through' },
   tag: { fontSize: 11, color: C.muted, fontFamily: 'Menlo' },

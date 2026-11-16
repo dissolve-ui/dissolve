@@ -67,7 +67,7 @@ const st = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   buttons: { flexDirection: 'row', justifyContent: 'center', gap: 10 },
   empty: { fontFamily: mono, fontSize: 11, color: C.muted, textAlign: 'center', marginTop: 150 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: 'white' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: C.bg },
   dot: { width: 34, height: 34, borderRadius: 10 },
   title: { fontSize: 15, fontWeight: '600', color: C.ink },
   meta: { fontSize: 13, color: C.text, marginTop: 1 },

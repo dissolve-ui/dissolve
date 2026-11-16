@@ -1,8 +1,20 @@
+/**
+ * SplitButton, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * classNames, change the timings, the copy, anything. Colors come from the dissolve theme tokens
+ * (global.css), so it follows light and dark mode out of the box.
+ *
+ * A button that divides in the middle like a drop of liquid metal: the two halves pull apart,
+ * a neck between them thins into a waist, then snaps. Closing fuses them back. Vector edges,
+ * no blur, so it stays crisp.
+ *
+ * <SplitButton label="Delete project" confirmLabel="Delete" onConfirm={remove} />
+ */
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { Canvas, Path, RoundedRect, Skia } from '@shopify/react-native-skia';
-import Animated, { Easing, interpolateColor, useAnimatedStyle, useDerivedValue, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import { Easing, interpolateColor, useAnimatedStyle, useDerivedValue, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { Animated, Pressable, Text, View, cn, useToken } from './tw';
 
 const SOFT = Easing.bezier(0.45, 0, 0.2, 1);
 
@@ -11,27 +23,39 @@ export type SplitButtonProps = {
   cancelLabel?: string;
   confirmLabel?: string;
   onConfirm: () => void;
-  color?: string;
-  cancelColor?: string;
-  cancelTextColor?: string;
-  confirmColor?: string;
+  /** Button height in points. Default 52. */
   height?: number;
   /** Space between the two halves once split. Default 28. */
   gap?: number;
   /** Split duration, ms. Default 620. */
   duration?: number;
   haptics?: boolean;
-  style?: StyleProp<ViewStyle>;
+  /** Root classes (margins, width...). */
+  className?: string;
+  /** Classes of every label (font size, weight...). */
+  labelClassName?: string;
+  /** Classes of the Cancel label (its color). */
+  cancelLabelClassName?: string;
 };
 
-/**
- * A button that divides in the middle like a drop of liquid metal: the two halves pull apart,
- * a neck between them thins into a waist, then snaps. Closing fuses them back. Vector edges,
- * no blur, so it stays crisp.
- *
- * <SplitButton label="Delete project" confirmLabel="Delete" onConfirm={remove} />
- */
-export function SplitButton({ label, cancelLabel = 'Cancel', confirmLabel = 'Confirm', onConfirm, color = '#FF3B30', cancelColor = '#E9E9EB', cancelTextColor = '#1C1C1E', confirmColor = '#FF3B30', height = 52, gap = 28, duration = 620, haptics = true, style }: SplitButtonProps) {
+export function SplitButton({
+  label,
+  cancelLabel = 'Cancel',
+  confirmLabel = 'Confirm',
+  onConfirm,
+  height = 52,
+  gap = 28,
+  duration = 620,
+  haptics = true,
+  className,
+  labelClassName,
+  cancelLabelClassName,
+}: SplitButtonProps) {
+  // Closed drop and Confirm half share the danger token; Cancel turns into surface-2.
+  const color = useToken('danger');
+  const cancelColor = useToken('surface-2');
+  const confirmColor = color;
+
   const [W, setW] = useState(0);
   const [open, setOpen] = useState(false);
   const p = useSharedValue(0);
@@ -96,8 +120,10 @@ export function SplitButton({ label, cancelLabel = 'Cancel', confirmLabel = 'Con
     fn();
   };
 
+  const labelBase = cn('text-base font-semibold', labelClassName);
+
   return (
-    <View onLayout={(e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width)} style={[{ height }, style]}>
+    <View onLayout={(e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width)} className={className} style={{ height }}>
       {W ? (
         <>
           <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
@@ -107,28 +133,33 @@ export function SplitButton({ label, cancelLabel = 'Cancel', confirmLabel = 'Con
           </Canvas>
           {open ? (
             <>
-              <Animated.View style={[s.slot, { left: 0 }, halves]}>
-                <Pressable style={s.fill} onPress={tap(() => setOpen(false))}>
-                  <Animated.Text style={[s.label, { color: cancelTextColor }, openLabel]}>{cancelLabel}</Animated.Text>
+              <Animated.View className="absolute bottom-0 left-0 top-0" style={halves}>
+                <Pressable className="flex-1 items-center justify-center" onPress={tap(() => setOpen(false))} accessibilityRole="button">
+                  <Animated.Text className={cn(labelBase, 'text-dissolve-foreground', cancelLabelClassName)} style={openLabel}>
+                    {cancelLabel}
+                  </Animated.Text>
                 </Pressable>
               </Animated.View>
-              <Animated.View style={[s.slot, { right: 0 }, halves]}>
+              <Animated.View className="absolute bottom-0 right-0 top-0" style={halves}>
                 <Pressable
-                  style={s.fill}
+                  className="flex-1 items-center justify-center"
+                  accessibilityRole="button"
                   onPress={() => {
                     if (haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
                     onConfirm();
                     setOpen(false);
                   }}
                 >
-                  <Animated.Text style={[s.label, { color: 'white' }, openLabel]}>{confirmLabel}</Animated.Text>
+                  <Animated.Text className={cn('text-dissolve-danger-foreground', labelBase)} style={openLabel}>
+                    {confirmLabel}
+                  </Animated.Text>
                 </Pressable>
               </Animated.View>
             </>
           ) : (
             <Pressable style={StyleSheet.absoluteFill} onPress={tap(() => setOpen(true))} accessibilityRole="button">
-              <Animated.View style={[s.fill, closedLabel]}>
-                <Text style={[s.label, { color: 'white' }]}>{label}</Text>
+              <Animated.View className="flex-1 items-center justify-center" style={closedLabel}>
+                <Text className={cn('text-dissolve-danger-foreground', labelBase)}>{label}</Text>
               </Animated.View>
             </Pressable>
           )}
@@ -137,9 +168,3 @@ export function SplitButton({ label, cancelLabel = 'Cancel', confirmLabel = 'Con
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  slot: { position: 'absolute', top: 0, bottom: 0 },
-  fill: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  label: { fontSize: 16, fontWeight: '600' },
-});
