@@ -1,14 +1,21 @@
+/**
+ * SignaturePad, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * classNames, change the nib, the copy, anything. Colors come from the dissolve theme tokens
+ * (global.css), so it follows light and dark mode out of the box.
+ *
+ * const pad = useRef<SignaturePadHandle>(null);
+ * <SignaturePad ref={pad} onChange={setSigned} onSave={({ base64 }) => upload(base64)} />
+ * pad.current?.save();
+ */
 import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from 'react';
-import { PixelRatio, Pressable, StyleSheet, Text, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
+import { PixelRatio, StyleSheet, View as RNView, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Canvas, Path, Skia, type SkImage, type SkPath } from '@shopify/react-native-skia';
-import Animated, { Easing, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
+import { Easing, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { useDissolveContext } from '../context';
-import { frames, measure } from '../core';
-import { runDissolve } from '../hooks/useDissolve';
-import type { ViewRef } from '../types';
+import { frames, measure, runDissolve, useDissolveContext, type ViewRef } from 'react-native-dissolve';
+import { Animated, Pressable, Text, View, cn, useToken } from './tw';
 
 const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 
@@ -36,22 +43,28 @@ export type SignaturePadHandle = {
 };
 
 export type SignaturePadProps = {
+  /** Ink color, also used for the exported PNG. Default: the foreground token. */
   strokeColor?: string;
   /** Base nib width in points. Slow strokes get thicker, fast ones thinner. Default 3.2. */
   strokeWidth?: number;
   onChange?: (hasSignature: boolean) => void;
   onSave?: (signature: SignatureExport) => void;
   placeholder?: string;
+  /** Pad height in points (the signing line sits at 70%). Default 200. */
   height?: number;
-  radius?: number;
-  background?: string;
-  guideColor?: string;
   /** Background of the exported PNG. Default transparent. */
   exportBackground?: string;
   /** Built in Undo and Clear pills. Default true. */
   controls?: boolean;
   haptics?: boolean;
-  style?: StyleProp<ViewStyle>;
+  /** Pad classes (background, radius, border...). */
+  className?: string;
+  /** Signing line classes. */
+  guideClassName?: string;
+  /** Placeholder and x mark classes. */
+  placeholderClassName?: string;
+  /** Undo and Clear pill classes. */
+  controlClassName?: string;
   ref?: Ref<SignaturePadHandle>;
 };
 
@@ -112,27 +125,25 @@ function outline(pts: number[]): SkPath {
  * Sign with your finger. Ink is drawn with Skia as variable width strokes (slow is thick, fast
  * is thin, tapered ends), on a signing line with an x and a placeholder that fades once you
  * start. Undo removes the last stroke, Clear turns the signature into dust.
- *
- * const pad = useRef<SignaturePadHandle>(null);
- * <SignaturePad ref={pad} onChange={setSigned} onSave={({ base64 }) => upload(base64)} />
- * pad.current?.save();
  */
 export function SignaturePad({
-  strokeColor = '#1C1C1E',
+  strokeColor,
   strokeWidth = 3.2,
   onChange,
   onSave,
   placeholder = 'Sign here',
   height = 200,
-  radius = 20,
-  background = '#FFFFFF',
-  guideColor = '#C7C7CC',
   exportBackground,
   controls = true,
   haptics = true,
-  style,
+  className,
+  guideClassName,
+  placeholderClassName,
+  controlClassName,
   ref,
 }: SignaturePadProps) {
+  const foreground = useToken('foreground');
+  const ink = strokeColor ?? foreground;
   const ctx = useDissolveContext();
   const inkRef = useRef<ViewRef>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -143,7 +154,7 @@ export function SignaturePad({
   const cur = useSharedValue<number[]>([]);
   const id = useSharedValue(0);
   const nib = useSharedValue(strokeWidth);
-  const ink = useSharedValue(0);
+  const inked = useSharedValue(0);
   const tools = useSharedValue(0);
 
   const paths = useMemo(() => strokes.map(outline), [strokes]);
@@ -152,9 +163,9 @@ export function SignaturePad({
 
   // Placeholder and tools follow the ink (the live stroke flips them on touch down).
   useEffect(() => {
-    ink.value = withTiming(has ? 1 : 0, { duration: 280, easing: CALM });
+    inked.value = withTiming(has ? 1 : 0, { duration: 280, easing: CALM });
     tools.value = withTiming(has ? 1 : 0, { duration: 280, easing: CALM });
-  }, [has, ink, tools]);
+  }, [has, inked, tools]);
 
   const lastHas = useRef(false);
   useEffect(() => {
@@ -182,7 +193,7 @@ export function SignaturePad({
       id.value += 1;
       nib.value = strokeWidth * 0.75;
       cur.value = [e.x, e.y, nib.value];
-      ink.value = withTiming(1, { duration: 220, easing: CALM });
+      inked.value = withTiming(1, { duration: 220, easing: CALM });
     })
     .onUpdate((e) => {
       const a = cur.value;
@@ -225,13 +236,13 @@ export function SignaturePad({
     canvas.scale(pr, pr);
     const paint = Skia.Paint();
     paint.setAntiAlias(true);
-    paint.setColor(Skia.Color(strokeColor));
+    paint.setColor(Skia.Color(ink));
     for (const p of paths) canvas.drawPath(p, paint);
     surface.flush();
     const snap = surface.makeImageSnapshot();
     const image = snap.makeNonTextureImage() ?? snap;
     return { image, base64: image.encodeToBase64(), width: size.w, height: size.h };
-  }, [strokes.length, size, exportBackground, strokeColor, paths]);
+  }, [strokes.length, size, exportBackground, ink, paths]);
 
   const undo = useCallback(() => {
     if (clearing.current) return;
@@ -270,52 +281,63 @@ export function SignaturePad({
 
   useImperativeHandle(ref, () => ({ undo, clear, isEmpty: () => strokes.length === 0, toImage, save }), [undo, clear, strokes.length, toImage, save]);
 
-  const holder = useAnimatedStyle(() => ({ opacity: 1 - ink.value, transform: [{ translateY: ink.value * -4 }] }));
+  const holder = useAnimatedStyle(() => ({ opacity: 1 - inked.value, transform: [{ translateY: inked.value * -4 }] }));
   const toolStyle = useAnimatedStyle(() => ({ opacity: tools.value, transform: [{ translateY: (1 - tools.value) * -4 }] }));
   const baseline = height * 0.7;
 
   return (
-    <View onLayout={onLayout} style={[{ height, borderRadius: radius, backgroundColor: background, overflow: 'hidden' }, style]} accessibilityLabel="Signature pad">
+    <View
+      onLayout={onLayout}
+      className={cn('overflow-hidden rounded-[20px] bg-dissolve-surface', className)}
+      style={{ height }}
+      accessibilityLabel="Signature pad"
+    >
       {/* Signing line: x, rule and the placeholder above it. */}
-      <View pointerEvents="none" style={[s.line, { top: baseline, backgroundColor: guideColor }]} />
-      <Text pointerEvents="none" style={[s.cross, { top: baseline - 26, color: guideColor }]}>
+      <View pointerEvents="none" className={cn('absolute left-[22px] right-[22px] bg-dissolve-border', guideClassName)} style={{ top: baseline, height: StyleSheet.hairlineWidth * 2 }} />
+      <Text pointerEvents="none" className={cn('absolute left-[24px] text-[22px] font-light text-dissolve-muted', placeholderClassName)} style={{ top: baseline - 26 }}>
         ×
       </Text>
-      <Animated.Text pointerEvents="none" style={[s.placeholder, { top: baseline - 34, color: guideColor }, holder]}>
+      <Animated.Text
+        pointerEvents="none"
+        className={cn('absolute left-0 right-0 text-center text-[15px] font-medium tracking-[-0.1px] text-dissolve-muted', placeholderClassName)}
+        style={[{ top: baseline - 34 }, holder]}
+      >
         {placeholder}
       </Animated.Text>
 
       <GestureDetector gesture={pan}>
-        <View ref={inkRef} collapsable={false} style={[StyleSheet.absoluteFill, { opacity: hidden ? 0 : 1 }]}>
+        <RNView ref={inkRef} collapsable={false} style={[StyleSheet.absoluteFill, { opacity: hidden ? 0 : 1 }]}>
           <Canvas style={StyleSheet.absoluteFill}>
             {paths.map((p, i) => (
-              <Path key={i} path={p} color={strokeColor} />
+              <Path key={i} path={p} color={ink} />
             ))}
-            <Path path={live} color={strokeColor} />
+            <Path path={live} color={ink} />
           </Canvas>
-        </View>
+        </RNView>
       </GestureDetector>
 
       {controls ? (
-        <Animated.View style={[s.tools, toolStyle]} pointerEvents={has ? 'box-none' : 'none'}>
-          <Pressable onPress={undo} hitSlop={6} style={({ pressed }) => [s.tool, pressed && s.pressed]} accessibilityRole="button" accessibilityLabel="Undo last stroke">
-            <Text style={s.toolText}>Undo</Text>
+        <Animated.View className="absolute right-[12px] top-[12px] flex-row gap-[6px]" style={toolStyle} pointerEvents={has ? 'box-none' : 'none'}>
+          <Pressable
+            onPress={undo}
+            hitSlop={6}
+            className={cn('rounded-full bg-dissolve-surface-2 px-[12px] py-[6px] active:opacity-60', controlClassName)}
+            accessibilityRole="button"
+            accessibilityLabel="Undo last stroke"
+          >
+            <Text className="text-[13px] font-semibold text-dissolve-foreground">Undo</Text>
           </Pressable>
-          <Pressable onPress={clear} hitSlop={6} style={({ pressed }) => [s.tool, pressed && s.pressed]} accessibilityRole="button" accessibilityLabel="Clear signature">
-            <Text style={s.toolText}>Clear</Text>
+          <Pressable
+            onPress={clear}
+            hitSlop={6}
+            className={cn('rounded-full bg-dissolve-surface-2 px-[12px] py-[6px] active:opacity-60', controlClassName)}
+            accessibilityRole="button"
+            accessibilityLabel="Clear signature"
+          >
+            <Text className="text-[13px] font-semibold text-dissolve-foreground">Clear</Text>
           </Pressable>
         </Animated.View>
       ) : null}
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  line: { position: 'absolute', left: 22, right: 22, height: StyleSheet.hairlineWidth * 2 },
-  cross: { position: 'absolute', left: 24, fontSize: 22, fontWeight: '300' },
-  placeholder: { position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 15, fontWeight: '500', letterSpacing: -0.1 },
-  tools: { position: 'absolute', top: 12, right: 12, flexDirection: 'row', gap: 6 },
-  tool: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: '#F2F2F7' },
-  pressed: { opacity: 0.6 },
-  toolText: { fontSize: 13, fontWeight: '600', color: '#3A3A3C' },
-});

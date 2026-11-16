@@ -52,7 +52,7 @@ const st = StyleSheet.create({
   back: { width: 60 },
   backText: { fontSize: 17, color: C.ink },
   barTitle: { fontSize: 17, fontWeight: '600', color: C.ink },
-  hero: { backgroundColor: C.dark, borderRadius: 22, padding: 22 },
+  hero: { backgroundColor: '#1C1C1E', borderRadius: 22, padding: 22 },
   amount: { fontSize: 38, fontWeight: '700', color: 'white' },
   merchant: { fontSize: 14, color: 'rgba(255,255,255,0.65)', marginTop: 4 },
   line: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.line },

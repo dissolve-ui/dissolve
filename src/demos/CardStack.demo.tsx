@@ -3,9 +3,10 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SymbolView } from 'expo-symbols';
-import Animated, { Easing, FadeIn, FadeOut } from 'react-native-reanimated';
-import { CardStack } from '../dissolve/components/CardStack';
-import { C, mono } from '../ui';
+import { Easing, FadeIn, FadeOut } from 'react-native-reanimated';
+import { CardStack } from '@registry/card-stack';
+import { Animated as Tw, Text as TwText, View as TwView, useToken } from '@registry/tw';
+import { mono } from '../ui';
 
 const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 
@@ -180,39 +181,42 @@ function CardFace({ card }: { card: Card }) {
 export default function CardStackDemo() {
   const [focus, setFocus] = useState<number | null>(null);
   const card = focus === null ? null : CARDS[focus];
+  const ink = useToken('foreground');
 
   return (
-    <View style={st.screen}>
+    <TwView className="bg-dissolve-background" style={st.screen}>
       <View style={st.header}>
-        <Text style={st.h1}>Wallet</Text>
-        <View style={st.plus}>
-          <SymbolView name="plus" size={16} tintColor={C.ink} weight="semibold" />
-        </View>
+        <TwText className="text-dissolve-foreground" style={st.h1}>Wallet</TwText>
+        <TwView className="bg-dissolve-surface" style={st.plus}>
+          <SymbolView name="plus" size={16} tintColor={ink} weight="semibold" />
+        </TwView>
       </View>
 
       <CardStack items={CARDS} keyExtractor={(c) => c.id} renderCard={(c) => <CardFace card={c} />} peek={58} onFocus={setFocus} />
 
       <View style={st.below}>
         {card ? (
-          <Animated.View key={card.id} entering={FadeIn.duration(360).delay(160).easing(CALM)} exiting={FadeOut.duration(160)} style={st.panel}>
-            <Text style={st.label}>LATEST · {card.title.toUpperCase()}</Text>
+          <Tw.View key={card.id} entering={FadeIn.duration(360).delay(160).easing(CALM)} exiting={FadeOut.duration(160)} className="bg-dissolve-surface" style={st.panel}>
+            <TwText className="text-dissolve-muted" style={st.label}>LATEST · {card.title.toUpperCase()}</TwText>
             {card.activity.map((a, i) => (
-              <View key={a.label} style={[st.tx, i > 0 && st.txLine]}>
+              <TwView key={a.label} className={i > 0 ? 'border-dissolve-border' : undefined} style={[st.tx, i > 0 && st.txLine]}>
                 <View style={{ flex: 1 }}>
-                  <Text style={st.txTitle}>{a.label}</Text>
-                  <Text style={st.txSub}>{a.sub}</Text>
+                  <TwText className="text-dissolve-foreground" style={st.txTitle}>{a.label}</TwText>
+                  <TwText className="text-dissolve-muted" style={st.txSub}>{a.sub}</TwText>
                 </View>
-                <Text style={[st.amount, a.amount.startsWith('+') && { color: '#2E9E5B' }]}>{a.amount}</Text>
-              </View>
+                <TwText className={a.amount.startsWith('+') ? 'text-dissolve-success' : 'text-dissolve-foreground'} style={st.amount}>
+                  {a.amount}
+                </TwText>
+              </TwView>
             ))}
-          </Animated.View>
+          </Tw.View>
         ) : (
-          <Animated.Text key="hint" entering={FadeIn.duration(300).delay(200)} exiting={FadeOut.duration(120)} style={st.hint}>
+          <Tw.Text key="hint" entering={FadeIn.duration(300).delay(200)} exiting={FadeOut.duration(120)} className="text-dissolve-muted" style={st.hint}>
             tap a card · swipe to flip · drag down to close
-          </Animated.Text>
+          </Tw.Text>
         )}
       </View>
-    </View>
+    </TwView>
   );
 }
 
@@ -241,17 +245,17 @@ const cs = StyleSheet.create({
 });
 
 const st = StyleSheet.create({
-  screen: { backgroundColor: C.bg, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24 },
+  screen: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
-  h1: { fontSize: 32, fontWeight: '700', color: '#1C1C1E', letterSpacing: -0.8 },
-  plus: { width: 34, height: 34, borderRadius: 17, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' },
+  h1: { fontSize: 32, fontWeight: '700', letterSpacing: -0.8 },
+  plus: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   below: { minHeight: 200, marginTop: 14 },
-  panel: { backgroundColor: C.surface, borderRadius: 20, borderCurve: 'continuous', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 6 },
-  label: { fontFamily: mono, fontSize: 11, color: C.muted, letterSpacing: 0.4, marginBottom: 6 },
+  panel: { borderRadius: 20, borderCurve: 'continuous', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 6 },
+  label: { fontFamily: mono, fontSize: 11, letterSpacing: 0.4, marginBottom: 6 },
   tx: { flexDirection: 'row', alignItems: 'center', paddingVertical: 11 },
-  txLine: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: C.line },
-  txTitle: { fontSize: 15, fontWeight: '500', color: '#1C1C1E' },
-  txSub: { fontSize: 13, color: C.muted, marginTop: 1 },
-  amount: { fontSize: 15, fontWeight: '500', color: '#1C1C1E', fontVariant: ['tabular-nums'] },
-  hint: { fontFamily: mono, fontSize: 11, color: C.muted, textAlign: 'center', marginTop: 8, letterSpacing: 0.2 },
+  txLine: { borderTopWidth: StyleSheet.hairlineWidth },
+  txTitle: { fontSize: 15, fontWeight: '500' },
+  txSub: { fontSize: 13, marginTop: 1 },
+  amount: { fontSize: 15, fontWeight: '500', fontVariant: ['tabular-nums'] },
+  hint: { fontFamily: mono, fontSize: 11, textAlign: 'center', marginTop: 8, letterSpacing: 0.2 },
 });

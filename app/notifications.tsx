@@ -55,7 +55,7 @@ export default function Notifications() {
 }
 
 const st = StyleSheet.create({
-  card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: 'white' },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: C.bg },
   icon: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   iconText: { color: 'white', fontSize: 17, fontWeight: '700' },
   row: { flexDirection: 'row', justifyContent: 'space-between' },

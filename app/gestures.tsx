@@ -135,14 +135,14 @@ export default function Gestures() {
 
 const st = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: 'white' },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: C.bg },
   thumb: { width: 40, height: 40, borderRadius: 12 },
   title: { fontSize: 15, fontWeight: '600', color: C.ink },
   sub: { fontSize: 13, color: C.text, marginTop: 1 },
   gone: { fontFamily: mono, fontSize: 11, color: C.muted, textAlign: 'center' },
   track: { height: 4, borderRadius: 2, backgroundColor: C.line, overflow: 'hidden', marginHorizontal: 4 },
   fill: { height: 4, borderRadius: 2, backgroundColor: C.dark },
-  sticker: { width: 180, padding: 8, borderRadius: 22, backgroundColor: 'white', gap: 8, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } },
+  sticker: { width: 180, padding: 8, borderRadius: 22, backgroundColor: C.bg, gap: 8, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } },
   stickerImg: { width: 164, height: 164, borderRadius: 16 },
   stickerText: { fontSize: 13, fontWeight: '600', color: C.ink, textAlign: 'center', paddingBottom: 2 },
 });

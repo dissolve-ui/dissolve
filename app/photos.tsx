@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 're
 import { Image } from 'expo-image';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useDissolve } from '@/dissolve';
-import { Button, Caption } from '@/ui';
+import { Button, C, Caption } from '@/ui';
 import { layout } from '@/ui';
 
 const IDS = ['10', '15', '17', '25', '28', '29', '37', '42', '48', '54', '64', '76'];
@@ -40,4 +40,4 @@ export default function Photos() {
   );
 }
 
-const st = StyleSheet.create({ photo: { borderRadius: 6, backgroundColor: '#EEE' } });
+const st = StyleSheet.create({ photo: { borderRadius: 6, backgroundColor: C.surface } });

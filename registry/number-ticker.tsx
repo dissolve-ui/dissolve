@@ -1,10 +1,23 @@
+/**
+ * NumberTicker, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * classNames, change the timings, anything. Colors come from the dissolve theme tokens
+ * (global.css), so it follows light and dark mode out of the box.
+ *
+ * Animated number for prices, balances and counters. Every digit is a clipped 0 to 9 column
+ * that rolls to its new value on a calm iOS curve, right to left with a slight stagger.
+ * Added digits open in, removed ones fold out, so the layout never jumps.
+ *
+ * <NumberTicker value={1240.5} decimals={2} locale="fr-FR" suffix={' €'} fontSize={44} />
+ * <NumberTicker value={balance} decimals={2} prefix="$" textClassName="text-dissolve-success" />
+ */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, Text, View, type LayoutChangeEvent, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import type { LayoutChangeEvent, TextStyle } from 'react-native';
+import { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import { Animated, Text, View, cn } from './tw';
 
 const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-const MINUS = '\u2212';
+const MINUS = '−';
 /** Extra room given to each glyph inside its clipped column, so fractional advances never clip. */
 const SLACK = 6;
 
@@ -20,21 +33,22 @@ export type NumberTickerProps = {
   decimalSeparator?: string;
   /** Static text before the number, e.g. '$'. */
   prefix?: string;
-  /** Static text after the number, e.g. '\u00A0€' (no break space). */
+  /** Static text after the number, e.g. ' €' (no break space). */
   suffix?: string;
+  /** Font size in points (drives the row height). Default 34. */
   fontSize?: number;
-  color?: string;
-  /** Extra text style (fontWeight, fontFamily, letterSpacing...). */
-  textStyle?: StyleProp<TextStyle>;
-  /** Style of the prefix and suffix, defaults to the number style. */
-  affixStyle?: StyleProp<TextStyle>;
   /** Roll duration in ms. Default 700. */
   duration?: number;
   /** Delay between two columns, right to left, in ms. Default 28. */
   stagger?: number;
   /** Tabular figures, so digits never change width. Default true. */
   tabular?: boolean;
-  style?: StyleProp<ViewStyle>;
+  /** Root classes (margins, alignment...). */
+  className?: string;
+  /** Number classes (color, weight, family...). Default text-dissolve-foreground font-semibold. */
+  textClassName?: string;
+  /** Prefix and suffix classes, added on top of the number classes. */
+  affixClassName?: string;
 };
 
 type Kind = 'digit' | 'sym';
@@ -77,7 +91,9 @@ function toCells(value: number, decimals: number, group: string, decimal: string
   return cells.sort((a, b) => a.order - b.order);
 }
 
-function Column({ item, width, lineHeight, text, delay, duration }: { item: Item; width: number; lineHeight: number; text: StyleProp<TextStyle>; delay: number; duration: number }) {
+type Look = { className: string; style: TextStyle };
+
+function Column({ item, width, lineHeight, look, delay, duration }: { item: Item; width: number; lineHeight: number; look: Look; delay: number; duration: number }) {
   const digit = item.kind === 'digit' ? Number(item.char) : 0;
   // New columns open from nothing and roll up from zero, leaving ones roll back to zero.
   const shown = item.present ? digit : 0;
@@ -94,21 +110,23 @@ function Column({ item, width, lineHeight, text, delay, duration }: { item: Item
 
   const box = useAnimatedStyle(() => ({ width: w.value, opacity: o.value }));
   const roll = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
+  const cell = { width: width + SLACK, marginLeft: -SLACK / 2, lineHeight, height: lineHeight };
+  const cls = cn(look.className, 'text-center');
 
   if (item.kind === 'sym') {
     return (
-      <Animated.View style={[s.clip, { height: lineHeight }, box]}>
-        <Text numberOfLines={1} style={[text, s.cell, { width: width + SLACK, marginLeft: -SLACK / 2, lineHeight, height: lineHeight }]}>
+      <Animated.View className="overflow-hidden" style={[{ height: lineHeight }, box]}>
+        <Text numberOfLines={1} className={cls} style={[look.style, cell]}>
           {item.char}
         </Text>
       </Animated.View>
     );
   }
   return (
-    <Animated.View style={[s.clip, { height: lineHeight }, box]}>
+    <Animated.View className="overflow-hidden" style={[{ height: lineHeight }, box]}>
       <Animated.View style={roll}>
         {DIGITS.map((d) => (
-          <Text key={d} numberOfLines={1} style={[text, s.cell, { width: width + SLACK, marginLeft: -SLACK / 2, lineHeight, height: lineHeight }]}>
+          <Text key={d} numberOfLines={1} className={cls} style={[look.style, cell]}>
             {d}
           </Text>
         ))}
@@ -118,22 +136,14 @@ function Column({ item, width, lineHeight, text, delay, duration }: { item: Item
 }
 
 /** Measures one glyph with the exact text style, off screen. */
-function Probe({ char, text, onWidth }: { char: string; text: StyleProp<TextStyle>; onWidth: (c: string, w: number) => void }) {
+function Probe({ char, look, onWidth }: { char: string; look: Look; onWidth: (c: string, w: number) => void }) {
   return (
-    <Text style={[text, s.probe]} onLayout={(e: LayoutChangeEvent) => onWidth(char, e.nativeEvent.layout.width)}>
+    <Text className={cn(look.className, 'absolute left-0 top-0 opacity-0')} style={look.style} onLayout={(e: LayoutChangeEvent) => onWidth(char, e.nativeEvent.layout.width)}>
       {char}
     </Text>
   );
 }
 
-/**
- * Animated number for prices, balances and counters. Every digit is a clipped 0 to 9 column
- * that rolls to its new value on a calm iOS curve, right to left with a slight stagger.
- * Added digits open in, removed ones fold out, so the layout never jumps.
- *
- * <NumberTicker value={1240.5} decimals={2} locale="fr-FR" suffix={'\u00A0€'} fontSize={44} />
- * <NumberTicker value={balance} decimals={2} prefix="$" />
- */
 export function NumberTicker({
   value,
   decimals = 0,
@@ -143,25 +153,27 @@ export function NumberTicker({
   prefix,
   suffix,
   fontSize = 34,
-  color = '#1C1C1E',
-  textStyle,
-  affixStyle,
   duration = 700,
   stagger = 28,
   tabular = true,
-  style,
+  className,
+  textClassName,
+  affixClassName,
 }: NumberTickerProps) {
   const seps = useMemo(() => separatorsFor(locale), [locale]);
   const group = separator ?? seps.group;
   const decimal = decimalSeparator ?? seps.decimal;
   const lineHeight = Math.round(fontSize * 1.22);
-  const text = useMemo<StyleProp<TextStyle>>(
-    () => [{ fontSize, color, fontWeight: '600', letterSpacing: -fontSize * 0.01 }, textStyle, { fontVariant: tabular ? ['tabular-nums'] : undefined, includeFontPadding: false }],
-    [fontSize, color, textStyle, tabular],
+  const look = useMemo<Look>(
+    () => ({
+      className: cn('font-semibold text-dissolve-foreground', textClassName),
+      style: { fontSize, letterSpacing: -fontSize * 0.01, fontVariant: tabular ? ['tabular-nums'] : undefined, includeFontPadding: false },
+    }),
+    [fontSize, textClassName, tabular],
   );
   // Width of every glyph we may draw, measured with the real text style. Re-measured when
-  // the style changes (the signature resets the probes).
-  const signature = JSON.stringify(StyleSheet.flatten(text));
+  // the style or the classes change (the signature resets the probes).
+  const signature = `${look.className}|${JSON.stringify(look.style)}`;
   const glyphs = useMemo(() => [...DIGITS, group, decimal, MINUS].filter(Boolean), [group, decimal]);
   const [widths, setWidths] = useState<{ sig: string; map: Record<string, number> }>({ sig: '', map: {} });
   const onWidth = (c: string, w: number) =>
@@ -219,13 +231,18 @@ export function NumberTicker({
     .map((i) => i.char)
     .join('');
   const label = `${prefix ?? ''}${digits}${suffix ?? ''}`;
+  const affix = cn(look.className, affixClassName);
 
   return (
-    <View style={[s.row, style]} accessible accessibilityRole="text" accessibilityLabel={label}>
+    <View className={cn('flex-row items-center self-start', className)} accessible accessibilityRole="text" accessibilityLabel={label}>
       {glyphs.map((g) => (
-        <Probe key={`${signature}${g}`} char={g} text={text} onWidth={onWidth} />
+        <Probe key={`${signature}${g}`} char={g} look={look} onWidth={onWidth} />
       ))}
-      {prefix ? <Text style={[text, { lineHeight }, affixStyle]}>{prefix}</Text> : null}
+      {prefix ? (
+        <Text className={affix} style={[look.style, { lineHeight }]}>
+          {prefix}
+        </Text>
+      ) : null}
       {ready ? (
         items.map((it) => (
           <Column
@@ -233,23 +250,22 @@ export function NumberTicker({
             item={it}
             width={it.kind === 'digit' ? digitW : (map[it.char] ?? 0)}
             lineHeight={lineHeight}
-            text={text}
+            look={look}
             delay={delays[it.key] ?? 0}
             duration={duration}
           />
         ))
       ) : (
         // First frame, before the probes report: plain text, same metrics, no flash.
-        <Text style={[text, { lineHeight }]}>{digits}</Text>
+        <Text className={look.className} style={[look.style, { lineHeight }]}>
+          {digits}
+        </Text>
       )}
-      {suffix ? <Text style={[text, { lineHeight }, affixStyle]}>{suffix}</Text> : null}
+      {suffix ? (
+        <Text className={affix} style={[look.style, { lineHeight }]}>
+          {suffix}
+        </Text>
+      ) : null}
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start' },
-  clip: { overflow: 'hidden' },
-  cell: { textAlign: 'center' },
-  probe: { position: 'absolute', opacity: 0, left: 0, top: 0 },
-});

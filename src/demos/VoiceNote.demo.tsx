@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 import Animated, { Easing, FadeIn, LinearTransition } from 'react-native-reanimated';
-import { VoiceNote } from '../dissolve/components/VoiceNote';
-import { C, mono } from '../ui';
+import { VoiceNote } from '@registry/voice-note';
+import { Pressable, Text, View, useToken } from '@registry/tw';
+import { mono } from '../ui';
 
 const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const layout = LinearTransition.duration(380).easing(CALM);
@@ -22,18 +23,21 @@ const THREAD: Item[] = [
  * Long press your own note to unsend it: it blows away as dust and the thread closes up.
  */
 export default function VoiceNoteDemo() {
+  const onPrimary = useToken('primary-foreground');
   const [items, setItems] = useState(THREAD);
   const remove = (id: string) => setItems((all) => all.filter((x) => x.id !== id));
   const restored = items.length === THREAD.length;
 
   return (
-    <View style={st.screen}>
-      <Text style={st.day}>TODAY 10:12</Text>
+    <View className="bg-dissolve-background" style={st.screen}>
+      <Text className="text-dissolve-muted" style={st.day}>TODAY 10:12</Text>
       {items.map((m) => (
         <Animated.View key={m.id} layout={layout} entering={FadeIn.duration(320).easing(CALM)} style={[st.row, { alignItems: m.me ? 'flex-end' : 'flex-start' }]}>
           {m.kind === 'text' ? (
-            <View style={[st.bubble, m.me ? st.me : st.them]}>
-              <Text style={[st.text, m.me && { color: '#FFFFFF' }]}>{m.text}</Text>
+            <View className={m.me ? 'bg-dissolve-primary' : 'bg-dissolve-surface'} style={st.bubble}>
+              <Text className={m.me ? 'text-dissolve-primary-foreground' : 'text-dissolve-foreground'} style={st.text}>
+                {m.text}
+              </Text>
             </View>
           ) : (
             <VoiceNote mine={m.me} duration={m.duration} seed={m.seed} onUnsend={m.me ? () => remove(m.id) : undefined} />
@@ -42,19 +46,19 @@ export default function VoiceNoteDemo() {
       ))}
 
       <Animated.View layout={layout} style={st.composer}>
-        <View style={st.field}>
-          <Text style={st.placeholder}>iMessage</Text>
+        <View className="border-dissolve-border bg-dissolve-surface" style={st.field}>
+          <Text className="text-dissolve-muted" style={st.placeholder}>iMessage</Text>
         </View>
-        <View style={st.mic}>
-          <SymbolView name="waveform" size={17} tintColor="#FFFFFF" weight="semibold" />
+        <View className="bg-dissolve-primary" style={st.mic}>
+          <SymbolView name="waveform" size={17} tintColor={onPrimary} weight="semibold" />
         </View>
       </Animated.View>
 
       <Animated.View layout={layout} style={st.footer}>
-        <Text style={st.hint}>{restored ? 'long press your note to unsend' : 'unsent · preset dust'}</Text>
+        <Text className="text-dissolve-muted" style={st.hint}>{restored ? 'long press your note to unsend' : 'unsent · preset dust'}</Text>
         {!restored ? (
-          <Pressable onPress={() => setItems(THREAD)} hitSlop={8} style={({ pressed }) => [st.reset, pressed && { opacity: 0.6 }]}>
-            <Text style={st.resetText}>Restore</Text>
+          <Pressable onPress={() => setItems(THREAD)} hitSlop={8} className="border-dissolve-border bg-dissolve-surface active:opacity-60" style={st.reset}>
+            <Text className="text-dissolve-foreground" style={st.resetText}>Restore</Text>
           </Pressable>
         ) : null}
       </Animated.View>
@@ -63,13 +67,11 @@ export default function VoiceNoteDemo() {
 }
 
 const st = StyleSheet.create({
-  screen: { backgroundColor: C.bg, paddingHorizontal: 14, paddingVertical: 18, gap: 6 },
-  day: { fontFamily: mono, fontSize: 11, color: C.muted, textAlign: 'center', marginBottom: 8, letterSpacing: 0.4 },
+  screen: { paddingHorizontal: 14, paddingVertical: 18, gap: 6 },
+  day: { fontFamily: mono, fontSize: 11, textAlign: 'center', marginBottom: 8, letterSpacing: 0.4 },
   row: { width: '100%' },
   bubble: { maxWidth: 270, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderCurve: 'continuous' },
-  me: { backgroundColor: '#1C1C1E' },
-  them: { backgroundColor: '#EFEFF1' },
-  text: { fontSize: 16, lineHeight: 21, color: '#1C1C1E', letterSpacing: -0.2 },
+  text: { fontSize: 16, lineHeight: 21, letterSpacing: -0.2 },
   composer: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 16 },
   field: {
     flex: 1,
@@ -77,14 +79,12 @@ const st = StyleSheet.create({
     borderRadius: 19,
     paddingHorizontal: 14,
     justifyContent: 'center',
-    backgroundColor: C.surface,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: C.line,
   },
-  placeholder: { fontSize: 16, color: C.muted },
-  mic: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#1C1C1E', alignItems: 'center', justifyContent: 'center' },
+  placeholder: { fontSize: 16 },
+  mic: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   footer: { alignItems: 'center', gap: 10, marginTop: 14 },
-  hint: { fontFamily: mono, fontSize: 11, color: C.muted, letterSpacing: 0.2 },
-  reset: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999, backgroundColor: C.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: C.line },
-  resetText: { fontSize: 13, fontWeight: '500', color: C.ink },
+  hint: { fontFamily: mono, fontSize: 11, letterSpacing: 0.2 },
+  reset: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999, borderWidth: StyleSheet.hairlineWidth },
+  resetText: { fontSize: 13, fontWeight: '500' },
 });

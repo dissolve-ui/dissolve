@@ -32,7 +32,9 @@
     "lib",
     "src",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "bin",
+    "registry"
   ],
   "sideEffects": false,
   "peerDependencies": {
@@ -49,5 +51,8 @@
   },
   "scripts": {
     "prepack": "sh ../../scripts/build-package.sh"
+  },
+  "bin": {
+    "react-native-dissolve": "bin/dissolve.mjs"
   }
 }

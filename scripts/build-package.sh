@@ -3,9 +3,10 @@
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PKG="$ROOT/packages/react-native-dissolve"
-rm -rf "$PKG/src" "$PKG/lib" "$PKG/mcp"
+rm -rf "$PKG/src" "$PKG/lib" "$PKG/mcp" "$PKG/registry"
 cp -R "$ROOT/src/dissolve" "$PKG/src"
 cp "$ROOT/LICENSE" "$PKG/LICENSE"
+cp -R "$ROOT/registry" "$PKG/registry"
 cd "$ROOT"
 npx tsc -p "$PKG/tsconfig.build.json"
 echo "built $(find "$PKG/lib" -name '*.js' | wc -l | tr -d ' ') js files"

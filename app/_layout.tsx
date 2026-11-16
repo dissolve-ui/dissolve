@@ -1,25 +1,30 @@
+import '../src/global.css';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DissolveProvider, ToastProvider } from '@/dissolve';
-import { C } from '@/ui';
+import { DissolveProvider } from '@/dissolve';
+import { ToastProvider } from '@registry/toast';
+import { useToken } from '@registry/tw';
 
 export default function Layout() {
   const insets = useSafeAreaInsets();
+  const bg = useToken('background');
+  const ink = useToken('foreground');
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <DissolveProvider>
         <ToastProvider top={insets.top + 6}>
-        <StatusBar style="dark" />
+        <StatusBar style="auto" />
         <Stack
           screenOptions={{
             headerLargeTitleEnabled: false,
             headerShadowVisible: false,
             headerLargeTitleShadowVisible: false,
-            headerStyle: { backgroundColor: C.bg },
-            headerTintColor: C.ink,
-            contentStyle: { backgroundColor: C.bg },
+            headerStyle: { backgroundColor: bg },
+            headerTintColor: ink,
+            headerTitleStyle: { color: ink },
+            contentStyle: { backgroundColor: bg },
             headerBackButtonDisplayMode: 'minimal',
           }}
         >

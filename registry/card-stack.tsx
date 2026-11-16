@@ -1,9 +1,17 @@
+/**
+ * CardStack, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * classNames, change the timings, the curve, anything. The cards are yours too: renderCard draws
+ * them, this file only adds the stack chrome (corner radius, clip and shadow).
+ *
+ * <CardStack items={cards} renderCard={(c) => <PaymentCard card={c} />} onFocus={setActive} />
+ */
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
+import { Animated, View, cn } from './tw';
 
 /** Calm iOS curve, no bounce: everything in the stack moves on it. */
 const CALM = Easing.bezier(0.32, 0.72, 0, 1);
@@ -23,14 +31,18 @@ export type CardStackProps<T> = {
   cardHeight?: number;
   /** Visible strip of each card in the stack. Default 60. */
   peek?: number;
-  /** Corner radius of the cards (clip and shadow). Default 20. */
-  radius?: number;
   /** Called with the focused index, or null when back to the stack. */
   onFocus?: (index: number | null) => void;
   keyExtractor?: (item: T, index: number) => string;
   haptics?: boolean;
-  style?: StyleProp<ViewStyle>;
+  /** Container classes (margins, padding...). */
+  className?: string;
+  /** Card chrome: corner radius and shadow. Replaces the default (rounded-[20px] plus a soft shadow cast upward on the card behind). */
+  cardClassName?: string;
 };
+
+/** Upward shadow: each card shades the strip of the card it overlaps. */
+const CARD = 'rounded-[20px] shadow-[0_-2px_20px_rgba(0,0,0,0.12)]';
 
 type Motion = 'move' | 'enter' | 'reappear';
 
@@ -47,14 +59,14 @@ type CardProps = {
   z: number;
   width: number;
   height: number;
-  radius: number;
+  className?: string;
   onTap: (i: number) => void;
   onDismiss: () => void;
   onCycle: (dir: number) => void;
   children: ReactNode;
 };
 
-function Card({ index, y, scale, delay, seq, motion, dir, focused, canCycle, z, width, height, radius, onTap, onDismiss, onCycle, children }: CardProps) {
+function Card({ index, y, scale, delay, seq, motion, dir, focused, canCycle, z, width, height, className, onTap, onDismiss, onCycle, children }: CardProps) {
   const ty = useSharedValue(y);
   const tx = useSharedValue(0);
   const sc = useSharedValue(scale);
@@ -149,13 +161,15 @@ function Card({ index, y, scale, delay, seq, motion, dir, focused, canCycle, z, 
   });
 
   return (
+    // boxShadow (the shadow-* classes) is drawn outside the clip, so one view does radius, clip and shadow.
     <GestureDetector gesture={Gesture.Race(pan, tap)}>
       <Animated.View
-        style={[s.card, { height, borderRadius: radius, zIndex: z }, style]}
+        className={cn('absolute left-0 right-0 top-0 overflow-hidden', className)}
+        style={[s.card, { height, zIndex: z }, style]}
         accessibilityRole="button"
         accessibilityState={{ selected: focused }}
       >
-        <View style={[s.clip, { borderRadius: radius }]}>{children}</View>
+        {children}
       </Animated.View>
     </GestureDetector>
   );
@@ -166,10 +180,8 @@ function Card({ index, y, scale, delay, seq, motion, dir, focused, canCycle, z, 
  * while the others slide down and compress under it. Drag the focused card down to put it
  * back, swipe it sideways to go to the next one. Everything runs on the UI thread on one
  * calm curve, with a fixed container height so nothing around it relayouts.
- *
- * <CardStack items={cards} renderCard={(c) => <PaymentCard card={c} />} onFocus={setActive} />
  */
-export function CardStack<T>({ items, renderCard, cardHeight, peek = 60, radius = 20, onFocus, keyExtractor, haptics = true, style }: CardStackProps<T>) {
+export function CardStack<T>({ items, renderCard, cardHeight, peek = 60, onFocus, keyExtractor, haptics = true, className, cardClassName = CARD }: CardStackProps<T>) {
   const [W, setW] = useState(0);
   const [focus, setFocus] = useState<number | null>(null);
   const [seq, setSeq] = useState(0);
@@ -241,9 +253,10 @@ export function CardStack<T>({ items, renderCard, cardHeight, peek = 60, radius 
   };
 
   return (
-    <View style={[{ height: W ? total : undefined }, style]} onLayout={(e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width)}>
+    <View className={className} style={{ height: W ? total : undefined }} onLayout={(e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width)}>
       {W ? (
-        <View style={[StyleSheet.absoluteFill, s.frame]}>
+        // Clips the compressed stack and the sideways exits to the component bounds.
+        <View className="overflow-hidden" style={StyleSheet.absoluteFill}>
           {items.map((item, i) => {
             const t = target(i);
             const motion: Motion = cycle && cycle.to === i ? 'enter' : cycle && cycle.from === i ? 'reappear' : 'move';
@@ -262,7 +275,7 @@ export function CardStack<T>({ items, renderCard, cardHeight, peek = 60, radius 
                 z={focus === i ? n + 10 : i}
                 width={W}
                 height={H}
-                radius={radius}
+                className={cardClassName}
                 onTap={onTap}
                 onDismiss={onDismiss}
                 onCycle={onCycle}
@@ -278,18 +291,5 @@ export function CardStack<T>({ items, renderCard, cardHeight, peek = 60, radius 
 }
 
 const s = StyleSheet.create({
-  // Clips the compressed stack and the sideways exits to the component bounds.
-  frame: { overflow: 'hidden' },
-  card: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    borderCurve: 'continuous',
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: -2 },
-  },
-  clip: { flex: 1, overflow: 'hidden', borderCurve: 'continuous' },
+  card: { borderCurve: 'continuous' },
 });

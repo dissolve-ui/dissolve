@@ -1,0 +1,50 @@
+/* dissolve theme: tokens used by the dissolve components. Light by default, dark follows the system.
+   Change any value here and every dissolve component follows. */
+:root {
+  --dissolve-background: rgb(255 255 255);
+  --dissolve-surface: rgb(242 242 247);
+  --dissolve-surface-2: rgb(229 229 234);
+  --dissolve-foreground: rgb(28 28 30);
+  --dissolve-muted: rgb(142 142 147);
+  --dissolve-primary: rgb(28 28 30);
+  --dissolve-primary-foreground: rgb(255 255 255);
+  --dissolve-success: rgb(52 199 89);
+  --dissolve-danger: rgb(255 59 48);
+  --dissolve-danger-foreground: rgb(255 255 255);
+  --dissolve-accent: rgb(10 132 255);
+  --dissolve-border: rgb(60 60 67 / 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dissolve-background: rgb(0 0 0);
+    --dissolve-surface: rgb(28 28 30);
+    --dissolve-surface-2: rgb(44 44 46);
+    --dissolve-foreground: rgb(242 242 247);
+    --dissolve-muted: rgb(152 152 157);
+    --dissolve-primary: rgb(242 242 247);
+    --dissolve-primary-foreground: rgb(28 28 30);
+    --dissolve-success: rgb(48 209 88);
+    --dissolve-danger: rgb(255 69 58);
+    --dissolve-danger-foreground: rgb(255 255 255);
+    --dissolve-accent: rgb(10 132 255);
+    --dissolve-border: rgb(84 84 88 / 0.5);
+  }
+}
+
+@layer theme {
+  @theme inline {
+    --color-dissolve-background: var(--dissolve-background);
+    --color-dissolve-surface: var(--dissolve-surface);
+    --color-dissolve-surface-2: var(--dissolve-surface-2);
+    --color-dissolve-foreground: var(--dissolve-foreground);
+    --color-dissolve-muted: var(--dissolve-muted);
+    --color-dissolve-primary: var(--dissolve-primary);
+    --color-dissolve-primary-foreground: var(--dissolve-primary-foreground);
+    --color-dissolve-success: var(--dissolve-success);
+    --color-dissolve-danger: var(--dissolve-danger);
+    --color-dissolve-danger-foreground: var(--dissolve-danger-foreground);
+    --color-dissolve-accent: var(--dissolve-accent);
+    --color-dissolve-border: var(--dissolve-border);
+  }
+}

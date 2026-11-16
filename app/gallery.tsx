@@ -71,7 +71,7 @@ function Tag({ name, dark }: { name: string; dark?: boolean }) {
 function Chip({ label, active, onPress }: { label: string; active?: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [st.chip, active && st.chipOn, pressed && { opacity: 0.7 }]}>
-      <Text style={[st.chipText, active && { color: 'white' }]}>{label}</Text>
+      <Text style={[st.chipText, active && { color: C.onDark }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -79,10 +79,10 @@ function Chip({ label, active, onPress }: { label: string; active?: boolean; onP
 function PlaygroundButton() {
   return (
     <Link href="/playground" asChild>
-      <Pressable style={({ pressed }) => [st.pg, pressed && { opacity: 0.8 }]}>
-        <SymbolView name="slider.horizontal.3" size={16} tintColor="white" />
+      <Pressable style={st.pg}>
+        <SymbolView name="slider.horizontal.3" size={16} tintColor={C.onDark} />
         <Text style={st.pgText}>Open the playground</Text>
-        <SymbolView name="arrow.right" size={14} tintColor="rgba(255,255,255,0.7)" />
+        <SymbolView name="arrow.right" size={14} tintColor={C.onDark} />
       </Pressable>
     </Link>
   );
@@ -520,7 +520,7 @@ const st = StyleSheet.create({
   pad: { paddingHorizontal: 16 },
   lead: { fontSize: 15, lineHeight: 22, color: C.text, paddingTop: 12, marginBottom: 14 },
   pg: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: C.dark, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14 },
-  pgText: { flex: 1, color: 'white', fontSize: 15, fontWeight: '600' },
+  pgText: { flex: 1, color: C.onDark, fontSize: 15, fontWeight: '600' },
 
   header: { flexDirection: 'row', alignItems: 'flex-end', paddingTop: 34, paddingBottom: 14, gap: 12 },
   index: { fontFamily: mono, fontSize: 11, color: C.muted },
@@ -547,17 +547,17 @@ const st = StyleSheet.create({
   plus: { position: 'absolute', top: -18, alignSelf: 'center', fontFamily: mono, fontSize: 12, fontWeight: '600', color: '#E4572E' },
 
   mail: { borderRadius: 22, overflow: 'hidden', paddingHorizontal: 16, paddingVertical: 30 },
-  mailInner: { backgroundColor: 'white', borderRadius: 16, padding: 18 },
+  mailInner: { backgroundColor: C.bg, borderRadius: 16, padding: 18 },
   mailTagRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   mailDot: { width: 7, height: 7, borderRadius: 4 },
   mailTag: { fontFamily: mono, fontSize: 11, color: C.ink, letterSpacing: 0.6 },
   mailTitle: { fontSize: 24, fontWeight: '600', color: C.ink, letterSpacing: -0.6, marginTop: 14 },
   mailBody: { fontSize: 14, lineHeight: 20, color: C.text, marginTop: 6, minHeight: 60 },
   mailCta: { alignSelf: 'flex-start', backgroundColor: C.dark, borderRadius: 99, paddingHorizontal: 18, paddingVertical: 10, marginTop: 16 },
-  mailCtaText: { color: 'white', fontSize: 14, fontWeight: '600' },
+  mailCtaText: { color: C.onDark, fontSize: 14, fontWeight: '600' },
 
   thread: { gap: 6, backgroundColor: C.surface, borderRadius: 22, padding: 12 },
-  them: { backgroundColor: 'white', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10 },
+  them: { backgroundColor: C.bg, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10 },
   themName: { fontSize: 12, fontWeight: '600', color: '#E4572E', marginBottom: 2 },
   themText: { fontSize: 16, lineHeight: 21, color: C.ink },
   album: { flexDirection: 'row', gap: 3, borderRadius: 20, overflow: 'hidden' },
@@ -567,18 +567,18 @@ const st = StyleSheet.create({
   photoMsg: { width: 240, backgroundColor: '#3D7BFF', borderRadius: 20, padding: 4, paddingBottom: 0 },
   photoImg: { width: '100%', height: 170, borderRadius: 17, marginBottom: 8 },
   meta: { fontSize: 11, color: 'rgba(255,255,255,0.7)', alignSelf: 'flex-end', paddingHorizontal: 10, paddingBottom: 8, marginTop: 2 },
-  composer: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, backgroundColor: 'white', borderRadius: 99, paddingLeft: 16, padding: 5 },
+  composer: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, backgroundColor: C.bg, borderRadius: 99, paddingLeft: 16, padding: 5 },
   placeholder: { flex: 1, fontSize: 15, color: C.muted },
   send: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#3D7BFF', alignItems: 'center', justifyContent: 'center' },
 
   arrivals: { gap: 8, backgroundColor: C.surface, borderRadius: 22, padding: 12, minHeight: 120, justifyContent: 'center' },
   empty: { fontFamily: mono, fontSize: 11, color: C.muted, textAlign: 'center' },
-  arrival: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'white', borderRadius: 18, padding: 8, paddingRight: 14 },
+  arrival: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: C.bg, borderRadius: 18, padding: 8, paddingRight: 14 },
   arrivalImg: { width: 52, height: 52, borderRadius: 12 },
   arrivalTitle: { fontSize: 15, fontWeight: '600', color: C.ink },
   arrivalSub: { fontFamily: mono, fontSize: 11, color: C.muted, marginTop: 2 },
 
-  gCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'white', borderRadius: 18, padding: 8, paddingRight: 14, borderWidth: StyleSheet.hairlineWidth, borderColor: C.line },
+  gCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: C.bg, borderRadius: 18, padding: 8, paddingRight: 14, borderWidth: StyleSheet.hairlineWidth, borderColor: C.line },
   gImg: { width: 54, height: 54, borderRadius: 12 },
   gTitle: { fontSize: 15, fontWeight: '600', color: C.ink },
   gSub: { fontFamily: mono, fontSize: 11, color: C.muted, marginTop: 2 },
@@ -590,13 +590,13 @@ const st = StyleSheet.create({
   slot: { width: 112, height: 38 },
   slotInner: { alignItems: 'flex-end', justifyContent: 'center' },
   follow: { backgroundColor: C.dark, borderRadius: 99, paddingHorizontal: 18, paddingVertical: 9 },
-  followText: { color: 'white', fontSize: 14, fontWeight: '600' },
-  following: { backgroundColor: 'white', borderRadius: 99, paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: C.line },
+  followText: { color: C.onDark, fontSize: 14, fontWeight: '600' },
+  following: { backgroundColor: C.bg, borderRadius: 99, paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: C.line },
   followingText: { color: C.ink, fontSize: 14, fontWeight: '600' },
 
   cascadeHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 4, paddingBottom: 4 },
   clear: { fontSize: 14, fontWeight: '600', color: '#3D7BFF' },
-  noteRow: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'white', borderRadius: 16, padding: 8 },
+  noteRow: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: C.bg, borderRadius: 16, padding: 8 },
   noteImg: { width: 42, height: 42, borderRadius: 10 },
   noteApp: { fontFamily: mono, fontSize: 10, color: C.muted, letterSpacing: 0.4 },
   noteText: { fontSize: 14, color: C.ink, marginTop: 1 },

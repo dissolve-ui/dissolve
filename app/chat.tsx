@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useDissolve } from '@/dissolve';
-import { Button, Caption } from '@/ui';
+import { Button, C, Caption } from '@/ui';
 import { layout } from '@/ui';
 
 type Msg = { id: string; me: boolean; text: string };
@@ -55,6 +55,6 @@ export default function Chat() {
 const st = StyleSheet.create({
   bubble: { maxWidth: 280, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20 },
   me: { backgroundColor: '#0A84FF' },
-  them: { backgroundColor: '#E9E9EB' },
-  text: { fontSize: 16, color: '#111', lineHeight: 21 },
+  them: { backgroundColor: C.surface },
+  text: { fontSize: 16, color: C.ink, lineHeight: 21 },
 });

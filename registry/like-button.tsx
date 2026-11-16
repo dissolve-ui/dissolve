@@ -1,9 +1,21 @@
+/**
+ * LikeButton, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * classNames, change the timings, the sparks, anything. Colors come from the dissolve theme tokens
+ * (global.css), so it follows light and dark mode out of the box. The liked heart keeps the brand
+ * pink by default (the color prop).
+ *
+ * Like: the heart pops and sparks burst around it. Unlike: the filled heart snaps away into
+ * grains and the outline is back.
+ *
+ * <LikeButton liked={liked} onChange={setLiked} count={likes} />
+ */
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View as RNView } from 'react-native';
 import { Canvas, Path, Skia } from '@shopify/react-native-skia';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming, type SharedValue } from 'react-native-reanimated';
+import { Easing, useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming, type SharedValue } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { useDissolve } from '../hooks/useDissolve';
+import { useDissolve } from 'react-native-dissolve';
+import { Animated, Pressable, Text, View, cn, useToken } from './tw';
 
 const HEART = 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
 const SPARKS = 10;
@@ -32,7 +44,7 @@ function Spark({ i, size, p, color }: { i: number; size: number; p: SharedValue<
     };
   });
   const d = Math.max(4, size * 0.16);
-  return <Animated.View style={[{ position: 'absolute', width: d, height: d, borderRadius: d / 2, backgroundColor: color }, style]} />;
+  return <Animated.View className="absolute" style={[{ width: d, height: d, borderRadius: d / 2, backgroundColor: color }, style]} />;
 }
 
 export type LikeButtonProps = {
@@ -40,21 +52,22 @@ export type LikeButtonProps = {
   onChange: (liked: boolean) => void;
   /** Heart size in points. Default 26. */
   size?: number;
+  /** Liked heart and count color. Default brand pink #FF2D55. */
   color?: string;
+  /** Outline heart and idle count color. Default the muted token. */
   idleColor?: string;
   /** Optional counter shown next to the heart. */
   count?: number;
   haptics?: boolean;
-  style?: StyleProp<ViewStyle>;
+  /** Row classes (gap, padding, margins...). */
+  className?: string;
+  /** Counter text classes (size, weight). */
+  countClassName?: string;
 };
 
-/**
- * Like: the heart pops and sparks burst around it. Unlike: the filled heart snaps away into
- * grains and the outline is back.
- *
- * <LikeButton liked={liked} onChange={setLiked} count={likes} />
- */
-export function LikeButton({ liked, onChange, size = 26, color = '#FF2D55', idleColor = '#8E8E93', count, haptics = true, style }: LikeButtonProps) {
+export function LikeButton({ liked, onChange, size = 26, color = '#FF2D55', idleColor, count, haptics = true, className, countClassName }: LikeButtonProps) {
+  const muted = useToken('muted');
+  const idle = idleColor ?? muted;
   const { ref, dissolving, dissolve, reset } = useDissolve();
   const scale = useSharedValue(1);
   const burst = useSharedValue(0);
@@ -82,34 +95,40 @@ export function LikeButton({ liked, onChange, size = 26, color = '#FF2D55', idle
   };
 
   return (
-    <Pressable onPress={press} hitSlop={10} style={[s.row, style]} accessibilityRole="button" accessibilityState={{ selected: liked }} accessibilityLabel={liked ? 'Unlike' : 'Like'}>
-      <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+    <Pressable
+      onPress={press}
+      hitSlop={10}
+      className={cn('flex-row items-center gap-1.5', className)}
+      accessibilityRole="button"
+      accessibilityState={{ selected: liked }}
+      accessibilityLabel={liked ? 'Unlike' : 'Like'}
+    >
+      <View className="items-center justify-center" style={{ width: size, height: size }}>
         {Array.from({ length: SPARKS }, (_, i) => (
           <Spark key={i} i={i} size={size} p={burst} color={PALETTE[i % PALETTE.length]} />
         ))}
         <Animated.View style={pop}>
           {liked ? (
-            <View ref={ref} collapsable={false} style={{ opacity: dissolving ? 0 : 1 }}>
+            <RNView ref={ref} collapsable={false} style={{ opacity: dissolving ? 0 : 1 }}>
               <Heart size={size} color={color} filled />
-            </View>
+            </RNView>
           ) : (
-            <Heart size={size} color={idleColor} filled={false} />
+            <Heart size={size} color={idle} filled={false} />
           )}
         </Animated.View>
         {liked && dissolving ? (
           <View style={StyleSheet.absoluteFill} pointerEvents="none">
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <Heart size={size} color={idleColor} filled={false} />
+            <View className="flex-1 items-center justify-center">
+              <Heart size={size} color={idle} filled={false} />
             </View>
           </View>
         ) : null}
       </View>
-      {count !== undefined ? <Text style={[s.count, { color: liked ? color : idleColor }]}>{count}</Text> : null}
+      {count !== undefined ? (
+        <Text className={cn('text-[15px] font-semibold tabular-nums', countClassName)} style={{ color: liked ? color : idle }}>
+          {count}
+        </Text>
+      ) : null}
     </Pressable>
   );
 }
-
-const s = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  count: { fontSize: 15, fontWeight: '600', fontVariant: ['tabular-nums'] },
-});

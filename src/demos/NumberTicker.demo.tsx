@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
-import { NumberTicker } from '../dissolve/components/NumberTicker';
-import { C, mono } from '../ui';
+import { NumberTicker } from '@registry/number-ticker';
+import { Text, View, useToken } from '@registry/tw';
+import { mono } from '../ui';
 
 const USD_PER_EUR = 1.08;
 
 function Action({ icon, label, onPress }: { icon: SFSymbol; label: string; onPress: () => void }) {
+  const onPrimary = useToken('primary-foreground');
   return (
     <Pressable
       onPress={() => {
@@ -16,16 +18,17 @@ function Action({ icon, label, onPress }: { icon: SFSymbol; label: string; onPre
       }}
       style={({ pressed }) => [st.action, pressed && { opacity: 0.6, transform: [{ scale: 0.96 }] }]}
     >
-      <View style={st.actionIcon}>
-        <SymbolView name={icon} size={18} tintColor="#FFFFFF" weight="semibold" />
+      <View className="bg-dissolve-primary" style={st.actionIcon}>
+        <SymbolView name={icon} size={18} tintColor={onPrimary} weight="semibold" />
       </View>
-      <Text style={st.actionLabel}>{label}</Text>
+      <Text className="text-dissolve-foreground" style={st.actionLabel}>{label}</Text>
     </Pressable>
   );
 }
 
 /** Wallet card: the balance rolls on every move, the dollar line follows in another locale. */
 export default function NumberTickerDemo() {
+  const dark = useColorScheme() === 'dark';
   const [balance, setBalance] = useState(1240.5);
   const [last, setLast] = useState(0);
 
@@ -35,14 +38,14 @@ export default function NumberTickerDemo() {
   };
 
   return (
-    <View style={st.card}>
-      <Text style={st.kicker}>MAIN ACCOUNT · EUR</Text>
-      <NumberTicker value={balance} decimals={2} locale="fr-FR" suffix={'\u00A0€'} fontSize={44} textStyle={st.balance} style={st.ticker} />
+    <View className="bg-dissolve-surface" style={st.card}>
+      <Text className="text-dissolve-muted" style={st.kicker}>MAIN ACCOUNT · EUR</Text>
+      <NumberTicker value={balance} decimals={2} locale="fr-FR" suffix={'\u00A0€'} fontSize={44} textClassName="font-bold tracking-[-1px]" className="mt-2" />
       <View style={st.sub}>
-        <NumberTicker value={balance * USD_PER_EUR} decimals={2} locale="en-US" prefix="≈ $" fontSize={15} color={C.muted} textStyle={st.usd} duration={600} />
+        <NumberTicker value={balance * USD_PER_EUR} decimals={2} locale="en-US" prefix="≈ $" fontSize={15} textClassName="font-medium text-dissolve-muted" duration={600} />
         {last ? (
-          <View style={[st.delta, { backgroundColor: last > 0 ? '#EAF9EE' : '#FFEFEE' }]}>
-            <Text style={[st.deltaText, { color: last > 0 ? '#248A3D' : '#D70015' }]}>
+          <View style={[st.delta, { backgroundColor: last > 0 ? (dark ? 'rgba(48,209,88,0.18)' : '#EAF9EE') : dark ? 'rgba(255,69,58,0.18)' : '#FFEFEE' }]}>
+            <Text style={[st.deltaText, { color: last > 0 ? (dark ? '#30D158' : '#248A3D') : dark ? '#FF6961' : '#D70015' }]}>
               {last > 0 ? '+' : '−'}
               {Math.abs(last).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €
             </Text>
@@ -61,8 +64,8 @@ export default function NumberTickerDemo() {
 }
 
 const st = StyleSheet.create({
-  card: { backgroundColor: C.surface, borderRadius: 22, padding: 20 },
-  kicker: { fontFamily: mono, fontSize: 11, color: C.muted, letterSpacing: 0.4 },
+  card: { borderRadius: 22, padding: 20 },
+  kicker: { fontFamily: mono, fontSize: 11, letterSpacing: 0.4 },
   ticker: { marginTop: 10 },
   balance: { fontWeight: '700', letterSpacing: -1.2 },
   sub: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4, minHeight: 24 },
@@ -71,6 +74,6 @@ const st = StyleSheet.create({
   deltaText: { fontSize: 12, fontWeight: '600', fontVariant: ['tabular-nums'] },
   actions: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 22 },
   action: { alignItems: 'center', gap: 7, width: 64 },
-  actionIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: C.dark, alignItems: 'center', justifyContent: 'center' },
-  actionLabel: { fontSize: 12, fontWeight: '500', color: C.ink },
+  actionIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  actionLabel: { fontSize: 12, fontWeight: '500' },
 });

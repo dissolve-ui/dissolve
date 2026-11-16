@@ -116,6 +116,50 @@ Common options for every atlas preset: `origin` (`'left' | 'right' | 'top' | 'bo
 Demo screens live in `app/` (playground, stream, appear, fling, gestures, cascade, screen, shatter,
 pile, morph).
 
+## Components
+
+Ready-made components ship the shadcn way: the CLI copies their source into your project, you own it
+and restyle it with NativeWind classNames. They read the dissolve theme tokens, so light and dark
+follow the system automatically.
+
+```sh
+npx react-native-dissolve init                  # tw primitives + theme tokens in your global.css
+npx react-native-dissolve add swipe-to-delete   # one or more components
+npx react-native-dissolve list                  # everything available
+```
+
+Components land in `components/dissolve/` (or `src/components/dissolve/` with a `src/` layout):
+
+```tsx
+import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
+
+<SlideToConfirm label="Slide to pay 42 €" doneLabel="Paid" onConfirm={pay} className="mx-4" knobClassName="bg-black" />
+```
+
+They need NativeWind v5 (Tailwind v4, react-native-css) and `tailwind-merge`, like shadcn: later classes
+win, so `className="bg-blue-500"` replaces the default background.
+
+| Component | |
+|---|---|
+| `swipe-to-delete` | Swipe a row left, it dissolves and the list closes up. |
+| `toast` | Toasts that arrive in grains and leave as dust, with Undo. |
+| `like-button` | Heart pop with sparks, snaps into grains on unlike. |
+| `morph-button` | Dynamic Island style pill: loader, then done. |
+| `split-button` | Splits in the middle like liquid metal into Cancel and Confirm. |
+| `slide-to-confirm` | Slide to pay, shimmer label, loader, done. |
+| `gooey-menu` | Actions pour out of a round button as drops. |
+| `otp-input` | One time code boxes, shake and dust on a wrong code. |
+| `number-ticker` | Rolling digits for prices and counters. |
+| `reaction-picker` | iMessage style reactions on long press. |
+| `voice-note` | Voice message bubble, scrub the waveform, unsend as dust. |
+| `card-stack` | Wallet style card stack. |
+| `signature-pad` | Sign with a finger, clear into dust, PNG export. |
+| `before-after` | Before / after image comparison. |
+
+Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `muted`, `primary`,
+`primary-foreground`, `success`, `danger`, `danger-foreground`, `accent`, `border`) live in your
+`global.css` after `init`: change them once and every component follows.
+
 ## Hooks
 
 | Hook | Purpose |
