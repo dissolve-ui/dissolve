@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MiniPlayer } from '@registry/mini-player';
 import { Text, View, useToken } from '@registry/tw';
 
@@ -24,7 +23,6 @@ const ROWS: [SFSymbol, string][] = [
 
 /** Music library with the liquid glass now playing pill docked at the bottom. Tap or drag it up, swipe it to skip. */
 export default function MiniPlayerDemo() {
-  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const ink = useToken('foreground');
   const muted = useToken('muted');
@@ -99,7 +97,7 @@ export default function MiniPlayerDemo() {
         onPlayPause={() => setPlaying((p) => !p)}
         onNext={() => go(i + 1)}
         onPrev={() => (t > 3 ? setT(0) : go(i - 1))}
-        bottom={insets.bottom + 6}
+        bottom={12}
         topInset={10}
       />
     </View>
