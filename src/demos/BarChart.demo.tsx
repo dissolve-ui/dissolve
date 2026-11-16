@@ -43,7 +43,7 @@ const DATA: Record<Period, BarDatum[]> = {
 };
 
 const total = (d: BarDatum) => (d.values ?? []).reduce((a, b) => a + b, 0);
-const euro = (v: number) => `${v.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} €`;
+const euro = (v: number) => `$${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 
 function Segmented({ value, onChange }: { value: Period; onChange: (p: Period) => void }) {
   const [w, setW] = useState(0);
@@ -94,7 +94,7 @@ export default function BarChartDemo() {
       <Text className="text-dissolve-muted" style={st.kicker}>
         SPENT · {caption.toUpperCase()}
       </Text>
-      <NumberTicker value={picked ? total(picked) : sum} decimals={0} locale="fr-FR" suffix={' €'} fontSize={34} duration={420} textClassName="font-bold tracking-[-0.8px]" className="mt-[4px]" />
+      <NumberTicker value={picked ? total(picked) : sum} decimals={0} locale="en-US" prefix="$" fontSize={34} duration={420} textClassName="font-bold tracking-[-0.8px]" className="mt-[4px]" />
 
       <BarChart
         data={data}

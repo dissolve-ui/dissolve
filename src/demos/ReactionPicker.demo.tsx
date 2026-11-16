@@ -8,11 +8,11 @@ import { mono } from '../ui';
 type Msg = { id: string; me: boolean; text: string; reaction?: string | null };
 
 const THREAD: Msg[] = [
-  { id: '1', me: false, text: 'Tu passes à l’atelier ce soir ?' },
-  { id: '2', me: false, text: 'Maya a fini les trois écrans, ils sont superbes', reaction: '🔥' },
-  { id: '3', me: true, text: 'Oui, vers 19 h' },
-  { id: '4', me: true, text: 'Je ramène le proto sur le téléphone, la poussière rend fou' },
-  { id: '5', me: false, text: 'Parfait, je garde une place 🙌' },
+  { id: '1', me: false, text: 'Coming by the studio tonight?' },
+  { id: '2', me: false, text: 'Maya finished the three screens, they look great', reaction: '🔥' },
+  { id: '3', me: true, text: 'Yes, around 7' },
+  { id: '4', me: true, text: 'Bringing the prototype on my phone, the dust is wild' },
+  { id: '5', me: false, text: 'Perfect, saving you a seat 🙌' },
 ];
 
 /**

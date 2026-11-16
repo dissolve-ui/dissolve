@@ -6,7 +6,7 @@ import { View } from '@registry/tw';
 export default function SplitButtonDemo() {
   const toast = useToast();
   return (
-    <View style={{ alignItems: 'center' }}>
+    <View style={{ alignSelf: 'stretch' }}>
       <SplitButton label="Delete project" confirmLabel="Delete" onConfirm={() => toast.show({ title: 'Project deleted', tone: 'error' })} />
     </View>
   );

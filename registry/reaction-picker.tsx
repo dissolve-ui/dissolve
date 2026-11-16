@@ -13,6 +13,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-g
 import Reanimated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withSpring, withTiming, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
+import { BlurView } from 'expo-blur';
 import { frames, measure, useDissolve, type Box, type Point, type ViewRef } from 'react-native-dissolve';
 import { Animated, Pressable, Text, View, cn } from './tw';
 
@@ -60,6 +61,10 @@ export type ReactionPickerProps = {
   badgeClassName?: string;
   /** Layer over the screen while the picker is open. Transparent by default, e.g. 'bg-black/20' to dim. */
   backdropClassName?: string;
+  /** Blurs the screen behind the lifted message while the picker is open (iOS). Default true. */
+  blur?: boolean;
+  /** Blur strength, 1 to 100. Default 24. */
+  blurIntensity?: number;
 };
 
 type Open = {
@@ -187,6 +192,8 @@ export function ReactionPicker({
   pillClassName,
   badgeClassName,
   backdropClassName,
+  blur = true,
+  blurIntensity = 24,
 }: ReactionPickerProps) {
   const { width: SW, height: SH } = useWindowDimensions();
   const ref = useRef<ViewRef>(null);
@@ -459,6 +466,7 @@ export function ReactionPicker({
         {open ? (
           <GestureHandlerRootView style={StyleSheet.absoluteFill}>
             <Animated.View className={backdropClassName} style={[StyleSheet.absoluteFill, backStyle]}>
+              {blur && Platform.OS === 'ios' ? <BlurView intensity={blurIntensity} tint="default" style={StyleSheet.absoluteFill} /> : null}
               <Pressable style={StyleSheet.absoluteFill} onPress={cancel} accessibilityLabel="Close reactions" />
             </Animated.View>
 

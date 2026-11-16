@@ -197,7 +197,8 @@ export function ThinkingOrb({ state = 'idle', size = 64, dots = 180, dotSize, le
 
   useFrameCallback((info) => {
     'worklet';
-    const now = info.timeSinceFirstFrame;
+    // Absolute frame time: timeSinceFirstFrame restarts whenever React re-renders the callback.
+    const now = info.timestamp;
     const dt = info.timeSincePreviousFrame ?? 16;
     const T = reduced ? 0 : now / 1000;
     const P = pose.value;

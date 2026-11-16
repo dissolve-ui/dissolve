@@ -38,6 +38,7 @@
     "@shopify/react-native-skia": "2.6.2",
     "@tailwindcss/postcss": "^4.3.5",
     "expo": "~57.0.6",
+    "expo-blur": "~57.0.3",
     "expo-clipboard": "~57.0.2",
     "expo-constants": "~57.0.24",
     "expo-glass-effect": "~57.0.5",

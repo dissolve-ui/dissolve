@@ -12,9 +12,9 @@ const layout = LinearTransition.duration(380).easing(CALM);
 type Item = { id: string; me: boolean } & ({ kind: 'text'; text: string } | { kind: 'voice'; duration: number; seed: string });
 
 const THREAD: Item[] = [
-  { id: 'a', me: false, kind: 'text', text: 'Je t’explique le brief en vocal, c’est plus simple' },
+  { id: 'a', me: false, kind: 'text', text: 'Easier to explain the brief in a voice note' },
   { id: 'b', me: false, kind: 'voice', duration: 23, seed: 'lea-brief' },
-  { id: 'c', me: true, kind: 'text', text: 'Top, je t’ai répondu' },
+  { id: 'c', me: true, kind: 'text', text: 'Great, just replied' },
   { id: 'd', me: true, kind: 'voice', duration: 9, seed: 'rayan-reply' },
 ];
 

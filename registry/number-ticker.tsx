@@ -23,7 +23,6 @@ const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 /** Two turns of the wheel plus a closing 0, so a column can roll either way from any digit. */
 const WHEEL = Array.from({ length: 21 }, (_, i) => DIGITS[i % 10]);
-const WHEEL_TEXT = WHEEL.join('\n');
 const MINUS = '−';
 /** Extra room given to each glyph inside its clipped column, so fractional advances never clip. */
 const SLACK = 6;
@@ -142,11 +141,14 @@ function Column({ item, width, lineHeight, look, delay, duration, dir }: { item:
   }
   return (
     <Animated.View className="overflow-hidden" style={[{ height: lineHeight }, box]}>
-      <Animated.View style={roll}>
-        {/* One text for the whole wheel, one line per digit: cheap to mount, even mid roll. */}
-        <Text className={cls} style={[look.style, cell, { height: lineHeight * WHEEL.length }]}>
-          {WHEEL_TEXT}
-        </Text>
+      <Animated.View style={[{ height: lineHeight * WHEEL.length }, roll]}>
+        {/* One text per digit at an exact offset: a single multi line text drifts on device,
+            because iOS rounds every line box and the error adds up down the wheel. */}
+        {WHEEL.map((d, i) => (
+          <Text key={i} numberOfLines={1} className={cls} style={[look.style, cell, { position: 'absolute', top: i * lineHeight, left: 0 }]}>
+            {d}
+          </Text>
+        ))}
       </Animated.View>
     </Animated.View>
   );

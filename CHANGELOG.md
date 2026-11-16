@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-11-16
+
 ### Added
 
 - Components, shadcn style: `npx react-native-dissolve init` installs the `tw` primitives and theme
@@ -33,6 +35,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The `pile` variant and the `usePile` hook, with the `floor` option and the provider's persistent
   layers that only the heap used.
+
+## [0.0.3] - 2026-11-15
+
+### Fixed
+
+- Website GitHub buttons link to the dissolve repo, the every variant grid plays one tile at a time.
+
+## [0.0.2] - 2026-11-15
+
+### Added
+
+- The MCP server ships as its own dependency free package, `react-native-dissolve-mcp`.
 
 ## [0.0.1] - 2026-11-15
 
