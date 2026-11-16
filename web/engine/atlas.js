@@ -830,14 +830,20 @@ gooSvg.innerHTML = '<filter id="dissolve-goo" color-interpolation-filters="sRGB"
 document.body.appendChild(gooSvg);
 let running = false;
 
+// The canvas CSS box must match its bitmap exactly. On iOS, 100vh is the viewport with the
+// toolbar hidden while innerHeight is the visible one, so a 100vh canvas stretched the grains
+// downward. Size both from innerWidth / innerHeight, and follow the toolbar as it moves.
 function resize() {
   overlay.width = innerWidth * DPR;
   overlay.height = innerHeight * DPR;
+  overlay.style.width = innerWidth + 'px';
+  overlay.style.height = innerHeight + 'px';
   gooCanvas.width = overlay.width;
   gooCanvas.height = overlay.height;
 }
 resize();
 addEventListener('resize', resize);
+window.visualViewport?.addEventListener('resize', resize);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
 /**
