@@ -448,7 +448,7 @@ h1 { margin: 0 0 10px; font-size: var(--fs-h1); line-height: 1.05; font-weight: 
 
 /* ---------- Engine overlay (from site/dissolve.js) ---------- */
 
-.dust-overlay { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 34; }
+.dust-overlay { position: fixed; left: 0; top: 0; pointer-events: none; z-index: 34; }
 
 /* ---------- Responsive ---------- */
 
@@ -556,3 +556,15 @@ h1 { margin: 0 0 10px; font-size: var(--fs-h1); line-height: 1.05; font-weight: 
 .sc-agent:hover .sc-agent-go { color: var(--text); }
 .sc-cmd.sc-agent code { font-family: var(--sans); font-size: 14px; font-weight: 600; letter-spacing: -0.005em; }
 .sc-agent-go { font-family: var(--sans); }
+
+/* ---------- Desktop: sidebar pinned to the left edge, content centered in the rest ---------- */
+@media (min-width: 861px) {
+  :root { --rail: calc(var(--side-w) + 40px); }
+  .shell { display: block; max-width: none; margin: 0; padding: 0 0 0 var(--rail); }
+  .side {
+    position: fixed; left: 0; top: 0; bottom: 0; width: var(--rail); max-height: none; z-index: 20;
+    align-self: stretch; height: auto; overscroll-behavior: contain;
+    padding: 22px 16px 0; background: var(--bg);
+  }
+  .view { max-width: var(--content-w); margin: 0 auto; padding: 28px 48px 120px; box-sizing: content-box; }
+}

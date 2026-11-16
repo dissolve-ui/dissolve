@@ -1000,7 +1000,14 @@ export function mountComponent(id, body, { mode = 'panel' } = {}) {
   const sc = scope();
   body.classList.add('cp-body', `cp-mode-${mode}`, `cp-is-${id}`);
   const api = COMPONENTS[id].mount(body, { sc, mode });
-  return { run: () => (sc.alive ? api.run() : Promise.resolve()), dispose: sc.dispose, _api: api };
+  // One run at a time: Play demo during an autoplay (or the reverse) joins the run in flight.
+  let current = null;
+  const run = () => {
+    if (!sc.alive) return Promise.resolve();
+    current ??= Promise.resolve(api.run()).finally(() => { current = null; });
+    return current;
+  };
+  return { run, dispose: sc.dispose, _api: api };
 }
 
 /* ======================================================================================
@@ -1023,8 +1030,58 @@ export function componentsSectionHTML(head) {
 }
 
 /** Mounts every panel of the gallery section. Returns a dispose function. */
+/**
+ * Autoplay, one demo at a time. Every mounted demo registers here; a single conductor walks the
+ * visible ones in page order, plays one, waits a beat, then moves to the next. A touch, click or
+ * key inside a demo hands it to the visitor until it has been idle a few seconds. Reduced motion
+ * turns it off.
+ */
+const AUTO = { list: [], i: 0, timer: 0, playing: false, BEAT: 1800, IDLE: 7000 };
+
+function conduct() {
+  clearTimeout(AUTO.timer);
+  if (AUTO.playing) return;
+  const now = performance.now();
+  const ready = AUTO.list
+    .filter((d) => d.visible && now - d.touched > AUTO.IDLE)
+    .sort((a, b) => (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+  if (!ready.length) { if (AUTO.list.some((d) => d.visible)) AUTO.timer = setTimeout(conduct, 1000); return; }
+  const next = ready.find((d) => d.order > AUTO.last) ?? ready[0];
+  AUTO.last = next.order;
+  AUTO.playing = true;
+  // A demo disposed mid run (route change) may never settle: cap a run at 25 s.
+  Promise.race([Promise.resolve(next.demo.run()), new Promise((r) => setTimeout(r, 25000))]).catch(() => {}).finally(() => {
+    AUTO.playing = false;
+    AUTO.timer = setTimeout(conduct, AUTO.BEAT);
+  });
+}
+
+let ORDER_SEQ = 0;
+export function autoplay(el, demo, { threshold = 0.6 } = {}) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return () => {};
+  const d = { el, demo, visible: false, touched: -1e9, order: ++ORDER_SEQ };
+  AUTO.list.push(d);
+  AUTO.last ??= 0;
+  const io = new IntersectionObserver(([en]) => {
+    d.visible = en.isIntersecting && en.intersectionRatio >= threshold;
+    if (d.visible && !AUTO.playing) { clearTimeout(AUTO.timer); AUTO.timer = setTimeout(conduct, 500); }
+  }, { threshold: [0, threshold, 1] });
+  io.observe(el);
+  const hand = () => { d.touched = performance.now(); };
+  for (const ev of ['pointerdown', 'keydown', 'wheel']) el.addEventListener(ev, hand, { passive: true });
+  return () => {
+    io.disconnect();
+    AUTO.list = AUTO.list.filter((x) => x !== d);
+    if (!AUTO.list.length) { AUTO.playing = false; clearTimeout(AUTO.timer); }
+  };
+}
+
 export function mountComponentsSection(root) {
-  const mounted = [...root.querySelectorAll('[data-cp]')].map((b) => mountComponent(b.dataset.cp, b, { mode: 'panel' }));
+  const mounted = [...root.querySelectorAll('[data-cp]')].map((b) => {
+    const m = mountComponent(b.dataset.cp, b, { mode: 'panel' });
+    const stop = autoplay(b, m);
+    return { dispose: () => { stop(); m.dispose(); } };
+  });
   return () => mounted.forEach((m) => m.dispose());
 }
 

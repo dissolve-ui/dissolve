@@ -7,7 +7,7 @@ import { OPTIONS, PRACTICES, PEERS, INSTALL, PROVIDER, PKG } from './variants-co
 import { showcaseHTML, mountShowcase } from './showcase.js';
 import { ready } from './images.js';
 import { introductionPage, installationPage, cliPage, themingPage, agentPromptPage, agentsStripHTML } from './docs.js';
-import { COMPONENTS, COMPONENT_ORDER, COMPONENT_GLYPH, mountComponent, componentsSectionHTML, mountComponentsSection, propsTable, componentPrompt, clearToasts } from './components.js';
+import { COMPONENTS, COMPONENT_ORDER, COMPONENT_GLYPH, mountComponent, autoplay, componentsSectionHTML, mountComponentsSection, propsTable, componentPrompt, clearToasts } from './components.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -338,8 +338,9 @@ function route(keepScroll) {
     });
   }
   if (comp) {
-    const stage = mountComponent(id, view.querySelector('[data-cp-stage]'), { mode: 'stage' });
-    teardown.push(stage.dispose);
+    const stageEl = view.querySelector('[data-cp-stage]');
+    const stage = mountComponent(id, stageEl, { mode: 'stage' });
+    teardown.push(autoplay(view.querySelector('#cp-stage'), stage, { threshold: 0.4 }), stage.dispose);
     view.querySelector('[data-replay]').addEventListener('click', () => stage.run());
     const cp = view.querySelector('[data-copy-prompt]');
     cp.addEventListener('click', () => {

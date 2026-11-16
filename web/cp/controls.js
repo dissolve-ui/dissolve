@@ -1028,14 +1028,22 @@ function mountChart(body, { sc, mode }) {
   labels();
   plan(true);
 
-  // Scripted pointer for the autoplay: moves across the plot, dots scatter around it.
-  const glide = async (i, n) => {
-    const slot = plotW / n, x = i * slot + slot / 2;
-    ptr = { x, y: height * 0.62 };
-    select(i);
-    draw();
-    await sc.wait(150);
-  };
+  // Scripted pointer for the autoplay: a real mouse pass. It glides across the bars with a soft
+  // vertical wave, the bar under it lights up and the dots scatter around it, then it leaves.
+  const sweep = (x0, x1, ms) => new Promise((done) => {
+    const t0 = performance.now(), n = shown.vals.length;
+    const step = (now) => {
+      if (!sc.alive) return done();
+      const t = Math.min(1, (now - t0) / ms);
+      const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      const x = x0 + (x1 - x0) * e;
+      ptr = { x, y: height * (0.55 + 0.22 * Math.sin(t * Math.PI * 3)) };
+      select(Math.max(0, Math.min(n - 1, Math.floor(x / (plotW / n)))));
+      draw();
+      if (t < 1) requestAnimationFrame(step); else done();
+    };
+    requestAnimationFrame(step);
+  });
 
   return {
     async run() {
@@ -1043,15 +1051,23 @@ function mountChart(body, { sc, mode }) {
       busy = true;
       await plan(true);
       busy = false;
-      await sc.wait(300);
-      const n = shown.vals.length;
-      for (let i = 0; i < n && sc.alive; i++) await glide(i, n);
-      for (let i = n - 2; i >= Math.floor(n / 2) && sc.alive; i--) await glide(i, n);
-      await sc.wait(500);
+      // Let the dots land before the pointer arrives.
+      await sc.wait(BC.ENTER + 900);
+      await sweep(plotW * 0.04, plotW * 0.96, 2600);
+      await sc.wait(250);
+      await sweep(plotW * 0.96, plotW * 0.45, 1300);
+      await sc.wait(600);
+      ptr = null;
       releaseScrub();
-      await sc.wait(350);
+      draw();
+      await sc.wait(700);
       await change(set === WEEK ? YEAR : WEEK);
-      await sc.wait(500);
+      await sc.wait(BC.CHANGE + 400);
+      await sweep(plotW * 0.1, plotW * 0.9, 2200);
+      ptr = null;
+      releaseScrub();
+      draw();
+      await sc.wait(400);
     },
   };
 }
