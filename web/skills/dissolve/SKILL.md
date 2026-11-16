@@ -1,6 +1,6 @@
 ---
 name: react-native-dissolve
-description: Add particle disintegration and assembly effects to React Native and Expo apps with react-native-dissolve (Skia snapshot + Reanimated 4 grains on the UI thread). Use when the user wants a view, list row, card, message, sticker or whole screen to dissolve, turn into dust or sand, burn, shatter, melt, peel off, fly into an icon, appear from particles, or be destroyed by a hold or swipe gesture, or when the code imports react-native-dissolve, DissolveProvider, useDissolve, DissolveIn, useAppear, useDissolveScrub, useDissolveHold, useDissolvePeel, useDissolveScreen, useDissolveMorph or usePile.
+description: Add particle disintegration and assembly effects to React Native and Expo apps with react-native-dissolve (Skia snapshot + Reanimated 4 grains on the UI thread). Use when the user wants a view, list row, card, message, sticker or whole screen to dissolve, turn into dust or sand, burn, shatter, melt, peel off, fly into an icon, appear from particles, or be destroyed by a hold or swipe gesture, or when the code imports react-native-dissolve, DissolveProvider, useDissolve, DissolveIn, useAppear, useDissolveScrub, useDissolveHold, useDissolvePeel, useDissolveScreen or useDissolveMorph.
 ---
 
 # react-native-dissolve
@@ -37,6 +37,58 @@ export default function Layout() {
 ```
 
 Before adding the provider, check it is not already there. Never add a second one.
+
+## Ready-made components
+
+Components are NOT exported by the package. They are copied into the app with the CLI, shadcn style, and the user owns the files. Never write `import { SlideToConfirm } from 'react-native-dissolve'`.
+
+They need NativeWind v5 (Tailwind v4 on react-native-css) and tailwind-merge. On Expo SDK 57:
+
+```sh
+npm pkg set overrides.lightningcss=1.30.1
+npm install --legacy-peer-deps nativewind@5.0.0-preview.4 react-native-css@3.0.7 tailwindcss@^4 @tailwindcss/postcss tailwind-merge
+```
+
+Then `metro.config.js` wraps the config with `withNativewind(getDefaultConfig(__dirname), { inlineVariables: false, globalClassNamePolyfill: false })` (from `nativewind/metro`), `postcss.config.mjs` uses `@tailwindcss/postcss`, `nativewind-env.d.ts` references `react-native-css/types`, and `global.css` imports `tailwindcss/theme.css`, `preflight.css` and `utilities.css` and is imported once in the root layout.
+
+```sh
+npx react-native-dissolve init                 # once: tw.tsx primitives + --dissolve-* tokens in global.css, checks the setup
+npx react-native-dissolve add slide-to-confirm # one or more names; components they build on are copied too
+npx react-native-dissolve list                 # every name
+```
+
+```tsx
+import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
+```
+
+Restyle with `className` and the part classNames (`textClassName`, `boxClassName`...): classes go through tailwind-merge, so later classes win. Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `muted`, `primary`, `primary-foreground`, `success`, `danger`, `danger-foreground`, `accent`, `border`, `chart-1` to `chart-3`, `chart-1`, `chart-2`, `chart-3`) live in `global.css` with a dark block; keep them in `@theme inline` so dark mode resolves. `toast` needs `<ToastProvider>` inside `<DissolveProvider>`.
+
+| Component | Use it for |
+|---|---|
+| `swipe-to-delete` | Swipe a row left to delete it: it dissolves, then the list closes up. |
+| `toast` | Toasts that arrive in grains and leave as dust, with an optional Undo action. |
+| `like-button` | Heart that pops with sparks on like and snaps into grains on unlike. |
+| `morph-button` | Dynamic Island style pill that folds into a loader, then opens as the done state. |
+| `split-button` | Splits in two like a drop of liquid metal, Cancel and Confirm halves. |
+| `slide-to-confirm` | Slide to pay or confirm, shimmer label, loader, done state. |
+| `gooey-menu` | Floating button whose actions pour out as gooey drops. |
+| `otp-input` | One time code boxes, verify sweep, success tint, shake and dust on reject. |
+| `number-ticker` | Rolling digit columns for prices and counters, locale aware. |
+| `reaction-picker` | iMessage style reactions: long press, dock magnifier, emoji flies to a badge. |
+| `voice-note` | Voice message bubble: play, scrub the waveform with ticks, unsend as dust. |
+| `card-stack` | Wallet style card stack: tap to focus, drag down to put back, swipe to cycle. |
+| `signature-pad` | Variable width Skia signature, undo, clear into dust, PNG export. |
+| `before-after` | Before / after image comparison with a draggable divider and haptic ticks. |
+| `thinking-orb` | A sphere of dots that shows what an AI agent is doing: thinking, searching, listening, done. |
+| `image-reveal` | Image generation loader: a thinking mosaic that resolves coarse to fine, then settles in grains. |
+| `sweep-transition` | A crisp light band sweeps across a view and leaves the new state behind it. |
+| `upload-tile` | Attachment that assembles from grains, fills a progress ring, rejected files leave as dust. |
+| `task-check` | Checkbox that draws its check and strikes the label, then the task moves away or dissolves. |
+| `quantity-stepper` | Minus and plus with rolling digits and an accelerating long press; at 1 it turns into a trash. |
+| `ruler-picker` | Horizontal ruler with momentum, rolling value and a haptic tick per graduation. |
+| `bar-chart` | Bar chart you scrub with a finger, sliding bubble, bars regrow on period change. |
+| `search-morph` | The magnifier becomes the search field; clearing turns the query into dust. |
+| `mini-player` | Now playing pill that opens into a full player as one object, then folds back. |
 
 ## Core pattern
 
@@ -76,7 +128,6 @@ Rules:
 | `velocity` | `{ x, y }` pt/s | fling |
 | `to` | ref or `{ x, y, width, height }` | stream target |
 | `onArrive` | `() => void` | stream, grains reached the target |
-| `floor` | number, `'screen'` or ref | pile |
 
 ## Picking a variant
 
@@ -95,7 +146,6 @@ Rules:
 | Reversible drag to erase | `useDissolveScrub` |
 | Sticker or card dismissal by hand | `useDissolvePeel` |
 | Destructive confirm (delete account, wipe) | `useDissolveHold` (charge), instead of an alert |
-| Todo done, trash heap | `pile` with `floor: 'screen'`, then `usePile().sweepPile()` |
 | Clear all | `field: 'cascade'` on the list container |
 | New message or card arrives | `<DissolveIn preset="gather">` |
 | List entrance | `<DissolveIn preset="rain" delay={i * 40}>` |
@@ -186,14 +236,6 @@ dissolveScreen({ preset: 'sand', then: () => router.back() });
 ```
 
 Give that screen `animation: 'none'` (or `'fade'`) in its Stack options. Options add `then`, `onFinish`, `maxGrains` (default 5000).
-
-### Pile
-
-```tsx
-await dissolve({ preset: 'pile', floor: 'screen' });
-const { sweepPile, clearPile } = usePile();
-await sweepPile({ preset: 'dust' });
-```
 
 ## Best practices
 

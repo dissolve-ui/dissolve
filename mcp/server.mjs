@@ -87,6 +87,39 @@ function Row({ item, onRemove }) {
 dissolve() resolves when the space can be reclaimed: remove the item from state after the await.
 Reduced motion is handled by the provider: the effect is skipped and the view is hidden right away.
 
+## Ready-made components (CLI, shadcn style)
+
+Components (swipe-to-delete, toast, like-button, morph-button, split-button, slide-to-confirm,
+gooey-menu, otp-input, number-ticker, reaction-picker, voice-note, card-stack, signature-pad,
+before-after, more with \`list\`) are NOT exported by the package. The CLI copies their source into
+the project, where the user owns it:
+
+\`\`\`sh
+npx ${PKG} init                 # once: components/dissolve/tw.tsx + --dissolve-* tokens in global.css
+npx ${PKG} add slide-to-confirm # one or more names
+npx ${PKG} list                 # every component
+\`\`\`
+
+Options: --path <dir> (default components/dissolve, or src/components/dissolve with a src/ layout
+mapped to @/*), --overwrite (replace existing files), --cwd <dir> (project root).
+
+\`\`\`tsx
+import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
+
+<SlideToConfirm label="Slide to pay 42 €" onConfirm={pay} className="mx-4" />
+\`\`\`
+
+They need NativeWind v5 (Tailwind v4 on react-native-css) and tailwind-merge. Known good on Expo SDK 57:
+nativewind 5.0.0-preview.4, react-native-css 3.0.7, npm overrides { "lightningcss": "1.30.1" },
+metro withNativewind, postcss @tailwindcss/postcss, global.css importing Tailwind.
+Style them with className and the part classNames (knobClassName, textClassName, boxClassName...):
+classes are merged with tailwind-merge, so later classes win. Colors that are animated or drawn by Skia read the tokens.
+Theme tokens (--dissolve-background, surface, surface-2, foreground, muted, primary,
+primary-foreground, success, danger, danger-foreground, accent, border) live in global.css,
+light on :root and dark in @media (prefers-color-scheme: dark). Change them there to retheme every
+component. They are mapped with @theme inline so each class resolves the token of the current color scheme.
+Toasts (and swipe-to-delete with Undo) need <ToastProvider> from '@/components/dissolve/toast' inside <DissolveProvider>.
+
 ## Common options (every atlas preset)
 
 - preset: VariantName
@@ -235,14 +268,6 @@ const VARIANTS = [
     tips: ['n[0] is the shard count, 150 to 250 reads well.'],
   },
   {
-    name: 'pile', kind: 'exit', hook: 'useDissolve + usePile',
-    use: 'Pours down and piles up on the floor, the heap stays until swept (todo done, trash).',
-    info: 'Pours down and piles up on the floor. The heap stays until you sweep it.',
-    snippet: `await dissolve({ preset: 'pile', floor: 'screen' });\n\nconst { sweepPile, clearPile } = usePile();\nawait sweepPile({ preset: 'dust' });`,
-    options: ['floor: number | \'screen\' | RefObject<View>', ...COMMON],
-    tips: ['Always offer a way to sweep the heap.'],
-  },
-  {
     name: 'morph', kind: 'transition', hook: 'useDissolveMorph',
     use: 'State change: one view rearranges its grains into another (Follow becomes Following).',
     info: 'One view rearranges its grains into another, sorted by brightness.',
@@ -279,6 +304,7 @@ const RULES = `Picking a variant:
 - Destructive confirm (delete account, wipe): useDissolveHold, the charge variant.
 - New message or card: DissolveIn preset="gather". List entrance: rain with delay={i * 40}. Generated text: print.
 - Clear all: field: 'cascade' on the list container. Toggle state: useDissolveMorph. Leave a screen: useDissolveScreen.
+- A ready-made UI fits (swipe to delete, toast, slide to confirm, OTP...): npx react-native-dissolve add <name>, import it from its copied file, never from the package.
 Best practices:
 - One effect per user action, 0.9 s to 1.8 s. Exits on user intent only, never on scroll.
 - Reduced motion is handled by the provider, do not add a custom fallback.
@@ -307,7 +333,7 @@ const TOOLS = [
   },
   {
     name: 'get_setup',
-    description: 'Get the install command (package and peer dependencies), the DissolveProvider root layout snippet, a minimal useDissolve example and the variant picking rules.',
+    description: 'Get the install command (package and peer dependencies), the DissolveProvider root layout snippet, a minimal useDissolve example, the component CLI (init, add, list, NativeWind v5 and theme tokens) and the variant picking rules.',
     inputSchema: { type: 'object', properties: {} },
   },
 ];
@@ -371,7 +397,7 @@ function handle(req) {
         protocolVersion: typeof params.protocolVersion === 'string' ? params.protocolVersion : PROTOCOL,
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: 'dissolve', version: VERSION },
-        instructions: 'Docs for react-native-dissolve (turn any React Native view into dust). Call get_setup to install it, list_variants to pick an effect, get_variant for the code.',
+        instructions: 'Docs for react-native-dissolve (turn any React Native view into dust). Call get_setup to install it and add components, list_variants to pick an effect, get_variant for the code.',
       };
     case 'ping':
       return {};

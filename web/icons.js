@@ -26,7 +26,6 @@ const FX = {
     const d = Math.hypot(c - 2, r - 2);
     return { x: c, y: r, o: 1, warm: d < 1.6 };
   },
-  pile: (c, r) => ({ x: c, y: r, o: r >= Math.abs(c - 2) + 2 ? 1 : 0.1 }),
   peel: (c, r) => (c + r > 5 ? { x: 9 - r, y: 9 - c, o: 0.35 } : { x: c, y: r, o: 1 }),
   melt: (c, r) => ({ x: c, y: r + (c % 2 ? r * 0.35 : r * 0.12), o: 1 - r / 9 }),
   morph: (c, r) => ({ x: c, y: r, o: c < 2 ? 1 : c === 2 ? 0.5 : Math.hypot(c - 3.5, r - 2) < 1.8 ? 1 : 0.1 }),
@@ -53,5 +52,7 @@ export const GLYPH = {
   introduction: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 7v4M8 5v.01" stroke-linecap="round"/></svg>',
   installation: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg>',
   'agent-prompt': '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5 6 8l-3 3.5M8 12h5"/></svg>',
+  cli: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="13" height="11" rx="2.5"/><path d="M4.5 6.5 6.5 8l-2 1.5M8.5 10h3"/></svg>',
+  theming: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 0 0 0 12z" fill="currentColor" stroke="none"/></svg>',
   gallery: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1.2"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1.2"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1.2"/><rect x="9" y="9" width="4.5" height="4.5" rx="1.2"/></svg>',
 };

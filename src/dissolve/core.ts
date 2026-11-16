@@ -108,7 +108,6 @@ export function buildParams(b: BurstInput, grain: number, pr: number): BurstPara
     ty: t ? t.y + t.height / 2 : 0,
     tw: t?.width ?? 0,
     th: t?.height ?? 0,
-    floorY: b.floorY ?? Dimensions.get('window').height,
     n0: n[0] ?? 0,
     n1: n[1] ?? 0,
     n2: n[2] ?? 0,

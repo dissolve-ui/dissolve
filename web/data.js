@@ -3,21 +3,23 @@
 
 export const GETTING_STARTED = [
   { id: 'introduction', title: 'Introduction' },
+  { id: 'agent-prompt', title: 'Agent prompt', badge: 'Fastest' },
   { id: 'installation', title: 'Installation' },
-  { id: 'agent-prompt', title: 'Agent prompt', badge: 'New' },
+  { id: 'cli', title: 'CLI' },
+  { id: 'theming', title: 'Theming' },
 ];
 
 export const GROUPS = [
   { label: 'Exits', ids: ['dust', 'sand', 'ember', 'pixel', 'vortex', 'shatter', 'stream'] },
   { label: 'Entrances', ids: ['gather', 'rain', 'print'] },
   { label: 'Gestures', ids: ['snap', 'fling', 'charge'] },
-  { label: 'Special', ids: ['pile', 'morph'] },
+  { label: 'Special', ids: ['morph'] },
   { label: 'Casual', ids: ['peel', 'melt'] },
 ];
 
 export const VARIANTS = {
   dust: { title: 'Dust', desc: 'Any view snapshots into grains that drift away on the wind, left edge first.', hook: 'useDissolve' },
-  sand: { title: 'Sand', desc: 'Grains pour straight down with gravity and pile out of frame.', hook: 'useDissolve' },
+  sand: { title: 'Sand', desc: 'Grains pour straight down with gravity and slide out of frame.', hook: 'useDissolve' },
   ember: { title: 'Ember', desc: 'Burns from the edge and rises as sparks tinted by the view itself.', hook: 'useDissolve' },
   pixel: { title: 'Pixel', desc: 'A blocky, stepped collapse for retro and game UIs.', hook: 'useDissolve' },
   vortex: { title: 'Vortex', desc: 'Grains spiral into the center and vanish.', hook: 'useDissolve' },
@@ -29,7 +31,6 @@ export const VARIANTS = {
   snap: { title: 'Snap', desc: 'Bursts outward from the exact point you touched.', hook: 'useDissolve' },
   fling: { title: 'Fling', desc: 'Follows the velocity of the swipe that threw it away.', hook: 'useDissolve' },
   charge: { title: 'Charge', desc: 'Hold to heat the view up, it bursts at full charge.', hook: 'useDissolveHold' },
-  pile: { title: 'Pile', desc: 'Grains fall and collect into a pile you can sweep later.', hook: 'usePile' },
   morph: { title: 'Morph', desc: 'View A breaks down and rebuilds itself as view B.', hook: 'useDissolveMorph' },
   peel: { title: 'Peel', desc: 'Peels off from the corner like a sticker, then flies away.', hook: 'useDissolvePeel' },
   melt: { title: 'Melt', desc: 'Melts down in drips, like wax under a lamp.', hook: 'useDissolve' },

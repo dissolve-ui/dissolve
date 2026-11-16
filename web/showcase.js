@@ -1,8 +1,9 @@
 // Web version of the mobile Gallery screen (app/gallery.tsx): every effect on real content.
 // Each dissolvable item is drawn into a canvas, so the snapshot handed to the engine is exact.
-import { play, snapshot, Heap, morph } from './engine/atlas.js';
+import { play, snapshot, morph } from './engine/atlas.js';
 
 import { IMG, ready, FONT, cover } from './images.js';
+import { CLAUDE_PATH, OPENAI_PATH } from './docs.js';
 
 const PAINTINGS = ['temple', 'lake', 'pines', 'arch', 'valley', 'pond', 'cypress', 'tuscany', 'aqueduct'];
 const IN_PRESETS = ['gather', 'rain', 'print'];
@@ -500,41 +501,6 @@ function mountMorph(root) {
   });
 }
 
-/* ---------- 08 Pile ---------- */
-
-const TODOS = ['Send the invoice to Léa', 'Export the hero in 2x', 'Book the studio for Friday', 'Reply to the Hannera brief'];
-
-function todoRow(w, label) {
-  const c = pal();
-  return item(w, 44, (ctx) => {
-    ctx.fillStyle = c.card; rr(ctx, 0, 0, w, 44, 12); ctx.fill();
-    ctx.strokeStyle = c.line; rr(ctx, 0.5, 0.5, w - 1, 43, 11.5); ctx.stroke();
-    ctx.strokeStyle = c.muted; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(22, 22, 8, 0, Math.PI * 2); ctx.stroke();
-    fitText(ctx, label, 42, 27, w - 56, { size: 14, color: c.ink });
-  });
-}
-
-function mountPile(root) {
-  const list = root.querySelector('#sc-todos');
-  const floor = root.querySelector('#sc-floor');
-  const heap = new Heap(floor, 90);
-  const w = list.clientWidth;
-  const rows = TODOS.map((t) => todoRow(w, t));
-  list.replaceChildren(...rows);
-  rows.forEach((el) => el.addEventListener('click', async () => {
-    if (el.dataset.busy) return;
-    el.dataset.busy = '1';
-    const r = rectOf(el);
-    hide(el);
-    await play({ ...r, preset: 'pile', heap }).done;
-  }));
-  root.querySelector('#sc-sweep').onclick = async () => {
-    await heap.sweep('dust');
-    rows.forEach((el) => { if (el.dataset.busy) { show(el); delete el.dataset.busy; } });
-  };
-}
-
 /* ---------- page ---------- */
 
 const head = (i, title, note, right = '') => `
@@ -542,22 +508,35 @@ const head = (i, title, note, right = '') => `
     <div><p class="sc-index">${i}</p><h2>${title}</h2><p class="sc-note">${note}</p></div>${right}
   </header>`;
 
-export function showcaseHTML() {
+/** Hero install sources: Claude Code, Codex, npm. */
+const HX = [
+  { label: 'Claude Code', cmd: 'curl -fsSL dissolve.rselmi.com/mcp.sh | sh', icon: `<svg width="15" height="15" viewBox="0 0 24 24" fill="#D97757" aria-hidden="true"><path d="${CLAUDE_PATH}"/></svg>` },
+  { label: 'Codex', cmd: 'codex mcp add dissolve -- npx -y react-native-dissolve-mcp', icon: `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${OPENAI_PATH}"/></svg>` },
+  { label: 'npm', cmd: 'npx expo install react-native-dissolve', icon: '<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#CB3837"/><path d="M5 7h14v10h-7v-8.2h-2.6V17H5z" fill="#fff"/></svg>' },
+];
+
+export function showcaseHTML({ components } = {}) {
   return `
 
 
   <header class="sc-hero2">
-    <h1>dissolve</h1>
+    <h1 class="hx-title"><canvas class="hx-title-cv" aria-hidden="true"></canvas><span class="hx-sr">dissolve</span></h1>
     <p>Animation library built for React Native</p>
   </header>
-  <div class="sc-start">
-    <div class="cmd sc-cmd"><span class="sc-cmd-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="#D97757" aria-label="Claude"><path d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"/></svg></span><code>curl -fsSL dissolve.rselmi.com/mcp.sh | sh</code><button class="icon-btn" aria-label="Copy command" data-copy><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg></button></div>
-    <div class="cmd sc-cmd"><span class="sc-cmd-icon"><svg width="18" height="18" viewBox="0 0 24 24" aria-label="npm"><rect width="24" height="24" rx="4" fill="#CB3837"/><path d="M5 7h14v10h-7v-8.2h-2.6V17H5z" fill="#fff"/></svg></span><code>npm install react-native-dissolve</code><button class="icon-btn" aria-label="Copy command" data-copy><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg></button></div>
+  <div class="hx" data-hx>
+    <div class="hx-src" role="tablist" aria-label="Install with">
+      <span class="hx-glide" aria-hidden="true"></span>
+      ${HX.map((h, i) => `<button class="hx-src-btn${i ? '' : ' on'}" role="tab" aria-label="${h.label}" title="${h.label}" data-hx-i="${i}">${h.icon}</button>`).join('')}
+    </div>
+    <code class="hx-cmd" data-hx-cmd>${HX[0].cmd}</code>
+    <button class="hx-copy" aria-label="Copy command" data-hx-copy><svg class="i-copy" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><svg class="i-ok" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
   </div>
+  <a class="hx-more" href="#/agent-prompt">Or paste one prompt into your agent <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
   ${head('01', 'Bento', 'Tap a card. snap starts where your cursor lands.')}
   <div class="sc-bento">
     ${BENTO.map((b, i) => `<div class="sc-slot${b.wide ? ' wide' : ''}" data-bento="${i}"></div>`).join('')}
   </div>
+
 
   ${head('02', 'Inbox', 'Scroll through, tap to archive. The first one flies into the bin.', `
     <div class="sc-bin" id="sc-bin"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 5.5l-.62 10.03c-.16 2.56-.24 3.84-.88 4.76a4 4 0 0 1-1.2 1.13C15.84 22 14.56 22 12 22c-2.57 0-3.86 0-4.82-.59a4 4 0 0 1-1.2-1.13c-.64-.92-.72-2.2-.87-4.77L4.5 5.5"/><path d="M3 5.5h18M16.06 5.5l-.69-1.41c-.45-.94-.68-1.4-1.07-1.7a2 2 0 0 0-.27-.17C13.59 2 13.07 2 12.03 2c-1.06 0-1.6 0-2.04.23a2 2 0 0 0-.28.18c-.4.3-.62.79-1.06 1.76L8.05 5.5M9.5 16.5v-6M14.5 16.5v-6"/></svg><span class="sc-badge" id="sc-bin-count" hidden>0</span></div>`)}
@@ -565,61 +544,193 @@ export function showcaseHTML() {
 
   <div class="sc-split">
     <div>
-      ${head('03', 'Thread', 'Send to watch messages arrive. Tap a message to unsend it.')}
-      <div class="sc-panel">
-        <div class="sc-thread" id="sc-thread"></div>
-        <div class="sc-composer"><span>Message</span><button class="sc-send" id="sc-send" aria-label="Send"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg></button></div>
-      </div>
-    </div>
-    <div>
-      ${head('04', 'Arrivals', 'New content assembling into place.')}
-      <div class="sc-panel">
-        <div class="chips sc-chips">${IN_PRESETS.map((p, i) => `<button class="chip${i ? '' : ' on'}" data-arrive="${p}">${p}</button>`).join('')}<button class="chip sc-add" id="sc-add">Add a card</button></div>
-        <div class="sc-arrivals" id="sc-arrivals"><p class="sc-empty">Nothing yet. Pick an entrance and add a card.</p></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="sc-split">
-    <div>
-      ${head('05', 'Gestures', 'Driven by your cursor: scrub it away, or hold until it gives.')}
-      <div class="sc-panel sc-gest">
-        <div id="sc-scrub" class="sc-gslot"></div>
-        <div id="sc-hold" class="sc-gslot"></div>
-      </div>
-    </div>
-    <div>
-      ${head('06', 'Cascade', 'A whole list leaves in a wave.')}
+      ${head('03', 'Cascade', 'A whole list leaves in a wave.')}
       <div class="sc-panel">
         <div class="sc-cascade-head"><span>Notification Center</span><button class="sc-clear" id="sc-clear">Clear all</button></div>
         <div class="sc-notes" id="sc-notes"></div>
       </div>
     </div>
-  </div>
-
-  <div class="sc-split">
     <div>
-      ${head('07', 'Morph', 'One view rearranges its grains into another.')}
-      <div class="sc-panel sc-morph" id="sc-morph"></div>
-    </div>
-    <div>
-      ${head('08', 'Pile', 'Done tasks pour down and heap up until you sweep.')}
-      <div class="sc-panel sc-pile">
-        <div class="sc-cascade-head"><span>Today</span><button class="sc-clear" id="sc-sweep">Sweep</button></div>
-        <div class="sc-todos" id="sc-todos"></div>
-        <div class="sc-floor" id="sc-floor"></div>
+      ${head('04', 'Thread', 'Send to watch messages arrive. Tap a message to unsend it.')}
+      <div class="sc-panel">
+        <div class="sc-thread" id="sc-thread"></div>
+        <div class="sc-composer"><span>Message</span><button class="sc-send" id="sc-send" aria-label="Send"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg></button></div>
       </div>
     </div>
   </div>
 
-${head('09', 'Every variant', 'One card per variant. Shatter is the last one coming to the web port.')}
-  <div class="filters chips">${['All', 'Exits', 'Entrances', 'Gestures', 'Special', 'Casual'].map((l, i) => `<button class="chip${i ? '' : ' on'}" data-filter="${l}">${l}</button>`).join('')}</div>
+  <div class="sc-split">
+    <div>
+      ${head('05', 'Arrivals', 'New content assembling into place.')}
+      <div class="sc-panel">
+        <div class="chips sc-chips">${IN_PRESETS.map((p, i) => `<button class="chip${i ? '' : ' on'}" data-arrive="${p}">${p}</button>`).join('')}<button class="chip sc-add" id="sc-add">Add a card</button></div>
+        <div class="sc-arrivals" id="sc-arrivals"><p class="sc-empty">Nothing yet. Pick an entrance and add a card.</p></div>
+      </div>
+    </div>
+    <div>
+      ${head('06', 'Gestures', 'Driven by your cursor: scrub it away, or hold until it gives.')}
+      <div class="sc-panel sc-gest">
+        <div id="sc-scrub" class="sc-gslot"></div>
+        <div id="sc-hold" class="sc-gslot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sc-solo">
+    <div>
+      ${head('07', 'Morph', 'One view rearranges its grains into another.')}
+      <div class="sc-panel sc-morph" id="sc-morph"></div>
+    </div>
+  </div>
+
+  ${components ? components(head) : ''}
+
+${head('09', 'Every variant', 'The principal exits and entrances, then the components. Every other variant has its own page in the sidebar.')}
+  <div class="filters chips">${['All', 'Exits', 'Entrances', 'Components'].map((l, i) => `<button class="chip${i ? '' : ' on'}" data-filter="${l}">${l}</button>`).join('')}</div>
   <div class="gallery" id="sc-all"></div>`;
 }
 
 export const head2 = (i, title, note, right = '') => head(i, title, note, right);
 
+/** Hero command bar: the source buttons swap the command, one click copy with a check. */
+function mountInstall(root) {
+  const box = root.querySelector('[data-hx]');
+  if (!box) return;
+  const glide = box.querySelector('.hx-glide');
+  const cmd = box.querySelector('[data-hx-cmd]');
+  const btns = [...box.querySelectorAll('.hx-src-btn')];
+  const place = (b) => { glide.style.transform = `translateX(${b.offsetLeft - 3}px)`; };
+  btns.forEach((b) => b.addEventListener('click', () => {
+    btns.forEach((x) => x.classList.toggle('on', x === b));
+    place(b);
+    cmd.classList.remove('swap'); void cmd.offsetWidth; cmd.classList.add('swap');
+    cmd.textContent = HX[+b.dataset.hxI].cmd;
+  }));
+  const copy = box.querySelector('[data-hx-copy]');
+  copy.addEventListener('click', () => {
+    navigator.clipboard?.writeText(cmd.textContent).catch(() => {});
+    copy.classList.add('ok');
+    setTimeout(() => copy.classList.remove('ok'), 1400);
+  });
+}
+
+/**
+ * Hero title in grains: the real Allo letters (round axis at 100) sampled on a 3 px grid.
+ * Grains gather in from below on load, flee the pointer and spring back, and a click bursts them.
+ */
+const TITLE_FACE = new FontFace('Allo Display', 'url(fonts/allo/AlloVariable.woff2)', { weight: '100 900', variationSettings: "'ROND' 100" });
+const CALM_T = (t) => 1 - Math.pow(1 - t, 3.2);
+
+function mountTitle(root) {
+  const h1 = root.querySelector('.hx-title');
+  const cv = h1?.querySelector('canvas');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const CELL = 3, DOT = 2.6, R = 70, PAD = 48;
+  let g = [], W = 0, H = 0, dpr = 1, ink = '#fff', raf = 0, t0 = 0, ptr = null, alive = true, started = false;
+
+  function build() {
+    const cs = getComputedStyle(h1);
+    const size = parseFloat(cs.fontSize);
+    ink = cs.color;
+    dpr = Math.min(2, devicePixelRatio || 1);
+    const font = `820 ${size}px 'Allo Display'`;
+    const m = document.createElement('canvas').getContext('2d');
+    m.font = font;
+    const tw = Math.ceil(m.measureText('dissolve').width + size * 0.02);
+    W = tw + 8; H = Math.ceil(size * 1.02);
+    cv.width = (W + PAD * 2) * dpr; cv.height = (H + PAD * 2) * dpr;
+    cv.style.width = W + PAD * 2 + 'px'; cv.style.height = H + PAD * 2 + 'px';
+    cv.style.margin = `${-PAD}px`;
+    const off = document.createElement('canvas');
+    off.width = W; off.height = H;
+    const o = off.getContext('2d');
+    o.font = font; o.fillStyle = '#000'; o.textBaseline = 'alphabetic';
+    o.fillText('dissolve', 2, Math.round(size * 0.8));
+    const data = o.getImageData(0, 0, W, H).data;
+    const prev = g;
+    g = [];
+    for (let y = CELL / 2; y < H; y += CELL) for (let x = CELL / 2; x < W; x += CELL) {
+      if (data[((y | 0) * W + (x | 0)) * 4 + 3] < 128) continue;
+      const r = Math.random();
+      // Start close to home: a short random offset with a slight lift, so the word condenses in place.
+      const ang = Math.random() * Math.PI * 2, dist = 10 + Math.random() * 26;
+      const sx = x + Math.cos(ang) * dist, sy = y + Math.sin(ang) * dist * 0.6 + 14;
+      g.push({ hx: x, hy: y, sx, sy, x: sx, y: sy, vx: 0, vy: 0, d: (x / W) * 560 + r * 180 });
+    }
+    if (prev.length && !reduced) for (const p of g) { p.x = p.hx; p.y = p.hy; p.d = 0; }
+    if (reduced) for (const p of g) { p.x = p.hx; p.y = p.hy; }
+    t0 = 0;
+    if (started) kick();
+  }
+
+  function kick() { if (started && !raf && alive) raf = requestAnimationFrame(frame); }
+
+  function frame(now) {
+    raf = 0;
+    if (!h1.isConnected) { alive = false; return; }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W + PAD * 2, H + PAD * 2);
+    ctx.translate(PAD, PAD);
+    ctx.fillStyle = ink;
+    let moving = false;
+    if (!t0) t0 = now;
+    const since = now - t0;
+    for (const p of g) {
+      // Arrival: each grain eases from its start to home, staggered left to right, fading in.
+      const e = reduced ? 1 : Math.min(1, Math.max(0, (since - p.d) / 1000));
+      let tx = p.hx, ty = p.hy;
+      if (e < 1) { moving = true; const k = 1 - Math.pow(1 - e, 4); tx = p.sx + (p.hx - p.sx) * k; ty = p.sy + (p.hy - p.sy) * k; }
+      // Pointer: grains inside the radius flee, then a damped spring brings them home.
+      let fx = 0, fy = 0;
+      if (ptr && e === 1) {
+        const dx = p.x - ptr.x, dy = p.y - ptr.y, d = Math.hypot(dx, dy);
+        if (d < R && d > 0.01) { const f = (1 - d / R) * 1.1; fx = (dx / d) * f; fy = (dy / d) * f; }
+      }
+      if (e === 1) {
+        p.vx = (p.vx + fx + (p.hx - p.x) * 0.06) * 0.86;
+        p.vy = (p.vy + fy + (p.hy - p.y) * 0.06) * 0.86;
+        p.x += p.vx; p.y += p.vy;
+        if (Math.abs(p.vx) + Math.abs(p.vy) > 0.02 || Math.abs(p.hx - p.x) + Math.abs(p.hy - p.y) > 0.05) moving = true;
+        else { p.x = p.hx; p.y = p.hy; }
+      } else { p.x = tx; p.y = ty; }
+      const a = e < 1 ? Math.min(1, e * 1.6) * Math.min(1, e * 1.6) : 1;
+      ctx.globalAlpha = a;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, DOT / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if (moving || ptr) kick();
+  }
+
+  const local = (e) => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left - PAD, y: e.clientY - r.top - PAD }; };
+  cv.addEventListener('pointermove', (e) => { ptr = local(e); kick(); });
+  cv.addEventListener('pointerleave', () => { ptr = null; kick(); });
+  cv.addEventListener('pointerdown', (e) => {
+    // Burst: every grain near the click is thrown outward with a random kick.
+    const c = local(e);
+    for (const p of g) {
+      const dx = p.x - c.x, dy = p.y - c.y, d = Math.hypot(dx, dy) || 1;
+      if (d > R * 1.6) continue;
+      const f = (1 - d / (R * 1.6)) * (9 + Math.random() * 9);
+      p.vx += (dx / d) * f + (Math.random() - 0.5) * 3;
+      p.vy += (dy / d) * f + (Math.random() - 0.5) * 3 - 2;
+    }
+    kick();
+  });
+  new MutationObserver(() => { ink = getComputedStyle(h1).color; kick(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  let rt = 0;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => h1.isConnected && build(), 150); });
+  const go = () => { started = true; t0 = 0; kick(); };
+  Promise.all([TITLE_FACE.load().then((f) => document.fonts.add(f)).catch(() => {}), ready])
+    .then(() => { build(); requestAnimationFrame(() => requestAnimationFrame(go)); });
+}
+
 export async function mountShowcase(root) {
+  mountTitle(root);
+  mountInstall(root);
   await ready;
   mountBento(root);
   mountInbox(root);
@@ -628,5 +739,4 @@ export async function mountShowcase(root) {
   mountGestures(root);
   mountCascade(root);
   mountMorph(root);
-  mountPile(root);
 }

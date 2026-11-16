@@ -13,7 +13,7 @@ export function makeBurst(b: BurstInput): Burst {
   const pr = b.image.width() / b.width;
   const direction = b.direction ?? (v.natural === 'in' ? 'in' : 'out');
   const params = { ...buildParams({ ...b, direction }, grain, pr), ...b.paramsOverride };
-  const { paramsOverride: _po, velocity: _v, target: _t, floorY: _f, n: _n, ...rest } = b;
+  const { paramsOverride: _po, velocity: _v, target: _t, n: _n, ...rest } = b;
   // Sampled here (inside ctx.add, never during render) so renderers can build their first
   // frame without reading shared values while rendering.
   const start = { p: b.progress?.value ?? 0, a0: b.aux0?.value ?? 0, a1: b.aux1?.value ?? 0 };

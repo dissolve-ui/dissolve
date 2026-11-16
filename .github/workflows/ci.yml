@@ -3,31 +3,41 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
+    name: Typecheck, tests and package
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
       - name: Type check
-        run: npx tsc --noEmit
+        run: npm run typecheck
+
+      - name: Tests (CLI, registry, theme, engine, package)
+        run: npm test
 
       - name: Syntax check web and mcp modules
         run: |
           set -e
-          for f in web/*.js web/engine/*.js; do
+          for f in web/*.js web/engine/*.js web/cp/*.js; do
+            [ -f "$f" ] || continue
             echo "node --check $f"
             node --check --input-type=module < "$f"
           done
@@ -35,3 +45,10 @@ jobs:
             echo "node --check $f"
             node --check "$f"
           done
+
+      - name: Build the npm package
+        run: npm run build:package
+
+      - name: Check the package contents
+        working-directory: packages/react-native-dissolve
+        run: npm pack --dry-run --ignore-scripts

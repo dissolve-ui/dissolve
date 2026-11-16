@@ -1,18 +1,142 @@
 {
   "components": [
-    { "name": "swipe-to-delete", "file": "swipe-to-delete.tsx", "export": "SwipeToDelete", "description": "Swipe a row left to delete it: it dissolves, then the list closes up." },
-    { "name": "toast", "file": "toast.tsx", "export": "ToastProvider, useToast", "description": "Toasts that arrive in grains and leave as dust, with an optional Undo action." },
-    { "name": "like-button", "file": "like-button.tsx", "export": "LikeButton", "description": "Heart that pops with sparks on like and snaps into grains on unlike." },
-    { "name": "morph-button", "file": "morph-button.tsx", "export": "MorphButton", "description": "Dynamic Island style pill that folds into a loader, then opens as the done state." },
-    { "name": "split-button", "file": "split-button.tsx", "export": "SplitButton", "description": "Splits in two like a drop of liquid metal, Cancel and Confirm halves." },
-    { "name": "slide-to-confirm", "file": "slide-to-confirm.tsx", "export": "SlideToConfirm", "description": "Slide to pay or confirm, shimmer label, loader, done state." },
-    { "name": "gooey-menu", "file": "gooey-menu.tsx", "export": "GooeyMenu", "description": "Floating button whose actions pour out as gooey drops." },
-    { "name": "otp-input", "file": "otp-input.tsx", "export": "OTPInput", "description": "One time code boxes, verify sweep, success tint, shake and dust on reject." },
-    { "name": "number-ticker", "file": "number-ticker.tsx", "export": "NumberTicker", "description": "Rolling digit columns for prices and counters, locale aware." },
-    { "name": "reaction-picker", "file": "reaction-picker.tsx", "export": "ReactionPicker", "description": "iMessage style reactions: long press, dock magnifier, emoji flies to a badge." },
-    { "name": "voice-note", "file": "voice-note.tsx", "export": "VoiceNote", "description": "Voice message bubble: play, scrub the waveform with ticks, unsend as dust." },
-    { "name": "card-stack", "file": "card-stack.tsx", "export": "CardStack", "description": "Wallet style card stack: tap to focus, drag down to put back, swipe to cycle." },
-    { "name": "signature-pad", "file": "signature-pad.tsx", "export": "SignaturePad", "description": "Variable width Skia signature, undo, clear into dust, PNG export." },
-    { "name": "before-after", "file": "before-after.tsx", "export": "BeforeAfter", "description": "Before / after image comparison with a draggable divider and haptic ticks." }
+    {
+      "name": "swipe-to-delete",
+      "file": "swipe-to-delete.tsx",
+      "export": "SwipeToDelete",
+      "description": "Swipe a row left to delete it: it dissolves, then the list closes up."
+    },
+    {
+      "name": "toast",
+      "file": "toast.tsx",
+      "export": "ToastProvider, useToast",
+      "description": "Toasts that arrive in grains and leave as dust, with an optional Undo action."
+    },
+    {
+      "name": "like-button",
+      "file": "like-button.tsx",
+      "export": "LikeButton",
+      "description": "Heart that pops with sparks on like and snaps into grains on unlike."
+    },
+    {
+      "name": "morph-button",
+      "file": "morph-button.tsx",
+      "export": "MorphButton",
+      "description": "Dynamic Island style pill that folds into a loader, then opens as the done state."
+    },
+    {
+      "name": "split-button",
+      "file": "split-button.tsx",
+      "export": "SplitButton",
+      "description": "Splits in two like a drop of liquid metal, Cancel and Confirm halves."
+    },
+    {
+      "name": "slide-to-confirm",
+      "file": "slide-to-confirm.tsx",
+      "export": "SlideToConfirm",
+      "description": "Slide to pay or confirm, shimmer label, loader, done state."
+    },
+    {
+      "name": "gooey-menu",
+      "file": "gooey-menu.tsx",
+      "export": "GooeyMenu",
+      "description": "Floating button whose actions pour out as gooey drops."
+    },
+    {
+      "name": "otp-input",
+      "file": "otp-input.tsx",
+      "export": "OTPInput",
+      "description": "One time code boxes, verify sweep, success tint, shake and dust on reject."
+    },
+    {
+      "name": "number-ticker",
+      "file": "number-ticker.tsx",
+      "export": "NumberTicker",
+      "description": "Rolling digit columns for prices and counters, locale aware."
+    },
+    {
+      "name": "reaction-picker",
+      "file": "reaction-picker.tsx",
+      "export": "ReactionPicker",
+      "description": "iMessage style reactions: long press, dock magnifier, emoji flies to a badge."
+    },
+    {
+      "name": "voice-note",
+      "file": "voice-note.tsx",
+      "export": "VoiceNote",
+      "description": "Voice message bubble: play, scrub the waveform with ticks, unsend as dust."
+    },
+    {
+      "name": "card-stack",
+      "file": "card-stack.tsx",
+      "export": "CardStack",
+      "description": "Wallet style card stack: tap to focus, drag down to put back, swipe to cycle."
+    },
+    {
+      "name": "signature-pad",
+      "file": "signature-pad.tsx",
+      "export": "SignaturePad",
+      "description": "Variable width Skia signature, undo, clear into dust, PNG export."
+    },
+    {
+      "name": "before-after",
+      "file": "before-after.tsx",
+      "export": "BeforeAfter",
+      "description": "Before / after image comparison with a draggable divider and haptic ticks."
+    },
+    {
+      "name": "thinking-orb",
+      "file": "thinking-orb.tsx",
+      "export": "ThinkingOrb",
+      "description": "A sphere of dots that shows what an AI agent is doing: thinking, searching, listening, done."
+    },
+    {
+      "name": "image-reveal",
+      "file": "image-reveal.tsx",
+      "export": "ImageReveal",
+      "description": "Image generation loader: a thinking mosaic that resolves coarse to fine, then settles in grains."
+    },
+    {
+      "name": "sweep-transition",
+      "file": "sweep-transition.tsx",
+      "export": "SweepTransition",
+      "description": "A crisp liquid band sweeps across a view and leaves the new state behind it."
+    },
+    {
+      "name": "upload-tile",
+      "file": "upload-tile.tsx",
+      "export": "UploadTile, UploadTray",
+      "description": "Attachment that assembles from grains, fills a progress ring, rejected files leave as dust."
+    },
+    {
+      "name": "task-check",
+      "file": "task-check.tsx",
+      "export": "TaskCheck",
+      "description": "Checkbox that draws its check and strikes the label, then the task moves away or dissolves."
+    },
+    {
+      "name": "quantity-stepper",
+      "file": "quantity-stepper.tsx",
+      "export": "QuantityStepper",
+      "description": "Minus and plus with rolling digits and an accelerating long press; at 1 it turns into a trash."
+    },
+    {
+      "name": "ruler-picker",
+      "file": "ruler-picker.tsx",
+      "export": "RulerPicker",
+      "description": "Horizontal ruler with momentum, rolling value and a haptic tick per graduation."
+    },
+    {
+      "name": "bar-chart",
+      "file": "bar-chart.tsx",
+      "export": "BarChart",
+      "description": "Bar chart you scrub with a finger, sliding bubble, bars regrow on period change."
+    },
+    {
+      "name": "mini-player",
+      "file": "mini-player.tsx",
+      "export": "MiniPlayer",
+      "description": "Now playing pill that opens into a full player as one object, then folds back."
+    }
   ]
 }

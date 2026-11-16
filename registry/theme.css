@@ -13,6 +13,9 @@
   --dissolve-danger-foreground: rgb(255 255 255);
   --dissolve-accent: rgb(10 132 255);
   --dissolve-border: rgb(60 60 67 / 0.12);
+  --dissolve-chart-1: rgb(255 55 135);
+  --dissolve-chart-2: rgb(124 92 255);
+  --dissolve-chart-3: rgb(255 196 0);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,6 +32,9 @@
     --dissolve-danger-foreground: rgb(255 255 255);
     --dissolve-accent: rgb(10 132 255);
     --dissolve-border: rgb(84 84 88 / 0.5);
+    --dissolve-chart-1: rgb(255 79 152);
+    --dissolve-chart-2: rgb(142 114 255);
+    --dissolve-chart-3: rgb(255 210 51);
   }
 }
 
@@ -46,5 +52,8 @@
     --color-dissolve-danger-foreground: var(--dissolve-danger-foreground);
     --color-dissolve-accent: var(--dissolve-accent);
     --color-dissolve-border: var(--dissolve-border);
+    --color-dissolve-chart-1: var(--dissolve-chart-1);
+    --color-dissolve-chart-2: var(--dissolve-chart-2);
+    --color-dissolve-chart-3: var(--dissolve-chart-3);
   }
 }

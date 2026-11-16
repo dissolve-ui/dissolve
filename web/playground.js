@@ -1,12 +1,12 @@
 // Variant playground: a live stage driven by a control panel, mirroring app/playground.tsx.
 // The code blocks under it always show the exact snippet for the current settings.
-import { play, snapshot, Heap, morph } from './engine/atlas.js';
+import { play, snapshot, morph } from './engine/atlas.js';
 import { drawCard, binSvg, attachFling, holdController, attachHold, peelController, attachPeel, attachScrub } from './demo.js';
 import { PKG } from './variants-content.js';
 
 /* ---------- variant facts (src/dissolve/variants/registry.ts) ---------- */
 
-const GRAIN = { dust: 3, sand: 2.5, ember: 3, pixel: 7, vortex: 3, shatter: 3, stream: 3.5, gather: 3, rain: 3, print: 3, snap: 3, fling: 3, charge: 3, pile: 2.5, morph: 4, peel: 3, melt: 3 };
+const GRAIN = { dust: 3, sand: 2.5, ember: 3, pixel: 7, vortex: 3, shatter: 3, stream: 3.5, gather: 3, rain: 3, print: 3, snap: 3, fling: 3, charge: 3, morph: 4, peel: 3, melt: 3 };
 const ATLAS = ['dust', 'sand', 'ember', 'pixel', 'vortex', 'snap', 'fling', 'stream', 'gather', 'rain', 'print', 'charge', 'peel'];
 const ENTRANCES = ['gather', 'rain', 'print'];
 const CLASSIC = ['dust', 'sand', 'ember', 'pixel', 'vortex'];
@@ -16,11 +16,10 @@ const FLINGS = [
   { label: 'fast right', v: { x: 2600, y: -200 } },
   { label: 'up left', v: { x: -900, y: -1400 } },
 ];
-/** Variant knob: n[0] for snap, shatter and pile, hook options for charge and peel. */
+/** Variant knob: n[0] for snap and shatter, hook options for charge and peel. */
 const KNOB = {
   snap: { key: 'n', title: 'Push', min: 0.4, max: 2, step: 0.1, def: 1, fmt: (v) => `${v}x` },
   shatter: { key: 'n', title: 'Shards', min: 60, max: 400, step: 10, def: 220, fmt: (v) => `${v}` },
-  pile: { key: 'n', title: 'Kept in the heap', min: 0.1, max: 0.8, step: 0.05, def: 0.35, fmt: (v) => `${Math.round(v * 100)}%` },
   charge: { key: 'holdMs', title: 'Hold time', min: 400, max: 3000, step: 100, def: 1200, fmt: (v) => `${v} ms` },
   peel: { key: 'threshold', title: 'Threshold', min: 0.2, max: 0.8, step: 0.05, def: 0.4, fmt: (v) => `${Math.round(v * 100)}%`, when: (s) => s.mode === 'hand' },
 };
@@ -34,7 +33,6 @@ const r2 = (v) => Math.round(v * 100) / 100;
 
 function durationDef(id, s) {
   if (ENTRANCES.includes(id)) return 1200;
-  if (id === 'pile') return 2000;
   if (id === 'charge') return 900;
   if (id === 'morph') return 1100;
   if (id === 'peel') return s.mode === 'hand' ? 700 : 1900;
@@ -153,7 +151,6 @@ await morph({ ${o.join(', ')}, reverse: true }); // and back`;
   if (id === 'fling') entries.push(['velocity', `{ x: ${FLINGS[s.fling].v.x}, y: ${FLINGS[s.fling].v.y} }`]);
   if (id === 'stream') entries.push(s.direction === 'in' ? ['from', 'sourceRef'] : ['to', 'binRef']);
   if (id === 'stream' && s.direction === 'out') entries.push(['onArrive', '() => bumpBadge()']);
-  if (id === 'pile') entries.push(['floor', "'screen'"]);
   if (s.field) entries.push(['field', "'cascade'"]);
   if (c.knob) entries.push(['n', `[${s.knob}]`]);
   if (s.haptics !== hapticsDef) entries.push(['haptics', `${s.haptics}`]);
@@ -181,10 +178,9 @@ ${lines.join('\n')}
 });`;
   }
   if (s.direction !== naturalOf(id)) lines.push(`  direction: '${s.direction}',`);
-  const pile = id === 'pile';
-  return `import { ${pile ? 'useDissolve, usePile' : 'useDissolve'} } from '${PKG}';
+  return `import { useDissolve } from '${PKG}';
 
-const { ref, dissolving, dissolve } = useDissolve();${pile ? '\nconst { sweepPile } = usePile();' : ''}
+const { ref, dissolving, dissolve } = useDissolve();
 
 <View ref={ref} collapsable={false} style={{ opacity: dissolving ? 0 : 1 }}>
   <Card />
@@ -192,7 +188,7 @@ const { ref, dissolving, dissolve } = useDissolve();${pile ? '\nconst { sweepPil
 
 await dissolve({
 ${lines.join('\n')}
-});${pile ? "\n\n// later, e.g. when leaving the screen\nawait sweepPile({ preset: 'dust', origin: 'left' });" : ''}`;
+});`;
 }
 
 /** Same settings on the Canvas 2D port (web/engine/atlas.js). */
@@ -213,7 +209,6 @@ await morph(a, b, { grain: ${s.grain}, duration: ${s.duration}, reverse: true })
   if (c.direction && s.direction !== naturalOf(id)) o.push(`direction: '${s.direction}'`);
   if (id === 'fling') o.push(`velocity: { x: ${FLINGS[s.fling].v.x}, y: ${FLINGS[s.fling].v.y} }`);
   if (id === 'stream') o.push('target: { x, y, width, height } // the bin rect');
-  if (id === 'pile') o.push('heap: new Heap(floorEl)');
   if (s.field) o.push("field: 'cascade'");
   if (c.knob && KNOB[id].key === 'n') o.push(`n: [${s.knob}]`);
   if (id === 'charge') o.push('hold: true');
@@ -227,7 +222,7 @@ await morph(a, b, { grain: ${s.grain}, duration: ${s.duration}, reverse: true })
         ? '\n// pointermove: h.set(progress), commit: h.release(), rewind: h.cancel()'
         : '';
   const hold = id === 'charge' || (id === 'peel' && s.mode === 'hand') || s.mode === 'scrub';
-  return `import { play${id === 'pile' ? ', Heap' : ''} } from './engine/atlas.js';
+  return `import { play } from './engine/atlas.js';
 
 // source: a canvas snapshot of the view, x, y, w, h: its viewport rect
 const h = play({
@@ -270,7 +265,6 @@ function hintFor(id, s) {
   if (s.mode === 'scrub') return 'Drag the card sideways, release past half to commit';
   if (id === 'fling') return 'Swipe the card, or press Play to use the velocity preset';
   if (id === 'morph') return 'Tap the card or press Play';
-  if (id === 'pile') return 'Each play adds to the heap. Sweep blows it away';
   if (caps(id, s).origin && s.origin === 'touch') return 'Tap the card where it should break';
   return 'Tap the card or press Play';
 }
@@ -288,7 +282,6 @@ export function playgroundHTML(id, { codeBlock, title }) {
           <button class="chip on" data-act="play">Play</button>
           <button class="chip" data-act="reverse">Reverse</button>
           <button class="chip" data-act="reset">Reset</button>
-          ${id === 'pile' ? '<button class="chip" data-act="sweep">Sweep</button>' : ''}
         </div>
       </div>
       <aside class="panel" aria-label="Playground controls">${panelHTML(id, s)}</aside>
@@ -303,7 +296,6 @@ export function playgroundHTML(id, { codeBlock, title }) {
 export function mountPlayground(root, id, { highlight }) {
   const pg = root.querySelector('[data-pg]');
   if (!pg) return () => {};
-  const stage = pg.querySelector('.pg-stage');
   const scene = pg.querySelector('.pg-scene');
   const panel = pg.querySelector('.panel');
   const hint = pg.querySelector('.pg-hint');
@@ -325,7 +317,7 @@ export function mountPlayground(root, id, { highlight }) {
   card.setAttribute('role', 'button');
   card.setAttribute('tabindex', '0');
   card.setAttribute('aria-label', `Play ${id}`);
-  let cardB = null, bin = null, heap = null, onB = false;
+  let cardB = null, bin = null, onB = false;
   const nodes = [card];
   if (id === 'morph') {
     cardB = mk('morphB');
@@ -343,7 +335,6 @@ export function mountPlayground(root, id, { highlight }) {
     nodes.push(bin);
   }
   scene.replaceChildren(...nodes);
-  if (id === 'pile') heap = new Heap(stage, 150);
 
   const rect = (el) => { const r = el.getBoundingClientRect(); return { source: el, x: r.left, y: r.top, w: r.width, h: r.height }; };
   const hide = (el) => { el.style.transition = 'none'; el.style.opacity = '0'; };
@@ -364,7 +355,6 @@ export function mountPlayground(root, id, { highlight }) {
     if (c.origin && s.origin !== 'auto') o.origin = s.origin === 'touch' ? (touch ?? { x: o.w / 2, y: o.h / 2 }) : s.origin;
     if (id === 'fling') o.velocity = FLINGS[s.fling].v;
     if (id === 'stream') { const b = bin.getBoundingClientRect(); o.target = { x: b.left, y: b.top, width: b.width, height: b.height }; }
-    if (id === 'pile') o.heap = heap;
     if (s.field) o.field = 'cascade';
     if (c.knob && KNOB[id].key === 'n') o.n = [s.knob];
     return o;
@@ -488,7 +478,6 @@ export function mountPlayground(root, id, { highlight }) {
       else if (id === 'peel' && s.mode === 'hand') { s.mode = 'auto'; s.duration = durationDef(id, s); refresh(true); run('in'); }
       else run(s.direction === 'in' ? 'out' : 'in');
     } else if (act === 'reset') reset();
-    else if (act === 'sweep' && heap && !busy) { busy = true; await heap.sweep('dust'); busy = false; }
   });
 
   function stop() {
@@ -502,7 +491,6 @@ export function mountPlayground(root, id, { highlight }) {
   function reset() {
     stop();
     s = defaults(id);
-    heap?.reset();
     onB = false;
     show(card, false);
     if (cardB) cardB.style.opacity = '0';

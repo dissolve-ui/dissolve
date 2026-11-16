@@ -35,7 +35,6 @@ export type VariantName =
   // E
   | 'shatter'
   // F
-  | 'pile'
   | 'morph'
   // casual
   | 'peel'
@@ -87,8 +86,6 @@ export type BurstParams = {
   ty: number;
   tw: number;
   th: number;
-  /** Floor in WINDOW coords (pile). Defaults to the window height. */
-  floorY: number;
   /** Free numeric slots for a variant (shards, push...). Read them as P.n0..P.n3. */
   n0: number;
   n1: number;
@@ -144,7 +141,6 @@ export type BurstInput = Omit<Burst, 'key' | 'params' | 'grain' | 'direction' | 
   velocity?: Point;
   /** Target rect in window coords. */
   target?: Box;
-  floorY?: number;
   n?: [number?, number?, number?, number?];
   /** Merged last into the computed params (variant resolve hooks). */
   paramsOverride?: Partial<BurstParams>;
@@ -233,7 +229,7 @@ export type AtlasVariant = VariantBase & {
   ownsOrigin?: boolean;
   /**
    * JS thread, once, after timing. Free pass over the whole buffer to fill extras or
-   * rewrite delay/life with global knowledge (sorting, heaps...).
+   * rewrite delay/life with global knowledge (sorting, paths...).
    */
   prepare?: (d: number[], stride: number, count: number, P: BurstParams, burst: Burst) => void;
   step: StepFn;
@@ -275,8 +271,6 @@ export type DissolveOptions = {
   velocity?: Point;
   /** Target view or window rect (stream). */
   to?: RefObject<ViewRef | null> | Box;
-  /** Floor in window coords, or 'screen' (pile). */
-  floor?: number | 'screen' | RefObject<ViewRef | null>;
   /** Delay field override (cascade) and its row bounds in local Y. */
   field?: FieldName;
   rows?: number[];
@@ -291,8 +285,6 @@ export type DissolveCtx = {
   /** Add a burst. Returns a handle to remove it (needed with external progress). */
   add: (b: BurstInput) => BurstHandle;
   remove: (key: string) => void;
-  /** Persistent overlay layers drawn under the bursts (pile heap...). null removes it. */
-  setLayer: (id: string, node: ReactNode | null) => void;
   reduced: boolean;
 };
 

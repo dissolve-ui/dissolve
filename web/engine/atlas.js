@@ -464,144 +464,6 @@ VARIANTS.melt = {
   },
 };
 
-/* ---------- pile (src/dissolve/variants/pile.tsx + pile.store.ts) ---------- */
-
-const PILE_END = 1.4, GRAVITY = 2400, SETTLE = 0.12, MIN_FALL = 0.12, REPOSE = 0.5, PACK = 0.9, SLIDE_STEPS = 12;
-
-function spanMax(H, x, g) {
-  const a = Math.floor(x - g / 2), b = Math.ceil(x + g / 2) - 1;
-  if (a < 0 || b >= H.length) return Infinity;
-  let m = 0;
-  for (let c = a; c <= b; c++) if (H[c] > m) m = H[c];
-  return m;
-}
-function spanSet(H, x, g, v) {
-  const a = Math.max(0, Math.floor(x - g / 2)), b = Math.min(H.length - 1, Math.ceil(x + g / 2) - 1);
-  for (let c = a; c <= b; c++) if (H[c] < v) H[c] = v;
-}
-
-/**
- * The frozen sand heap of a floor element (the web stand-in for the provider 'pile' layer).
- * A canvas pinned to the bottom of `floorEl`; H is the height profile per 1 css px column.
- */
-export class Heap {
-  constructor(floorEl, height = 140) {
-    this.el = floorEl;
-    this.canvas = document.createElement('canvas');
-    this.canvas.className = 'heap';
-    this.height = height;
-    floorEl.append(this.canvas);
-    this.reset();
-  }
-  reset() {
-    const w = Math.ceil(this.el.clientWidth);
-    this.W = w;
-    this.H = new Float32Array(w);
-    this.canvas.width = w * DPR;
-    this.canvas.height = this.height * DPR;
-    this.canvas.style.width = w + 'px';
-    this.canvas.style.height = this.height + 'px';
-    this.g = this.canvas.getContext('2d');
-  }
-  /** Viewport geometry right now: floor line and left edge. */
-  measure() {
-    const r = this.el.getBoundingClientRect();
-    return { floorY: r.bottom - 1, left: r.left };
-  }
-  get empty() { return !this.H.some((v) => v > 0); }
-  /** Dissolves the heap with an exit preset, then clears it (usePile().sweepPile). */
-  async sweep(preset = 'dust') {
-    if (this.empty) return;
-    const r = this.canvas.getBoundingClientRect();
-    const snap = document.createElement('canvas');
-    snap.width = this.canvas.width; snap.height = this.canvas.height;
-    snap.getContext('2d').drawImage(this.canvas, 0, 0);
-    this.reset();
-    await play({ source: snap, x: r.left, y: r.top, w: r.width, h: r.height, preset, grain: 2.5, duration: 1300 }).done;
-  }
-}
-
-VARIANTS.pile = {
-  grain: 2.5, end: PILE_END, natural: 'out', extra: 3, spread: 0.45, jitter: 0.12,
-  duration: () => 2000,
-  timing: (g, P) => ({ delay: (g.lx / P.w) * 0.45 + g.r1 * 0.12, life: 0.6 }),
-  prepare(d, stride, count, P, opts) {
-    const heap = opts.heap;
-    const geo = heap ? heap.measure() : { floorY: P.floorY, left: 0 };
-    const committed = !!heap && opts.direction !== 'in';
-    const H = heap ? (committed ? heap.H : heap.H.slice()) : new Float32Array(Math.ceil(innerWidth));
-    const W = H.length;
-    const keep = P.n0 > 0 ? Math.min(1, P.n0) : 0.35;
-    const rate = PILE_END / Math.max(0.05, P.sec);
-    const g = P.grain;
-    const order = [], keys = new Float64Array(count);
-    for (let i = 0; i < count; i++) {
-      const k = i * stride, delay = d[k + 6];
-      const dist = Math.max(0, P.floorY - (P.y + d[k + 1]));
-      let fall = Math.sqrt((2 * dist) / GRAVITY) * rate;
-      fall = Math.max(MIN_FALL, Math.min(fall, PILE_END - SETTLE - delay));
-      d[k + 7] = fall + SETTLE;
-      if (d[k + 4] < keep) { d[k + 10] = fall / (fall + SETTLE); keys[i] = delay + fall; order.push(i); }
-      else { d[k + 10] = -1; d[k + 7] = Math.max(MIN_FALL, Math.min(0.55, PILE_END - delay)); }
-    }
-    order.sort((a, b) => keys[a] - keys[b]);
-    for (const i of order) {
-      const k = i * stride;
-      // Columns are local to the floor element.
-      let xc = P.x + d[k] + (d[k + 3] - 0.3) * 30 - geo.left;
-      xc = Math.min(W - g / 2, Math.max(g / 2, xc));
-      let hc = spanMax(H, xc, g);
-      for (let s = 0; s < SLIDE_STEPS; s++) {
-        const hl = spanMax(H, xc - g, g), hr = spanMax(H, xc + g, g), low = Math.min(hl, hr);
-        if (!(hc > low + g * REPOSE)) break;
-        xc += hl <= hr ? -g : g;
-        hc = spanMax(H, xc, g);
-      }
-      if (!isFinite(hc)) hc = 0;
-      d[k + 8] = xc + geo.left;
-      d[k + 9] = P.floorY - hc - g / 2;
-      spanSet(H, xc, g, hc + g * PACK);
-    }
-    opts._pile = { geo, committed };
-  },
-  step(t, d, k, P, a0, a1, o) {
-    const tl = d[k + 10], x0 = P.x + d[k], y0 = P.y + d[k + 1];
-    if (tl < 0) {
-      const e = t * t, drop = P.floorY - y0;
-      o.cx = x0 + (d[k + 3] - 0.3) * 30 * e;
-      o.cy = y0 + (drop > 0 ? Math.min(drop, 260) : 0) * e;
-      o.s = 1 - t * 0.4;
-      return;
-    }
-    const xf = d[k + 8], yf = d[k + 9];
-    o.a = 1;
-    if (t < tl) {
-      const q = t / tl;
-      o.cx = x0 + (xf - x0) * q;
-      o.cy = y0 + (yf - y0) * q * q;
-      o.rot = (d[k + 5] - 0.5) * 3 * Math.sin(Math.PI * q);
-    } else {
-      const u = tl < 1 ? (t - tl) / (1 - tl) : 1, v = 1 - u;
-      o.cx = xf;
-      o.cy = yf - Math.abs(Math.sin(u * Math.PI * 2)) * 1.6 * v * v;
-    }
-  },
-  /** Bakes the landed grains into the heap canvas (pile.store bake). */
-  settle(b) {
-    const heap = b.opts.heap, info = b.opts._pile;
-    if (!heap || !info?.committed) return;
-    const { d, stride, count, P } = b;
-    const g = P.grain, sg = g * DPR, top = info.geo.floorY - heap.height;
-    const x = heap.g;
-    x.setTransform(DPR, 0, 0, DPR, 0, 0);
-    for (let i = 0; i < count; i++) {
-      const k = i * stride;
-      if (d[k + 10] < 0) continue;
-      x.drawImage(b.source, d[k] * DPR - sg / 2, d[k + 1] * DPR - sg / 2, sg, sg, d[k + 8] - info.geo.left - g / 2, d[k + 9] - top - g / 2, g, g);
-    }
-  },
-};
-
 /* ---------- morph (src/dissolve/variants/morph.tsx) ---------- */
 
 const MORPH_END = 1.1, MORPH_LIFE = 0.6, MS = 10;
@@ -893,7 +755,6 @@ function buildParams(b, grain, duration) {
     vx: b.velocity?.x ?? 0, vy: b.velocity?.y ?? 0,
     tx: t ? t.x + t.width / 2 : innerWidth / 2, ty: t ? t.y + t.height / 2 : innerHeight - 64,
     tw: t?.width ?? 24, th: t?.height ?? 24,
-    floorY: b.floorY ?? innerHeight,
     n0: n[0] ?? 0, n1: n[1] ?? 0, n2: n[2] ?? 0, n3: n[3] ?? 0,
   };
 }
@@ -981,7 +842,7 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
 /**
  * Starts a burst. opts: { source (DPR canvas of w x h css px), x, y, w, h (viewport css px),
- * preset, grain, duration, direction, origin, velocity, target {x,y,width,height}, n, hold }.
+ * preset, grain, duration, direction, origin, velocity, target {x,y,width,height}, n, hold, fixed }.
  * Returns { done: Promise, aux: { a0, a1 }, set(p), release(), cancel() }.
  * hold: true keeps progress at 0 (aux driven pre phase, used by charge) until release().
  * set(p) drives the raw progress by hand (scrub); release() then plays on from there.
@@ -1002,7 +863,6 @@ export function play(opts) {
   let grain = opts.grain ?? v.grain;
   const min = Math.sqrt((opts.w * opts.h) / MAX_GRAINS);
   if (grain < min) grain = Math.ceil(min * 2) / 2;
-  if (opts.heap) opts.floorY = opts.heap.measure().floorY;
   const P0 = buildParams(opts, grain, 1000);
   const duration = opts.duration ?? (v.duration ? v.duration(P0) : 1500);
   const P = buildParams(opts, grain, duration);
@@ -1030,7 +890,8 @@ export function play(opts) {
   const b = {
     v, P, d, stride, count, end, rev, duration,
     source: opts.source, tinted: v.tint ? tintLayer(opts.source, v.tint) : null,
-    sx0: scrollX, sy0: scrollY,
+    // fixed: the element is position: fixed (a viewport toast), grains ignore page scroll.
+    sx0: opts.fixed ? null : scrollX, sy0: opts.fixed ? null : scrollY,
     start: opts.hold ? null : performance.now(),
     aux: handle.aux, finish: resolveDone, manual: null, opts,
   };
@@ -1084,10 +945,10 @@ function frame(now) {
   ctx.clearRect(0, 0, overlay.width, overlay.height);
   for (const b of bursts) {
     const raw = b.manual != null ? b.manual : b.start ? ((now - b.start) / b.duration) * b.end : 0;
-    if (raw >= b.end) { bursts.delete(b); b.v.settle?.(b); b.finish(); continue; }
+    if (raw >= b.end) { bursts.delete(b); b.finish(); continue; }
     const p = b.rev ? b.end - raw : raw;
     const { P, d, stride, v } = b;
-    const offX = b.sx0 - scrollX, offY = b.sy0 - scrollY;
+    const offX = b.sx0 == null ? 0 : b.sx0 - scrollX, offY = b.sy0 == null ? 0 : b.sy0 - scrollY;
     if (b.draw) { b.draw(p, offX, offY); continue; }
     const g = P.grain, sg = g * DPR, a0 = b.aux.a0, a1 = b.aux.a1;
     const x = v.goo ? gctx : ctx;

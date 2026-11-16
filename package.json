@@ -25,12 +25,20 @@
   "private": true,
   "scripts": {
     "start": "expo start",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test test/*.test.mjs",
+    "test:cli": "node --test test/cli.test.mjs",
+    "test:registry": "node --test test/registry.test.mjs test/theme.test.mjs",
+    "test:package": "node --test test/package.test.mjs",
+    "build:package": "sh scripts/build-package.sh",
+    "check": "npm run typecheck && npm test"
   },
   "dependencies": {
     "@shopify/react-native-skia": "2.6.2",
     "@tailwindcss/postcss": "^4.3.5",
     "expo": "~57.0.6",
+    "expo-clipboard": "~57.0.2",
     "expo-constants": "~57.0.24",
     "expo-glass-effect": "~57.0.5",
     "expo-haptics": "~57.0.1",
@@ -38,8 +46,10 @@
     "expo-linear-gradient": "~57.0.2",
     "expo-linking": "~57.0.14",
     "expo-router": "~57.0.31",
+    "expo-sqlite": "~57.0.5",
     "expo-status-bar": "~57.0.1",
     "expo-symbols": "~57.0.3",
+    "expo-web-browser": "~57.0.3",
     "nativewind": "5.0.0-preview.4",
     "react": "19.2.3",
     "react-native": "0.86.3",
@@ -58,5 +68,8 @@
   },
   "overrides": {
     "lightningcss": "1.30.1"
+  },
+  "engines": {
+    "node": ">=22.6"
   }
 }

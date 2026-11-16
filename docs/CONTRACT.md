@@ -14,7 +14,7 @@ Validate with `cd /Users/rayanselmi/works/dissolve && npx tsc --noEmit`. Ignore 
 | C scrub + charge | `variants/charge.ts`, `hooks/useDissolveScrub.ts`, `hooks/useDissolveHold.ts` | `charge` (AtlasVariant), `useDissolveScrub`, `ScrubOptions`, `useDissolveHold`, `HoldOptions` |
 | D cascade | `variants/cascade.ts`, `hooks/useDissolveScreen.ts` | `cascadeField` (FieldFn), `useDissolveScreen`, `ScreenOptions` |
 | E shatter | `variants/shatter.tsx` | `shatter` (CustomVariant) |
-| F pile + morph | `variants/pile.tsx`, `variants/morph.tsx`, `hooks/useDissolveMorph.ts`, `hooks/usePile.ts` | `pile`, `morph` (CustomVariant), `useDissolveMorph`, `MorphOptions`, `usePile` |
+| F morph | `variants/morph.tsx`, `hooks/useDissolveMorph.ts` | `morph` (CustomVariant), `useDissolveMorph`, `MorphOptions` |
 
 All paths are under `src/dissolve/`. You may add private helper files only if they are prefixed with your variant name (e.g. `variants/shatter.mesh.ts`). You may not edit `app/` screens (the playground agent owns them), `package.json`, or any other group's file. Never import another builder's file: copy the small bits of math you need. You may extend the exported option types of your own hooks (add fields), but do not rename or remove exports.
 
@@ -26,7 +26,7 @@ If you truly need an engine change, do not make it: describe it in your final re
 dissolve(opts) / builder hook
   -> runDissolve(ctx, ref, opts, extra)        hooks/useDissolve.ts
        capture(ref)  -> { image, box }          core.ts (makeImageFromView + measureInWindow)
-       generic options: to -> target rect, floor -> floorY
+       generic options: to -> target rect
        variant.resolve?(...)                    your async JS hook
        ctx.add(BurstInput) -> BurstHandle       index.tsx provider
          makeBurst: grain cap, pixel ratio, flat BurstParams   Host.tsx
@@ -39,7 +39,7 @@ dissolve(opts) / builder hook
 
 `makeBurst` also samples `burst.start = { p, a0, a1 }` (progress and aux values at add time) so renderers never read shared values during render.
 
-The provider renders a full screen, `pointerEvents="none"` overlay above the app: first the persistent layers (`setLayer`), then one `BurstHost` per burst. Everything is in WINDOW coordinates.
+The provider renders a full screen, `pointerEvents="none"` overlay above the app: one `BurstHost` per burst. Everything is in WINDOW coordinates.
 
 ## 3. Worklet dispatch (why it works on the UI thread)
 
@@ -86,7 +86,7 @@ Before each `step` call the engine resets `o` to the rest pose: `cx = P.x + lx`,
 
 Perf contract kept by the engine: one pass per frame, grains whose `t` did not change since the last frame are skipped. Because of that skip, your step must be a pure function of `t` (plus `a0`, `a1`): no per-grain state between frames. When `a0` or `a1` changes, every grain is recomputed (charge uses this). Grain counts are capped at `MAX_GRAINS = 6000` by `capGrain` in `makeBurst`: big views get bigger grains automatically.
 
-`BurstParams P` (flat numbers, captured once): `x y w h` (window rect), `grain pr cols rows maxR`, `dir` (0 out, 1 in), `sec` (duration in s), `hasOrigin ox oy maxD` (origin in LOCAL coords, defaults to the center), `vx vy` (pt/s), `tx ty tw th` (target rect in WINDOW coords, `tx ty` is its center), `floorY` (window, defaults to screen height), `n0..n3` free knobs (from `opts.n`, or from `resolve` via `params`).
+`BurstParams P` (flat numbers, captured once): `x y w h` (window rect), `grain pr cols rows maxR`, `dir` (0 out, 1 in), `sec` (duration in s), `hasOrigin ox oy maxD` (origin in LOCAL coords, defaults to the center), `vx vy` (pt/s), `tx ty tw th` (target rect in WINDOW coords, `tx ty` is its center), `n0..n3` free knobs (from `opts.n`, or from `resolve` via `params`).
 
 ### Origin (generic, every atlas preset)
 
@@ -103,13 +103,13 @@ The initial pose is computed on the JS side with the same `step`, so an entrance
 
 ### resolve (optional, JS, async)
 
-`resolve({ opts, box, image, grain, duration })` returns `{ params?, grain?, duration?, data?, haptics? }`. Use it to derive params from options (fling: duration from speed, stream: arrival haptics and `opts.onArrive` timers from the arrival quantiles). `haptics` replaces the default pattern. Change the grain through `grain`, never through `params.grain`. `opts.to` and `opts.floor` are already measured into `P.tx/ty/tw/th` and `P.floorY` before `resolve` runs.
+`resolve({ opts, box, image, grain, duration })` returns `{ params?, grain?, duration?, data?, haptics? }`. Use it to derive params from options (fling: duration from speed, stream: arrival haptics and `opts.onArrive` timers from the arrival quantiles). `haptics` replaces the default pattern. Change the grain through `grain`, never through `params.grain`. `opts.to` is already measured into `P.tx/ty/tw/th` before `resolve` runs.
 
 ### Fields (D)
 
-`FieldFn = (g: GrainSeed, P, burst, life?, end?) => delay`, JS side. The engine passes the variant's own `life` for that grain and the timeline `end`, so a field can keep `delay <= end - life` (clean last frame). Selected with `dissolve({ preset: 'dust', field: 'cascade', rows })`; `rows` lands in `burst.rowBounds` (local Y bounds). A field wins over the origin delay; the variant keeps its own `life` and motion. A variant whose `prepare` rewrites delays (stream, pile) overrides the field.
+`FieldFn = (g: GrainSeed, P, burst, life?, end?) => delay`, JS side. The engine passes the variant's own `life` for that grain and the timeline `end`, so a field can keep `delay <= end - life` (clean last frame). Selected with `dissolve({ preset: 'dust', field: 'cascade', rows })`; `rows` lands in `burst.rowBounds` (local Y bounds). A field wins over the origin delay; the variant keeps its own `life` and motion. A variant whose `prepare` rewrites delays (stream) overrides the field.
 
-## 5. Custom renderers (E shatter, F pile and morph)
+## 5. Custom renderers (E shatter, F morph)
 
 ```ts
 type CustomVariant = { kind: 'custom'; name; info; defaultGrain; end?; natural?; resolve?;
@@ -123,13 +123,12 @@ type CustomVariant = { kind: 'custom'; name; info; defaultGrain; end?; natural?;
 - The host drives timing and calls `onFinish` then removes you. With an external progress nobody removes you except the owner.
 - `burst.data` is your free payload (second image for morph). `burst.image` is the snapshot, `burst.params` the flat params.
 - You may embed the engine: `<Particles burst={burst} variant={privateAtlasVariant} progress={progress} />` with a variant object private to your file (not registered).
-- Persistent visuals (pile heap) go through `useDissolveContext().setLayer('pile', node)`; `setLayer('pile', null)` removes them. Layers render under the bursts and survive burst removal.
 
 ## 6. Hooks (B, C, D, F)
 
 Use only public engine pieces:
 
-- `useDissolveContext()` from `../context`: `{ add, remove, setLayer, reduced }`. `add(BurstInput)` returns `{ key, remove }`. Respect `reduced` (skip the effect, just show or hide).
+- `useDissolveContext()` from `../context`: `{ add, remove, reduced }`. `add(BurstInput)` returns `{ key, remove }`. Respect `reduced` (skip the effect, just show or hide).
 - `runDissolve(ctx, ref, opts, extra)` from `./useDissolve`: the whole capture, resolve, add, haptics pipeline. `extra` is `{ progress?, aux0?, aux1?, data?, onFinish?, image?, box? }`; pass `image` and `box` to reuse a snapshot taken earlier (scrub and hold pre-capture on touch down). Returns `{ handle, duration }` or null.
 - `capture(ref)`, `measure(ref)`, `frames(n)`, `capGrain`, `defaultHaptics` from `../core`.
 - `getVariant(name)` from `../variants/registry` gives `end` and `defaultGrain`.

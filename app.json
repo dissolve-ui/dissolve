@@ -13,7 +13,9 @@
     },
     "plugins": [
       "expo-router",
-      "expo-image"
+      "expo-image",
+      "expo-web-browser",
+      "expo-sqlite"
     ],
     "scheme": "dissolve",
     "experiments": {

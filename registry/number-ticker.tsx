@@ -3,8 +3,11 @@
  * classNames, change the timings, anything. Colors come from the dissolve theme tokens
  * (global.css), so it follows light and dark mode out of the box.
  *
- * Animated number for prices, balances and counters. Every digit is a clipped 0 to 9 column
- * that rolls to its new value on a calm iOS curve, right to left with a slight stagger.
+ * Animated number for prices, balances and counters. Every digit is a clipped column that rolls
+ * to its new value on a calm iOS curve, right to left with a slight stagger. Columns roll like an
+ * odometer, in the direction the number moves: 9 to 10 turns the units one step forward instead
+ * of spinning back through 8..1, and a new value arriving mid roll carries on from where the
+ * column is, so fast changes (a held stepper) never flash stale digits.
  * Added digits open in, removed ones fold out, so the layout never jumps.
  *
  * <NumberTicker value={1240.5} decimals={2} locale="fr-FR" suffix={' €'} fontSize={44} />
@@ -13,10 +16,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LayoutChangeEvent, TextStyle } from 'react-native';
 import { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import { scheduleOnUI } from 'react-native-worklets';
 import { Animated, Text, View, cn } from './tw';
 
 const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+/** Two turns of the wheel plus a closing 0, so a column can roll either way from any digit. */
+const WHEEL = Array.from({ length: 21 }, (_, i) => DIGITS[i % 10]);
+const WHEEL_TEXT = WHEEL.join('\n');
 const MINUS = '−';
 /** Extra room given to each glyph inside its clipped column, so fractional advances never clip. */
 const SLACK = 6;
@@ -93,23 +100,34 @@ function toCells(value: number, decimals: number, group: string, decimal: string
 
 type Look = { className: string; style: TextStyle };
 
-function Column({ item, width, lineHeight, look, delay, duration }: { item: Item; width: number; lineHeight: number; look: Look; delay: number; duration: number }) {
+function Column({ item, width, lineHeight, look, delay, duration, dir }: { item: Item; width: number; lineHeight: number; look: Look; delay: number; duration: number; dir: number }) {
   const digit = item.kind === 'digit' ? Number(item.char) : 0;
   // New columns open from nothing and roll up from zero, leaving ones roll back to zero.
   const shown = item.present ? digit : 0;
-  const y = useSharedValue(item.fresh ? 0 : -shown * lineHeight);
+  // Wheel position in digits (0..20). The row at index i shows i % 10.
+  const pos = useSharedValue(item.fresh ? 0 : shown);
   const w = useSharedValue(item.fresh ? 0 : width);
   const o = useSharedValue(item.fresh ? 0 : 1);
 
   useEffect(() => {
     const cfg = { duration, easing: CALM };
-    y.value = withDelay(delay, withTiming(-shown * lineHeight, cfg));
+    const up = dir >= 0;
+    scheduleOnUI(() => {
+      'worklet';
+      // Re-base the wheel on the turn that leaves room in the direction of travel (same digit on
+      // screen, no visual change), then roll the short way that way. Picks up mid roll.
+      let c = pos.value % 10;
+      if (!up) c += 10;
+      pos.value = c;
+      const to = up ? (shown >= c - 0.5 ? shown : shown + 10) : shown + 10 <= c + 0.5 ? shown + 10 : shown;
+      pos.value = withDelay(delay, withTiming(to, cfg));
+    });
     w.value = withDelay(item.present ? 0 : delay, withTiming(item.present ? width : 0, cfg));
     o.value = withDelay(item.present ? delay : 0, withTiming(item.present ? 1 : 0, { duration: duration * 0.6, easing: CALM }));
-  }, [shown, item.present, width, lineHeight, delay, duration, y, w, o]);
+  }, [shown, dir, item.present, width, delay, duration, pos, w, o]);
 
   const box = useAnimatedStyle(() => ({ width: w.value, opacity: o.value }));
-  const roll = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
+  const roll = useAnimatedStyle(() => ({ transform: [{ translateY: -pos.value * lineHeight }] }));
   const cell = { width: width + SLACK, marginLeft: -SLACK / 2, lineHeight, height: lineHeight };
   const cls = cn(look.className, 'text-center');
 
@@ -125,11 +143,10 @@ function Column({ item, width, lineHeight, look, delay, duration }: { item: Item
   return (
     <Animated.View className="overflow-hidden" style={[{ height: lineHeight }, box]}>
       <Animated.View style={roll}>
-        {DIGITS.map((d) => (
-          <Text key={d} numberOfLines={1} className={cls} style={[look.style, cell]}>
-            {d}
-          </Text>
-        ))}
+        {/* One text for the whole wheel, one line per digit: cheap to mount, even mid roll. */}
+        <Text className={cls} style={[look.style, cell, { height: lineHeight * WHEEL.length }]}>
+          {WHEEL_TEXT}
+        </Text>
       </Animated.View>
     </Animated.View>
   );
@@ -185,6 +202,16 @@ export function NumberTicker({
   const map = widths.sig === signature ? widths.map : {};
   const ready = glyphs.every((g) => map[g] != null);
   const digitW = Math.max(0, ...DIGITS.map((d) => map[d] ?? 0));
+
+  // Direction of the last change (in magnitude, the columns show digits), so every column rolls
+  // the way the number moves.
+  const last = useRef(value);
+  const dirRef = useRef(1);
+  if (value !== last.current) {
+    if (Number.isFinite(value) && Number.isFinite(last.current)) dirRef.current = Math.abs(value) >= Math.abs(last.current) ? 1 : -1;
+    last.current = value;
+  }
+  const dir = dirRef.current;
 
   // Union of the current cells and the ones still folding out.
   const prev = useRef<Item[]>([]);
@@ -253,6 +280,7 @@ export function NumberTicker({
             look={look}
             delay={delays[it.key] ?? 0}
             duration={duration}
+            dir={dir}
           />
         ))
       ) : (

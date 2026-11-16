@@ -1,0 +1,44 @@
+name: Component request
+description: Propose a new copy paste component for the registry (npx react-native-dissolve add).
+labels: [component]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Components live in `registry/`, are styled with NativeWind theme tokens and are installed with the CLI.
+        Check the [component list](https://dissolve.rselmi.com) first.
+  - type: input
+    id: name
+    attributes:
+      label: Component name
+      description: Kebab case, as it would be typed in `npx react-native-dissolve add <name>`.
+      placeholder: pull-to-refresh
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What it does
+      description: The interaction, the states and where dissolve effects come in.
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Apps, videos or designs that show the interaction.
+    validations:
+      required: true
+  - type: textarea
+    id: api
+    attributes:
+      label: Proposed props
+      render: tsx
+      placeholder: "<PullToRefresh onRefresh={load}>{list}</PullToRefresh>"
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Checklist
+      options:
+        - label: It only needs the allowed dependencies (react-native, Skia, Reanimated, Gesture Handler, expo-haptics, expo-symbols, expo-image).
+        - label: I would like to build it (registry file, index.json entry, demo, web port, tests).
