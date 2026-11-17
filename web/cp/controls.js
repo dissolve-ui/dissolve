@@ -1,6 +1,6 @@
 // Controls: QuantityStepper, RulerPicker, BarChart, MiniPlayer (registry/*.tsx), ported raw.
 // Same geometry, timings and curves as the native sources. Only the component, centered.
-import { CALM, QUAD, value, el, clamp, rectOf, play, snapshot, IMG, FONT, cover, rr } from './kit.js';
+import { CALM, QUAD, value, el, clamp, rectOf, play, snapshot, IMG, FONT, cover, rr, claimTouch } from './kit.js';
 
 const PKG = 'react-native-dissolve';
 const prop = (name, type, def, desc) => ({ name, type, def, desc });
@@ -1282,6 +1282,8 @@ function mountPlayer(body, { sc, mode }) {
 
   // Vertical pan drives `o` 1:1 (open or closed); a sideways pan on the closed pill skips.
   let g = null;
+  // Touch: up opens the pill, down closes the sheet; the other way scrolls the page.
+  const claimed = claimTouch(sheet, (dx, dy) => !!g && (opened ? dy > 0 : dy < 0));
   sheet.addEventListener('pointerdown', (e) => {
     if (e.button > 0) return;
     g = { x0: e.clientX, y0: e.clientY, axis: 0, start: o.v, side: o.v > 0.5, samples: [], t0: performance.now() };
@@ -1293,8 +1295,10 @@ function mountPlayer(body, { sc, mode }) {
     const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
     if (!g.axis) {
       if (!opened && Math.abs(dx) > 12 && Math.abs(dy) <= 10) g.axis = 1;
-      else if (Math.abs(dy) > 8 && Math.abs(dx) <= 24) g.axis = 2;
-      else if (Math.abs(dx) > 24) { g = null; return; }
+      else if (Math.abs(dy) > 8 && Math.abs(dx) <= 24) {
+        if (e.pointerType === 'touch' && !claimed()) { g = null; return; }
+        g.axis = 2;
+      } else if (Math.abs(dx) > 24) { g = null; return; }
       else return;
       try { sheet.setPointerCapture(e.pointerId); } catch {}
       sheet.classList.add('dragging');

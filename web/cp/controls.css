@@ -117,7 +117,7 @@
   --cc-glass-in: rgba(0, 0, 0, 0.06);
 }
 .cc-mp-sheet {
-  position: absolute; left: 0; top: 0; overflow: hidden; touch-action: none; cursor: pointer;
+  position: absolute; left: 0; top: 0; overflow: hidden; touch-action: pan-y; cursor: pointer;
   background: var(--cc-glass);
   -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%);
   box-shadow:

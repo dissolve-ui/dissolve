@@ -260,7 +260,7 @@ h1 { margin: 0 0 10px; font-size: var(--fs-h1); line-height: 1.05; font-weight: 
   display: grid; place-items: center;
 }
 .stage-slot { display: grid; place-items: center; width: 100%; height: 100%; padding: 24px; }
-.demo-card { cursor: pointer; border-radius: 20px; box-shadow: var(--shadow); transition: opacity .5s var(--ease), transform .45s var(--spring); touch-action: none; user-select: none; -webkit-user-select: none; }
+.demo-card { cursor: pointer; border-radius: 20px; box-shadow: var(--shadow); transition: opacity .5s var(--ease), transform .45s var(--spring); touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .demo-pair { position: relative; display: grid; cursor: pointer; }
 .demo-pair .demo-card-b { position: absolute; inset: 0; }
 .g-thumb, .stage { overflow: hidden; }
@@ -355,6 +355,8 @@ h1 { margin: 0 0 10px; font-size: var(--fs-h1); line-height: 1.05; font-weight: 
 .g-hint { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0; color: var(--muted); font-weight: 450; font-size: var(--fs-sm); letter-spacing: 0; transition: color .2s; }
 .g-meta:hover .g-hint { color: var(--text); }
 .g-meta:hover .g-group { color: var(--text-2); }
+.g-meta > svg { flex: none; color: var(--muted); transition: color .2s; }
+.g-meta:hover > svg { color: var(--text); }
 
 
 /* ---------- Showcase (gallery home, mirrors app/gallery.tsx) ---------- */
@@ -365,7 +367,7 @@ h1 { margin: 0 0 10px; font-size: var(--fs-h1); line-height: 1.05; font-weight: 
 .sc-head h2 { margin: 0; font-size: var(--fs-h2); line-height: 1.1; font-weight: 740; letter-spacing: -0.03em; font-variation-settings: var(--round); }
 .sc-note { margin: 6px 0 0; color: var(--muted); font-size: 14px; text-wrap: pretty; }
 
-.sc-item { display: block; cursor: pointer; border-radius: 20px; transition: opacity .7s var(--ease); touch-action: none; user-select: none; -webkit-user-select: none; }
+.sc-item { display: block; cursor: pointer; border-radius: 20px; transition: opacity .7s var(--ease); touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .sc-item.grab, .demo-card.grab { cursor: grab; }
 
 .sc-bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }

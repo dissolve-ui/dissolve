@@ -409,10 +409,7 @@ export function mountPlayground(root, id, { highlight }) {
   if (hold) attachHold(card, hold, () => !busy);
   else if (peel) {
     card.classList.add('grab');
-    card.addEventListener('pointerdown', (e) => { if (s.mode === 'hand' && !busy) { if (peel.grab(e.clientX, e.clientY)) try { card.setPointerCapture(e.pointerId); } catch {} } });
-    card.addEventListener('pointermove', (e) => peel.move(e.clientX, e.clientY));
-    card.addEventListener('pointerup', () => peel.drop());
-    card.addEventListener('pointercancel', () => peel.drop());
+    attachPeel(card, peel, () => s.mode === 'hand' && !busy);
     card.addEventListener('click', () => { if (s.mode === 'auto') run(); });
   } else if (id === 'fling') {
     attachFling(card, { canStart: () => !busy, onTap: () => run(), onFling: (velocity) => run('out', { opts: { velocity, origin: undefined } }) });

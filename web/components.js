@@ -7,6 +7,8 @@ import { ENTRIES as MESSAGES } from './cp/messages.js';
 import { ENTRIES as SURFACES } from './cp/surfaces.js';
 import { ENTRIES as AI } from './cp/ai.js';
 import { ENTRIES as CONTROLS } from './cp/controls.js';
+import { ENTRIES as PULL } from './cp/pull.js';
+import { ENTRIES as REORDER } from './cp/reorder.js';
 
 export { bezier, scope };
 
@@ -978,7 +980,7 @@ import { GooeyMenu } from '${DIR}/gooey-menu';
 };
 
 // The ports in cp/*.js carry their own glyph next to their content.
-Object.assign(COMPONENTS, INPUTS, MESSAGES, SURFACES, AI, CONTROLS);
+Object.assign(COMPONENTS, INPUTS, MESSAGES, SURFACES, AI, CONTROLS, PULL, REORDER);
 
 export const COMPONENT_ORDER = Object.keys(COMPONENTS);
 
@@ -1016,17 +1018,35 @@ export function mountComponent(id, body, { mode = 'panel' } = {}) {
 
 const arrowR = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
 
-export function componentsSectionHTML(head) {
-  return `${head('08', 'Components', `Ready-made components built on the dissolve engine. All ${COMPONENT_ORDER.length} are live, try them.`)}
-  <div class="cp-grid">
-    ${COMPONENT_ORDER.map((id) => `<section class="cp-panel" aria-label="${COMPONENTS[id].title}">
-      <a class="cp-panel-head" href="#/${id}">
-        <span class="cp-panel-text"><span class="cp-name">${COMPONENTS[id].title}</span><span class="cp-note">${COMPONENTS[id].note}</span></span>
+/** A few engine effects sit among the components, so the gallery shows why dissolve from the first row. */
+const FX = { 0: { id: 'dust', title: 'Dust', href: '#/dust' }, 4: { id: 'stream', title: 'Stream', href: '#/stream' }, 8: { id: 'scrub', title: 'Scrub', href: '#/effects' } };
+
+export function componentsSectionHTML() {
+  // Columns filled in reading order. The page re-renders on resize, so the count follows the width.
+  const cols = innerWidth >= 1400 ? 3 : 2;
+  const items = [];
+  COMPONENT_ORDER.forEach((id) => {
+    while (FX[items.length]) items.push({ fx: FX[items.length] });
+    items.push({ id });
+  });
+  const panel = (it, i) => it.fx
+    ? `<section class="cp-panel cp-panel-fx" aria-label="${it.fx.title}">
+      <a class="cp-panel-head" href="${it.fx.href}">
+        <span class="cp-panel-text"><span class="cp-name">${it.fx.title}</span></span>
         <span class="cp-go">${arrowR}</span>
       </a>
-      <div class="cp-panel-body" data-cp="${id}"></div>
-    </section>`).join('')}
-  </div>`;
+      <div class="cp-panel-body cp-fx-body" data-fx="${it.fx.id}" data-rank="${i}"><div class="stage-slot"></div></div>
+    </section>`
+    : `<section class="cp-panel" aria-label="${COMPONENTS[it.id].title}">
+      <a class="cp-panel-head" href="#/${it.id}">
+        <span class="cp-panel-text"><span class="cp-name">${COMPONENTS[it.id].title}</span></span>
+        <span class="cp-go">${arrowR}</span>
+      </a>
+      <div class="cp-panel-body" data-cp="${it.id}" data-rank="${i}"></div>
+    </section>`;
+  return `<div class="cp-grid cp-grid-home">${Array.from({ length: cols }, (_, col) => `<div class="cp-col">
+    ${items.map((it, i) => (i % cols !== col ? '' : panel(it, i))).join('')}
+  </div>`).join('')}</div>`;
 }
 
 /** Mounts every panel of the gallery section. Returns a dispose function. */
@@ -1036,7 +1056,7 @@ export function componentsSectionHTML(head) {
  * key inside a demo hands it to the visitor until it has been idle a few seconds. Reduced motion
  * turns it off.
  */
-const AUTO = { list: [], i: 0, timer: 0, playing: false, BEAT: 1800, IDLE: 7000 };
+const AUTO = { list: [], i: 0, timer: 0, playing: false, BEAT: 900, IDLE: 7000, CAP: 9000 };
 
 function conduct() {
   clearTimeout(AUTO.timer);
@@ -1044,24 +1064,25 @@ function conduct() {
   const now = performance.now();
   const ready = AUTO.list
     .filter((d) => d.visible && now - d.touched > AUTO.IDLE)
-    .sort((a, b) => (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+    .sort((a, b) => a.rank - b.rank);
   if (!ready.length) { if (AUTO.list.some((d) => d.visible)) AUTO.timer = setTimeout(conduct, 1000); return; }
-  const next = ready.find((d) => d.order > AUTO.last) ?? ready[0];
-  AUTO.last = next.order;
+  const next = ready.find((d) => d.rank > AUTO.last) ?? ready[0];
+  AUTO.last = next.rank;
   AUTO.playing = true;
-  // A demo disposed mid run (route change) may never settle: cap a run at 25 s.
-  Promise.race([Promise.resolve(next.demo.run()), new Promise((r) => setTimeout(r, 25000))]).catch(() => {}).finally(() => {
+  // Cap a run so one long story (or a demo disposed mid run) never holds the queue.
+  Promise.race([Promise.resolve(next.demo.run()), new Promise((r) => setTimeout(r, AUTO.CAP))]).catch(() => {}).finally(() => {
     AUTO.playing = false;
     AUTO.timer = setTimeout(conduct, AUTO.BEAT);
   });
 }
 
 let ORDER_SEQ = 0;
-export function autoplay(el, demo, { threshold = 0.6 } = {}) {
+export function autoplay(el, demo, { threshold = 0.6, rank } = {}) {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return () => {};
-  const d = { el, demo, visible: false, touched: -1e9, order: ++ORDER_SEQ };
+  // rank: reading order (the masonry columns put DOM order column by column).
+  const d = { el, demo, visible: false, touched: -1e9, rank: rank ?? 1000 + ++ORDER_SEQ };
   AUTO.list.push(d);
-  AUTO.last ??= 0;
+  AUTO.last ??= -1;
   const io = new IntersectionObserver(([en]) => {
     d.visible = en.isIntersecting && en.intersectionRatio >= threshold;
     if (d.visible && !AUTO.playing) { clearTimeout(AUTO.timer); AUTO.timer = setTimeout(conduct, 500); }
@@ -1079,7 +1100,7 @@ export function autoplay(el, demo, { threshold = 0.6 } = {}) {
 export function mountComponentsSection(root) {
   const mounted = [...root.querySelectorAll('[data-cp]')].map((b) => {
     const m = mountComponent(b.dataset.cp, b, { mode: 'panel' });
-    const stop = autoplay(b, m);
+    const stop = autoplay(b, m, { threshold: 0.35, rank: Number(b.dataset.rank) });
     return { dispose: () => { stop(); m.dispose(); } };
   });
   return () => mounted.forEach((m) => m.dispose());

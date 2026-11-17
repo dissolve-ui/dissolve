@@ -241,18 +241,27 @@ const box = (el) => { const r = el.getBoundingClientRect(); return { source: el,
 const hideEl = (el) => { el.style.transition = 'none'; el.style.opacity = '0'; };
 const showEl = (el) => { el.style.transition = 'none'; el.style.opacity = '1'; };
 
+// Touch: the cards are touch-action: pan-y, so a vertical swipe scrolls the page and cancels the
+// pointer. A drag becomes the card's own once it leaves the press sideways; from then on the page
+// holds still. Mouse and pen drag at once.
+const sideways = (e, x0, y0) => { const dx = Math.abs(e.clientX - x0); return dx > 6 && dx > Math.abs(e.clientY - y0); };
+const holdPage = (el, isOwn) => el.addEventListener('touchmove', (e) => { if (isOwn() && e.cancelable) e.preventDefault(); }, { passive: false });
+const TOUCH_HOLD_DELAY = 120; // a swipe cancels the pointer within this, before any charge shows
+
 /** Drag to throw (fling). onFling(velocity) on a fast release, onTap() on a tap, springs back otherwise. */
 export function attachFling(el, { canStart = () => true, onFling, onTap, minSpeed = 300 }) {
   let start = null, last = null;
   el.addEventListener('pointerdown', (e) => {
     if (!canStart()) return;
     try { el.setPointerCapture(e.pointerId); } catch {}
-    start = { x: e.clientX, y: e.clientY };
+    start = { x: e.clientX, y: e.clientY, on: e.pointerType !== 'touch' };
     last = { x: e.clientX, y: e.clientY, t: performance.now(), vx: 0, vy: 0 };
     el.style.transition = 'none';
   });
+  holdPage(el, () => !!start?.on);
   el.addEventListener('pointermove', (e) => {
     if (!start) return;
+    if (!start.on) { if (!sideways(e, start.x, start.y)) return; start.on = true; }
     const now = performance.now(), dt = Math.max(1, now - last.t);
     last = { x: e.clientX, y: e.clientY, t: now, vx: ((e.clientX - last.x) / dt) * 1000, vy: ((e.clientY - last.y) / dt) * 1000 };
     el.style.transform = `translate(${e.clientX - start.x}px, ${e.clientY - start.y}px) rotate(${(e.clientX - start.x) * 0.04}deg)`;
@@ -266,7 +275,8 @@ export function attachFling(el, { canStart = () => true, onFling, onTap, minSpee
     onFling({ x: Math.round(last.vx), y: Math.round(last.vy) });
   };
   el.addEventListener('pointerup', up);
-  el.addEventListener('pointercancel', up);
+  // Cancelled (the page took the swipe): spring back, never a tap or a throw.
+  el.addEventListener('pointercancel', () => { if (!start) return; start = null; el.style.transition = ''; el.style.transform = ''; });
 }
 
 /**
@@ -312,13 +322,16 @@ export function holdController(el, get) {
 }
 
 export function attachHold(el, ctrl, canStart = () => true) {
+  let wait = 0;
   el.addEventListener('pointerdown', (e) => {
     if (!canStart() || ctrl.active) return;
     e.preventDefault();
-    const r = el.getBoundingClientRect();
-    ctrl.start({ x: e.clientX - r.left, y: e.clientY - r.top });
+    const r = el.getBoundingClientRect(), at = { x: e.clientX - r.left, y: e.clientY - r.top };
+    if (e.pointerType !== 'touch') { ctrl.start(at); return; }
+    clearTimeout(wait);
+    wait = setTimeout(() => { wait = 0; if (canStart()) ctrl.start(at); }, TOUCH_HOLD_DELAY);
   });
-  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) el.addEventListener(ev, () => ctrl.stop());
+  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) el.addEventListener(ev, () => { clearTimeout(wait); wait = 0; ctrl.stop(); });
 }
 
 /**
@@ -384,14 +397,30 @@ export function peelController(el, get) {
   return api;
 }
 
-export function attachPeel(el, ctrl) {
-  el.addEventListener('pointerdown', (e) => {
-    if (!ctrl.grab(e.clientX, e.clientY)) return;
+export function attachPeel(el, ctrl, canStart = () => true) {
+  let pend = null, on = false;
+  const grab = (e, x, y) => {
+    if (!ctrl.grab(x, y)) return;
+    on = true;
     try { el.setPointerCapture(e.pointerId); } catch {}
+  };
+  el.addEventListener('pointerdown', (e) => {
+    if (!canStart()) return;
+    if (e.pointerType === 'touch') pend = { x: e.clientX, y: e.clientY };
+    else grab(e, e.clientX, e.clientY);
   });
-  el.addEventListener('pointermove', (e) => ctrl.move(e.clientX, e.clientY));
-  el.addEventListener('pointerup', () => ctrl.drop());
-  el.addEventListener('pointercancel', () => ctrl.drop());
+  holdPage(el, () => on);
+  el.addEventListener('pointermove', (e) => {
+    if (pend) {
+      if (!sideways(e, pend.x, pend.y)) return;
+      const p = pend; pend = null;
+      grab(e, p.x, p.y);
+    }
+    if (on) ctrl.move(e.clientX, e.clientY);
+  });
+  const end = () => { pend = null; if (!on) return; on = false; ctrl.drop(); };
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
 }
 
 /**
@@ -404,14 +433,15 @@ export function attachScrub(el, get, canStart = () => true) {
   el.addEventListener('pointerdown', (e) => {
     if (!canStart()) return;
     try { el.setPointerCapture(e.pointerId); } catch {}
-    st = { x0: e.clientX, last: e.clientX, t: performance.now(), v: 0, h: null, o: get(), b: box(el) };
+    st = { x0: e.clientX, y0: e.clientY, touch: e.pointerType === 'touch', last: e.clientX, t: performance.now(), v: 0, h: null, o: get(), b: box(el) };
   });
+  holdPage(el, () => !!st?.h);
   el.addEventListener('pointermove', (e) => {
     if (!st) return;
     const now = performance.now(), dx = e.clientX - st.x0;
     st.v = ((e.clientX - st.last) / Math.max(1, now - st.t)) * 1000; st.last = e.clientX; st.t = now;
     if (!st.h) {
-      if (Math.abs(dx) < 8) return;
+      if (Math.abs(dx) < 8 || (st.touch && !sideways(e, st.x0, st.y0))) return;
       st.right = dx > 0;
       st.h = play({ ...st.b, preset: st.o.preset, grain: st.o.grain, duration: st.o.duration, origin: st.right ? 'left' : 'right', hold: true });
       const v = ENGINE[st.o.preset];
@@ -425,10 +455,10 @@ export function attachScrub(el, get, canStart = () => true) {
     st.frac = Math.max(0, Math.min(1, (st.right ? dx : -dx) / st.range));
     st.h.set(st.frac * st.reach);
   });
-  const up = async () => {
+  const up = async (e) => {
     if (!st) return;
     const cur = st; st = null;
-    if (!cur.h) { cur.o.onTap?.(); return; }
+    if (!cur.h) { if (e.type === 'pointerup') cur.o.onTap?.(); return; }
     const along = cur.right ? cur.v : -cur.v;
     if (cur.frac >= (cur.o.threshold ?? 0.55) || along > 800) {
       cur.h.release();
