@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `pull-to-refresh`: grains gather into a ring 1:1 with the pull, spin while `onRefresh` runs, then stream into the new items. Wrap items in `PullItem`, it works for lists and bento layouts alike.
+- `reorder-list`: long press to lift a row, the others make room, a tick per slot, auto scroll near the edges.
+
+### Fixed
+- iOS: grains drawn during a scroll drag use Reanimated views (Skia and animated layout props hold still while a scroll view is tracking).
+
 ## [0.0.4] - 2026-11-16
 
 ### Added

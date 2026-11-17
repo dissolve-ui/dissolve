@@ -137,6 +137,18 @@
       "file": "mini-player.tsx",
       "export": "MiniPlayer",
       "description": "Now playing pill that opens into a full player as one object, then folds back."
+    },
+    {
+      "name": "pull-to-refresh",
+      "file": "pull-to-refresh.tsx",
+      "export": "PullToRefresh",
+      "description": "Pull a list down: grains gather into a loader, release and the content rebuilds itself."
+    },
+    {
+      "name": "reorder-list",
+      "file": "reorder-list.tsx",
+      "export": "ReorderList",
+      "description": "Long press a row to lift it, drag to reorder, the others make room, it settles with a tick."
     }
   ]
 }

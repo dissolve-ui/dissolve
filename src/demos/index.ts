@@ -23,6 +23,8 @@ import QuantityStepperDemo from './QuantityStepper.demo';
 import RulerPickerDemo from './RulerPicker.demo';
 import BarChartDemo from './BarChart.demo';
 import MiniPlayerDemo from './MiniPlayer.demo';
+import PullToRefreshDemo from './PullToRefresh.demo';
+import ReorderListDemo from './ReorderList.demo';
 
 /**
  * One demo per registry component, in registry/index.json order. The slug is the registry
@@ -55,4 +57,6 @@ export const DEMOS: DemoEntry[] = [
   { slug: 'ruler-picker', title: 'Ruler picker', note: 'Drag or fling the ruler, it snaps with ticks.', icon: 'ruler', Component: RulerPickerDemo, scroll: true },
   { slug: 'bar-chart', title: 'Bar chart', note: 'Scrub the bars, switch the period.', icon: 'chart.bar', Component: BarChartDemo, scroll: true },
   { slug: 'mini-player', title: 'Mini player', note: 'Tap or drag the pill up into the player.', icon: 'play.circle', Component: MiniPlayerDemo, scroll: false },
+  { slug: 'pull-to-refresh', title: 'Pull to refresh', note: 'Pull the feed down, release to rebuild it.', icon: 'arrow.down.circle', Component: PullToRefreshDemo, scroll: false },
+  { slug: 'reorder-list', title: 'Reorder list', note: 'Long press a row, drag it to a new place.', icon: 'line.3.horizontal', Component: ReorderListDemo, scroll: false },
 ];
