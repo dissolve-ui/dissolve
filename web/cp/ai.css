@@ -27,7 +27,7 @@
 .cp-ai-chip:focus-visible, .cp-ai [tabindex]:focus-visible, .cp-tc-row:focus-visible, .cp-up-add:focus-visible, .cp-up-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---------- ThinkingOrb ---------- */
-.cp-orb-cv { display: block; cursor: pointer; touch-action: none; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
+.cp-orb-cv { display: block; cursor: pointer; touch-action: pan-y; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
 
 /* ---------- ImageReveal ---------- */
 .cp-rv-frame {

@@ -125,6 +125,32 @@ export const mix = (a, b, t) => { const A = hex(a), B = hex(b); return `rgb(${A.
 export const rectOf = (node) => { const r = node.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; };
 export const frame = () => new Promise(requestAnimationFrame);
 
+/**
+ * Touch on a `touch-action: pan-y` surface: a vertical swipe scrolls the page unless
+ * want(dx, dy) claims it on its first move. A claimed touch keeps the page still to its end.
+ * Returns () => whether the touch in progress is claimed.
+ */
+export function claimTouch(node, want) {
+  let t = null;
+  node.addEventListener('touchstart', (e) => {
+    const p = e.touches[0];
+    t = e.touches.length === 1 ? { x: p.clientX, y: p.clientY, on: null } : null;
+  }, { passive: true });
+  node.addEventListener('touchmove', (e) => {
+    if (!t) return;
+    if (t.on === null) {
+      const p = e.touches[0], dx = p.clientX - t.x, dy = p.clientY - t.y;
+      if (Math.abs(dx) + Math.abs(dy) < 2) return;
+      t.on = Math.abs(dy) >= Math.abs(dx) && !!want(dx, dy);
+    }
+    if (t.on && e.cancelable) e.preventDefault();
+  }, { passive: false });
+  const off = () => { t = null; };
+  node.addEventListener('touchend', off);
+  node.addEventListener('touchcancel', off);
+  return () => !!t?.on;
+}
+
 export function fit(ctx, str, maxW) {
   if (ctx.measureText(str).width <= maxW) return str;
   let out = str;

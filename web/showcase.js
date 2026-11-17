@@ -365,26 +365,46 @@ function respawn(el, ms = 1500) { setTimeout(() => { show(el); delete el.dataset
 function mountGestures(root) {
   const slotS = root.querySelector('#sc-scrub'), slotH = root.querySelector('#sc-hold');
   const w = slotS.clientWidth;
+  mountScrub(slotS);
+  mountHold(slotH, w);
+}
 
+/** Scrub card: dust driven by the finger or cursor, reversible until you let go past half. */
+export function mountScrub(slotS) {
+  const w = slotS.clientWidth;
   // Scrub: dust driven by the finger, reversible until you let go past half.
   const sc = gCard(w, 'lake', 'Drag me sideways', 'scrub · go back and the grains return');
   sc.classList.add('grab');
   slotS.replaceChildren(sc);
-  let h = null, x0 = 0, p = 0;
-  sc.addEventListener('pointerdown', (e) => {
-    if (sc.dataset.busy) return;
+  // Touch: the card is touch-action: pan-y, a vertical swipe scrolls the page. The scrub starts
+  // once the finger leaves the press sideways, then the page holds still.
+  let h = null, x0 = 0, p = 0, pend = null;
+  const begin = (e, x) => {
     sc.dataset.busy = '1';
     try { sc.setPointerCapture(e.pointerId); } catch {}
-    x0 = e.clientX; p = 0;
+    x0 = x; p = 0;
     h = play({ ...rectOf(sc), preset: 'dust', hold: true, duration: 1300 });
     hide(sc);
+  };
+  sc.addEventListener('pointerdown', (e) => {
+    if (sc.dataset.busy) return;
+    if (e.pointerType === 'touch') pend = { x: e.clientX, y: e.clientY };
+    else begin(e, e.clientX);
   });
+  sc.addEventListener('touchmove', (e) => { if (h && e.cancelable) e.preventDefault(); }, { passive: false });
   sc.addEventListener('pointermove', (e) => {
+    if (pend) {
+      const dx = Math.abs(e.clientX - pend.x);
+      if (dx <= 6 || dx <= Math.abs(e.clientY - pend.y)) return;
+      const x = pend.x; pend = null;
+      begin(e, x);
+    }
     if (!h) return;
     p = Math.max(0, Math.min(1, (e.clientX - x0) / (w * 0.85)));
     h.set(p * h.end);
   });
-  sc.addEventListener('pointerup', () => {
+  const scrubEnd = () => {
+    pend = null;
     if (!h) return;
     const cur = h; h = null;
     if (p > 0.45) { cur.release(); cur.done.then(() => respawn(sc)); return; }
@@ -395,8 +415,12 @@ function mountGestures(root) {
       if (k < 1) requestAnimationFrame(back); else { cur.cancel(); show(sc, false); delete sc.dataset.busy; }
     };
     requestAnimationFrame(back);
-  });
+  };
+  sc.addEventListener('pointerup', scrubEnd);
+  sc.addEventListener('pointercancel', scrubEnd);
+}
 
+function mountHold(slotH, w) {
   // Hold: charge heats the card, bursts at full charge, let go early to cancel.
   const hc = gCard(w, 'aqueduct', 'Delete this project', 'charge · hold to confirm, let go to cancel');
   slotH.replaceChildren(hc);
@@ -408,22 +432,31 @@ function mountGestures(root) {
     if (c >= 1) { const cur = hh; hh = null; cur.release(); cur.done.then(() => respawn(hc)); return; }
     requestAnimationFrame(tick);
   };
-  hc.addEventListener('pointerdown', (e) => {
-    if (hc.dataset.busy) return;
-    e.preventDefault();
+  // Touch: wait a beat before charging, a swipe that scrolls the page cancels the pointer first.
+  let wait = 0;
+  const charge = () => {
     hc.dataset.busy = '1';
     hh = play({ ...rectOf(hc), preset: 'charge', hold: true });
     hide(hc);
     t0 = performance.now();
     requestAnimationFrame(tick);
+  };
+  hc.addEventListener('pointerdown', (e) => {
+    if (hc.dataset.busy) return;
+    e.preventDefault();
+    clearTimeout(wait);
+    if (e.pointerType === 'touch') wait = setTimeout(() => { wait = 0; if (!hc.dataset.busy) charge(); }, 120);
+    else charge();
   });
   const cancel = () => {
+    clearTimeout(wait); wait = 0;
     if (!hh) return;
     hh.cancel(); hh = null;
     show(hc, false); delete hc.dataset.busy;
   };
   hc.addEventListener('pointerup', cancel);
   hc.addEventListener('pointerleave', cancel);
+  hc.addEventListener('pointercancel', cancel);
 }
 
 /* ---------- 06 Cascade ---------- */
@@ -515,13 +548,17 @@ const HX = [
   { label: 'npm', cmd: 'npx expo install react-native-dissolve', icon: '<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#CB3837"/><path d="M5 7h14v10h-7v-8.2h-2.6V17H5z" fill="#fff"/></svg>' },
 ];
 
+/** Gallery: the hero, then only the components. */
 export function showcaseHTML({ components } = {}) {
+  return `${heroHTML()}
+  ${components ? components(head) : ''}`;
+}
+
+function heroHTML() {
   return `
-
-
   <header class="sc-hero2">
     <h1 class="hx-title"><canvas class="hx-title-cv" aria-hidden="true"></canvas><span class="hx-sr">dissolve</span></h1>
-    <p>Animation library built for React Native</p>
+    <p>Animation library built for <strong>React Native</strong></p>
   </header>
   <div class="hx" data-hx>
     <div class="hx-src" role="tablist" aria-label="Install with">
@@ -531,7 +568,16 @@ export function showcaseHTML({ components } = {}) {
     <code class="hx-cmd" data-hx-cmd>${HX[0].cmd}</code>
     <button class="hx-copy" aria-label="Copy command" data-hx-copy><svg class="i-copy" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><svg class="i-ok" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
   </div>
-  <a class="hx-more" href="#/agent-prompt">Or paste one prompt into your agent <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+  <a class="hx-more" href="#/agent-prompt">Or paste one prompt into your agent <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>`;
+}
+
+/** Effects page: the engine on its own, scene by scene, then every variant. */
+export function effectsHTML() {
+  return `
+  <header class="head">
+    <h1>Effects</h1>
+    <p class="sub">The engine on its own: any view can leave, arrive or morph in grains.</p>
+  </header>
   ${head('01', 'Bento', 'Tap a card. snap starts where your cursor lands.')}
   <div class="sc-bento">
     ${BENTO.map((b, i) => `<div class="sc-slot${b.wide ? ' wide' : ''}" data-bento="${i}"></div>`).join('')}
@@ -583,10 +629,8 @@ export function showcaseHTML({ components } = {}) {
     </div>
   </div>
 
-  ${components ? components(head) : ''}
-
-${head('09', 'Every variant', 'The principal exits and entrances, then the components. Every other variant has its own page in the sidebar.')}
-  <div class="filters chips">${['All', 'Exits', 'Entrances', 'Components'].map((l, i) => `<button class="chip${i ? '' : ' on'}" data-filter="${l}">${l}</button>`).join('')}</div>
+${head('08', 'Every variant', 'The principal exits and entrances. Every other variant has its own page in the sidebar.')}
+  <div class="filters chips">${['All', 'Exits', 'Entrances'].map((l, i) => `<button class="chip${i ? '' : ' on'}" data-filter="${l}">${l}</button>`).join('')}</div>
   <div class="gallery" id="sc-all"></div>`;
 }
 
@@ -621,6 +665,9 @@ function mountInstall(root) {
 const TITLE_FACE = new FontFace('Allo Display', 'url(fonts/allo/AlloVariable.woff2)', { weight: '100 900', variationSettings: "'ROND' 100" });
 const CALM_T = (t) => 1 - Math.pow(1 - t, 3.2);
 
+/** Title ink from the theme token: the computed color lags behind while the theme cross-fades. */
+const readInk = () => getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#fff';
+
 function mountTitle(root) {
   const h1 = root.querySelector('.hx-title');
   const cv = h1?.querySelector('canvas');
@@ -633,7 +680,7 @@ function mountTitle(root) {
   function build() {
     const cs = getComputedStyle(h1);
     const size = parseFloat(cs.fontSize);
-    ink = cs.color;
+    ink = readInk();
     dpr = Math.min(2, devicePixelRatio || 1);
     const font = `820 ${size}px 'Allo Display'`;
     const m = document.createElement('canvas').getContext('2d');
@@ -720,7 +767,7 @@ function mountTitle(root) {
     }
     kick();
   });
-  new MutationObserver(() => { ink = getComputedStyle(h1).color; kick(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  new MutationObserver(() => { ink = readInk(); kick(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   let rt = 0;
   addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => h1.isConnected && build(), 150); });
   const go = () => { started = true; t0 = 0; kick(); };
@@ -729,8 +776,11 @@ function mountTitle(root) {
 }
 
 export async function mountShowcase(root) {
-  mountTitle(root);
-  mountInstall(root);
+  if (root.querySelector('.hx-title')) {
+    mountTitle(root);
+    mountInstall(root);
+  }
+  if (!root.querySelector('.sc-bento')) return;
   await ready;
   mountBento(root);
   mountInbox(root);

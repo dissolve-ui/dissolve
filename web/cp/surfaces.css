@@ -12,7 +12,7 @@
   cursor: pointer; touch-action: pan-y; user-select: none; -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent; will-change: transform, opacity;
 }
-.cp-cs-card.focused { touch-action: none; cursor: grab; }
+.cp-cs-card.focused { cursor: grab; }
 .cp-cs-card.dragging { cursor: grabbing; }
 .cp-cs-card:focus-visible { outline-offset: 3px; border-radius: inherit; }
 .cp-cs-clip { position: absolute; inset: 0; overflow: hidden; }

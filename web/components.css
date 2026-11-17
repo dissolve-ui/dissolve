@@ -2,25 +2,32 @@
 
 /* ---------- Gallery section ---------- */
 
-.cp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+.cp-grid { display: flex; align-items: flex-start; gap: 12px; }
+/* Three columns need more than the text column: the grid breaks out of it, centered, up to 1240px. */
+@media (min-width: 1400px) {
+  .cp-grid { width: min(1240px, calc(100vw - var(--rail, 0px) - 48px)); position: relative; left: 50%; transform: translateX(-50%); }
+}
+/* Two columns filled left, right, left...: reading order stays row by row, heights stay natural. */
+.cp-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
 .cp-panel {
+  /* Masonry, Pinterest style: each card keeps its natural height, columns fill top to bottom. */
   display: flex; flex-direction: column; min-width: 0;
-  border-radius: var(--r-lg); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+  border-radius: 24px; background: var(--surface);
 }
 .cp-panel-head {
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
-  padding: 16px 14px 0 18px; border-radius: var(--r-lg) var(--r-lg) 0 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 12px 0 18px; border-radius: 24px 24px 0 0;
 }
 .cp-panel-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.cp-name { font-size: 16px; line-height: 1.3; font-weight: 700; letter-spacing: -0.015em; color: var(--text); font-variation-settings: var(--round-mid); }
-.cp-note { font-size: 13px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
+.cp-name { font-size: 13px; line-height: 1.3; font-weight: 600; letter-spacing: -0.005em; color: var(--muted); transition: color .2s; }
 .cp-go {
-  flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
-  color: var(--faint); transition: color .2s, background .2s;
+  flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  color: var(--faint); opacity: 0; transition: opacity .2s, color .2s, background .2s;
 }
+.cp-panel:hover .cp-go { opacity: 1; }
 .cp-panel-head:hover .cp-go { color: var(--text); background: var(--wash); }
-.cp-panel-head:hover .cp-name { color: var(--text); }
-.cp-panel-body { flex: 1; min-height: 190px; padding: 20px 18px 22px; }
+.cp-panel:hover .cp-name { color: var(--text); }
+.cp-panel-body { flex: 1; min-height: 190px; padding: 24px 20px 32px; }
 
 /* Every mounted demo body centers its component. */
 .cp-body { display: grid; place-items: center; }
@@ -137,13 +144,20 @@
 /* ---------- Responsive ---------- */
 
 @media (max-width: 860px) {
-  .cp-grid { grid-template-columns: 1fr; }
+  .cp-grid { flex-direction: column; align-items: stretch; }
+  .cp-col { display: contents; }
+  .cp-go { opacity: 1; }
   .cp-stage { min-height: 320px; }
 }
 
 @media (max-width: 600px) {
-  .cp-panel { border-radius: var(--r-md); }
+  .cp-panel { border-radius: 20px; }
   .cp-panel-head { padding: 14px 12px 0 16px; }
   .cp-panel-body { padding: 18px 14px 18px; min-height: 160px; }
   .cp-stage .stage-slot { padding: 36px 16px 64px; }
 }
+
+/* Engine effects mixed into the gallery grid. */
+.cp-fx-body { display: grid; place-items: center; min-height: 170px; }
+.cp-fx-body .stage-slot { width: 100%; box-sizing: border-box; padding: 0; min-height: 0; display: grid; place-items: center; }
+.cp-grid-home { margin-top: 72px; }

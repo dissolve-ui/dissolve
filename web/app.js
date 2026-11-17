@@ -4,10 +4,10 @@ import { mountDemo, HINTS, tilesHTML, mountTiles } from './demo.js';
 import { cancelAll } from './engine/atlas.js';
 import { playgroundHTML, mountPlayground } from './playground.js';
 import { OPTIONS, PRACTICES, PEERS, INSTALL, PROVIDER, PKG } from './variants-content.js';
-import { showcaseHTML, mountShowcase } from './showcase.js';
+import { showcaseHTML, effectsHTML, mountShowcase, mountScrub } from './showcase.js';
 import { ready } from './images.js';
 import { introductionPage, installationPage, cliPage, themingPage, agentPromptPage, agentsStripHTML } from './docs.js';
-import { COMPONENTS, COMPONENT_ORDER, COMPONENT_GLYPH, mountComponent, autoplay, componentsSectionHTML, mountComponentsSection, propsTable, componentPrompt, clearToasts } from './components.js';
+import { COMPONENTS, COMPONENT_ORDER, mountComponent, autoplay, componentsSectionHTML, mountComponentsSection, propsTable, componentPrompt, clearToasts } from './components.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -53,6 +53,7 @@ function renderSidebar() {
     <div class="side-group">
       <p class="side-label">Getting started</p>
       ${link('gallery', 'Gallery')}
+      ${link('effects', 'Effects')}
       ${GETTING_STARTED.map((p) => link(p.id, p.title, p.badge)).join('')}
     </div>
     <div class="side-group">
@@ -107,7 +108,7 @@ function pageHead(id, title, desc, glyph, nav = VARIANT_NAV) {
   const prev = i > 0 ? order[i - 1] : null, next = i >= 0 && i < order.length - 1 ? order[i + 1] : null;
   return `<header class="head">
     <div class="head-top">
-      <div class="head-icon">${glyph}</div>
+      ${glyph ? `<div class="head-icon">${glyph}</div>` : '<span></span>'}
       ${i >= 0 ? `<div class="head-nav">
         <a class="round" ${prev ? `href="#/${prev}" title="${nav.title(prev)}"` : 'aria-disabled="true"'} aria-label="Previous ${nav.noun}">${arrow('l')}</a>
         <a class="round" ${next ? `href="#/${next}" title="${nav.title(next)}"` : 'aria-disabled="true"'} aria-label="Next ${nav.noun}">${arrow('r')}</a>
@@ -227,7 +228,7 @@ function componentPage(id) {
   const needsToast = id === 'toast';
   const snip = splitAdd(c.code, id);
   return `
-  ${pageHead(id, c.title, c.desc, `<span class="glyph-lg">${COMPONENT_GLYPH[id]}</span>`, COMPONENT_NAV)}
+  ${pageHead(id, c.title, c.desc, null, COMPONENT_NAV)}
 
   <div class="toolbar">
     <div class="seg" role="tablist">
@@ -288,22 +289,21 @@ const PAGES = {
   theming: () => themingPage(DOC),
   'agent-prompt': () => agentPromptPage(DOC),
   gallery: () => showcaseHTML({ components: componentsSectionHTML }) + agentsStripHTML(),
+  effects: () => effectsHTML(),
 };
 
 /** The "Every variant" grid: the principal exits and entrances, then the components. */
 const GRID = [
   ...['dust', 'sand', 'ember', 'pixel', 'snap', 'stream'].map((id) => ({ id, group: 'Exits' })),
   ...['gather', 'rain'].map((id) => ({ id, group: 'Entrances' })),
-  ...COMPONENT_ORDER.map((id) => ({ id, group: 'Components', component: true })),
 ];
 
 function tiles() {
   return GRID.map(({ id, group, component }) => {
     const title = component ? COMPONENTS[id].title : VARIANTS[id].title;
-    const hint = component ? COMPONENTS[id].tileHint : HINTS[id];
     return `<div class="g-tile" data-group="${group}">
       <div class="g-thumb${component ? ' g-thumb-cp' : ''}" ${component ? 'data-cp-tile' : 'data-demo'}="${id}"><div class="stage-slot"></div></div>
-      <a class="g-meta" href="#/${id}"><span class="g-name">${title}<span class="g-group">${component ? 'Component' : group}</span></span><span class="g-hint">${hint}${arrow('r')}</span></a>
+      <a class="g-meta" href="#/${id}"><span class="g-name">${title}</span>${arrow('r')}</a>
     </div>`;
   }).join('');
 }
@@ -323,7 +323,7 @@ function route(keepScroll) {
   const comp = COMPONENTS[id];
   view.innerHTML = VARIANTS[id] ? variantPage(id) : comp ? componentPage(id) : (PAGES[id] ?? PAGES.gallery)();
   document.querySelectorAll('.side-link').forEach((a) => a.classList.toggle('on', a.dataset.id === id));
-  document.title = `${VARIANTS[id]?.title ?? comp?.title ?? (GETTING_STARTED.find((p) => p.id === id)?.title || (id === 'gallery' ? 'Gallery' : 'Introduction'))} · dissolve`;
+  document.title = `${VARIANTS[id]?.title ?? comp?.title ?? (GETTING_STARTED.find((p) => p.id === id)?.title || (id === 'gallery' ? 'Gallery' : id === 'effects' ? 'Effects' : 'Introduction'))} · dissolve`;
   document.body.classList.remove('side-open');
   if (keepScroll !== true) window.scrollTo(0, 0);
   wire(view);
@@ -337,20 +337,20 @@ function route(keepScroll) {
       setTimeout(() => cp.classList.remove('done'), 900);
     });
   }
-  if (comp) {
-    const stageEl = view.querySelector('[data-cp-stage]');
-    const stage = mountComponent(id, stageEl, { mode: 'stage' });
-    teardown.push(autoplay(view.querySelector('#cp-stage'), stage, { threshold: 0.4 }), stage.dispose);
-    view.querySelector('[data-replay]').addEventListener('click', () => stage.run());
-    const cp = view.querySelector('[data-copy-prompt]');
-    cp.addEventListener('click', () => {
-      navigator.clipboard?.writeText(componentPrompt(id)).catch(() => {});
-      cp.classList.add('done');
-      setTimeout(() => cp.classList.remove('done'), 900);
-    });
-  }
-  if (id === 'gallery' || !(VARIANTS[id] || PAGES[id] || comp)) {
+  if (comp) teardown.push(mountComponentPage(view, id));
+  if (id === 'gallery' || id === 'effects' || !(VARIANTS[id] || PAGES[id] || comp)) {
     document.body.classList.add('is-showcase');
+    mountShowcase(view);
+    if (id !== 'effects') {
+      teardown.push(mountComponentsSection(view));
+      view.querySelectorAll('[data-fx]').forEach((el) => {
+        if (el.dataset.fx === 'scrub') return mountScrub(el.querySelector('.stage-slot'));
+        const api = mountDemo(el, el.dataset.fx, { size: 'sm', autoplay: false });
+        teardown.push(autoplay(el, api, { threshold: 0.35, rank: Number(el.dataset.rank) }));
+      });
+    }
+  } else document.body.classList.remove('is-showcase');
+  if (id === 'effects') {
     $('#sc-all').innerHTML = tiles();
     const demos = [...view.querySelectorAll('#sc-all [data-demo], #sc-all [data-cp-tile]')].map((el) => {
       if (el.dataset.demo) return { el, api: mountDemo(el, el.dataset.demo, { size: 'sm', autoplay: false }) };
@@ -359,9 +359,21 @@ function route(keepScroll) {
       return { el, api, component: true };
     });
     sequence($('#sc-all'), demos);
-    mountShowcase(view);
-    teardown.push(mountComponentsSection(view));
-  } else document.body.classList.remove('is-showcase');
+  }
+}
+
+/** Mounts the live parts of a component page (stage, autoplay, buttons). Returns a dispose function. */
+function mountComponentPage(root, id) {
+  const stage = mountComponent(id, root.querySelector('[data-cp-stage]'), { mode: 'stage' });
+  const stopAuto = autoplay(root.querySelector('#cp-stage'), stage, { threshold: 0.4 });
+  root.querySelector('[data-replay]').addEventListener('click', () => stage.run());
+  const cp = root.querySelector('[data-copy-prompt]');
+  cp.addEventListener('click', () => {
+    navigator.clipboard?.writeText(componentPrompt(id)).catch(() => {});
+    cp.classList.add('done');
+    setTimeout(() => cp.classList.remove('done'), 900);
+  });
+  return () => { stopAuto(); stage.dispose(); };
 }
 
 /**

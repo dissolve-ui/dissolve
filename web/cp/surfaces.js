@@ -1,6 +1,6 @@
 // Surfaces: CardStack, BeforeAfter (src/dissolve/components/*), ported to the web.
 // Same geometry, timings and curves as the native sources. Shown raw: one instance, no screen around it.
-import { bezier, CALM, QUAD, value, el, clamp, rectOf, play, snapshot, FONT, rr } from './kit.js';
+import { bezier, CALM, QUAD, value, el, clamp, rectOf, play, snapshot, FONT, rr, claimTouch } from './kit.js';
 
 const MONO = "'Geist Mono', ui-monospace, monospace";
 
@@ -155,6 +155,8 @@ function mountCardStack(body, { sc, mode }) {
   cards.forEach((c) => {
     const node = c.node;
     let g = null;
+    // Touch: a swipe down on the focused card puts it back, any other vertical swipe scrolls the page.
+    const claimed = claimTouch(node, (dx, dy) => !!g && focus === c.i && dy > 0);
     node.addEventListener('pointerdown', (e) => {
       if (e.button > 0) return;
       g = { x0: e.clientX, y0: e.clientY, t0: performance.now(), axis: 0, samples: [] };
@@ -171,6 +173,7 @@ function mountCardStack(body, { sc, mode }) {
         if (focus !== c.i) { g.moved = true; c.press.to(0, 260, CALM); return; }
         g.axis = n > 1 && Math.abs(dx) > Math.abs(dy) ? 1 : 2;
         c.press.to(0, 260, CALM);
+        if (g.axis === 2 && e.pointerType === 'touch' && !claimed()) { g = null; return; }
         node.classList.add('dragging');
       }
       if (g.axis === 1) { c.tx.set(dx); return; }

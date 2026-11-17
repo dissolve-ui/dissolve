@@ -29,7 +29,7 @@
 .tile-body { position: relative; flex: 1; min-height: 0; margin: 8px 14px 0; display: flex; flex-direction: column; justify-content: center; }
 .tile-hint { margin: 0; padding: 8px 16px 12px; font-size: 12px; font-weight: 450; color: var(--faint); }
 
-.tl-item { display: block; border-radius: 14px; cursor: pointer; transition: opacity .5s var(--ease), transform .45s var(--spring); touch-action: none; user-select: none; -webkit-user-select: none; }
+.tl-item { display: block; border-radius: 14px; cursor: pointer; transition: opacity .5s var(--ease), transform .45s var(--spring); touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .tl-item.tl-static { cursor: default; }
 .tl-item.grab { cursor: grab; }
 .tl-list { display: flex; flex-direction: column; }
