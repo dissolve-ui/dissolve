@@ -1,6 +1,6 @@
 {
   "name": "react-native-dissolve",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Turn any React Native view into dust. Skia snapshot, grains animated on the UI thread with Reanimated 4. Exits, entrances, gestures.",
   "author": "Rayan Selmi",
   "license": "MIT",
