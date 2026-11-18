@@ -149,6 +149,40 @@
       "file": "reorder-list.tsx",
       "export": "ReorderList",
       "description": "Long press a row to lift it, drag to reorder, the others make room, it settles with a tick."
+    },
+    {
+      "name": "glossy-button",
+      "file": "glossy-button.tsx",
+      "export": "GlossyButton",
+      "description": "Tactile pill lit from the inside: gradient stroke, inner light and ring, presses down on a crisp spring."
+    },
+    {
+      "name": "scratch-card",
+      "file": "scratch-card.tsx",
+      "export": "ScratchCard",
+      "description": "Glossy foil scratch card that tilts in 3D under the finger, sheds grains, then dissolves past the threshold."
+    },
+    {
+      "name": "skeleton",
+      "file": "skeleton.tsx",
+      "export": "Skeleton, SkeletonBlock",
+      "description": "Loading placeholders that break into grains and recompose into the real content, block by block."
+    },
+    {
+      "name": "segmented-control",
+      "file": "segmented-control.tsx",
+      "export": "SegmentedControl",
+      "description": "iOS segmented control whose pill breaks into grains, flows to the new segment and reassembles. Drag across to follow the finger."
+    }
+  ],
+  "helpers": [
+    {
+      "file": "motion.ts",
+      "description": "Shared motion helpers (calm curve, wait, clamp01, hash), copied with the components that import it."
+    },
+    {
+      "file": "dots.ts",
+      "description": "Shared dot drawing helpers (token colors as channels, Atlas sprite, in place buffer notify), copied with the components that import it."
     }
   ]
 }

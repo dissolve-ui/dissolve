@@ -8,8 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `segmented-control`: iOS style segmented control whose pill breaks into grains, flows to the new segment on a slight arc and reassembles there. Drag across the segments and the selection follows the finger, a selection tick per change.
 - `pull-to-refresh`: grains gather into a ring 1:1 with the pull, spin while `onRefresh` runs, then stream into the new items. Wrap items in `PullItem`, it works for lists and bento layouts alike.
 - `reorder-list`: long press to lift a row, the others make room, a tick per slot, auto scroll near the edges.
+- `scratch-card`: glossy foil (one shader: brushed metal, grain, holographic hint, bevel, specular band) that tilts in 3D under the finger with the light following it. Scratching sheds foil grains, past `threshold` the rest of the foil dissolves.
+- `skeleton`: loading placeholders (lines, circles, rects) under a calm wave of light. When loading ends, each block breaks into grains that recompose its real content, staggered in reading order. Wrap the content in `SkeletonBlock` and give it its placeholder shape.
 
 ### Fixed
 - iOS: grains drawn during a scroll drag use Reanimated views (Skia and animated layout props hold still while a scroll view is tracking).
