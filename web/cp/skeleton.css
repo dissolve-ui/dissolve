@@ -1,0 +1,20 @@
+/* Skeleton (cp/skeleton.js) */
+.sk { --sk-fill: var(--raised); position: relative; display: flex; flex-direction: column; text-align: left; color: var(--text); user-select: none; -webkit-user-select: none; }
+[data-theme='light'] .sk { --sk-fill: var(--surface-2); }
+.sk-b { position: relative; }
+.sk-c { opacity: 0; }
+.sk-ph { position: absolute; left: 0; top: 0; display: flex; align-items: center; pointer-events: none; }
+.sk-ph i { display: block; flex: none; background: var(--sk-fill); }
+.sk-profile { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+.sk-names { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sk-row { display: flex; align-items: center; gap: 14px; padding: 10px 0; }
+.sk-avatar, .sk-thumb { display: block; object-fit: cover; -webkit-user-drag: none; }
+.sk-avatar { width: 64px; height: 64px; border-radius: 50%; }
+.sk-thumb { width: 52px; height: 52px; border-radius: 12px; }
+.sk-name, .sk-handle, .sk-title, .sk-sub { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sk-name { font-size: 20px; line-height: 25px; font-weight: 600; letter-spacing: -0.022em; }
+.sk-handle, .sk-sub { font-size: 15px; line-height: 20px; letter-spacing: -0.015em; color: var(--muted); }
+.sk-title { font-size: 17px; line-height: 22px; letter-spacing: -0.025em; }
+.sk-reload { align-self: center; margin-top: 24px; padding: 6px 10px; border: 0; background: none; font: inherit; font-size: 15px; line-height: 20px; letter-spacing: -0.015em; color: var(--accent); cursor: pointer; border-radius: 8px; -webkit-tap-highlight-color: transparent; transition: color 0.2s; }
+.sk-reload.busy { color: var(--muted); cursor: default; }
+.sk-reload:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

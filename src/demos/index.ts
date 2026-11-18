@@ -25,6 +25,10 @@ import BarChartDemo from './BarChart.demo';
 import MiniPlayerDemo from './MiniPlayer.demo';
 import PullToRefreshDemo from './PullToRefresh.demo';
 import ReorderListDemo from './ReorderList.demo';
+import GlossyButtonDemo from './GlossyButton.demo';
+import ScratchCardDemo from './ScratchCard.demo';
+import SegmentedControlDemo from './SegmentedControl.demo';
+import SkeletonDemo from './Skeleton.demo';
 
 /**
  * One demo per registry component, in registry/index.json order. The slug is the registry
@@ -59,4 +63,8 @@ export const DEMOS: DemoEntry[] = [
   { slug: 'mini-player', title: 'Mini player', note: 'Tap or drag the pill up into the player.', icon: 'play.circle', Component: MiniPlayerDemo, scroll: false },
   { slug: 'pull-to-refresh', title: 'Pull to refresh', note: 'Pull the feed down, release to rebuild it.', icon: 'arrow.down.circle', Component: PullToRefreshDemo, scroll: false },
   { slug: 'reorder-list', title: 'Reorder list', note: 'Long press a row, drag it to a new place.', icon: 'line.3.horizontal', Component: ReorderListDemo, scroll: false },
+  { slug: 'glossy-button', title: 'Glossy button', note: 'A tactile pill lit from the inside. Press it.', icon: 'button.horizontal', Component: GlossyButtonDemo, scroll: true },
+  { slug: 'scratch-card', title: 'Scratch card', note: 'Scratch the foil. Past half, the rest turns to dust.', icon: 'giftcard', Component: ScratchCardDemo, scroll: true },
+  { slug: 'skeleton', title: 'Skeleton', note: 'Tap Reload: the placeholders turn into the content, grain by grain.', icon: 'rectangle.dashed', Component: SkeletonDemo, scroll: true },
+  { slug: 'segmented-control', title: 'Segmented control', note: 'Tap or drag across: the pill flows over in grains.', icon: 'switch.2', Component: SegmentedControlDemo, scroll: true },
 ];
