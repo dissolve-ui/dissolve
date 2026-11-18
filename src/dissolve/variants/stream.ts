@@ -4,7 +4,7 @@ import { DEFAULT_END, eo, measure, originField, ss } from '../core';
 import type { AtlasVariant, Box, BurstParams, DissolveOptions, ResolveCtx, ResolveResult } from '../types';
 
 /**
- * GROUP B. stream (docs/VARIANTS.md section 3). natural 'both', reads P.dir.
+ * stream (docs/VARIANTS.md section 3). natural 'both', reads P.dir.
  *
  * out (dir 0): every grain leaves its rest spot and flies along a quadratic Bezier
  *   P0 (rest) -> P1 (lifted control point) -> P2 (target center plus a small jitter),

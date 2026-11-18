@@ -1,9 +1,10 @@
 /* Docs pages: Introduction, Installation, CLI, Theming, Agent prompt, plus the "works with your coding agent" strip.
    Page builders take the helpers from app.js ({ pageHead, codeBlock, cmd, copyIcon, icon, GLYPH }). */
 
+import { PKG } from './variants-content.js';
+
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-const PKG = 'react-native-dissolve';
 const PEERS = ['@shopify/react-native-skia', 'react-native-reanimated', 'react-native-worklets', 'react-native-gesture-handler', 'expo-haptics'];
 const INSTALL = `npx expo install ${PKG} ${PEERS.join(' ')}`;
 const SKILL_PATH = 'skills/dissolve/SKILL.md';
@@ -43,7 +44,7 @@ export function Row({ item, onRemove }) {
   );
 }`;
 
-export const PROMPT = `Add react-native-dissolve to this React Native / Expo app. It snapshots any view with Skia and turns it into grains animated on the UI thread (Reanimated 4).
+const PROMPT = `Add react-native-dissolve to this React Native / Expo app. It snapshots any view with Skia and turns it into grains animated on the UI thread (Reanimated 4).
 
 1. Install the package and its peers:
    ${INSTALL}

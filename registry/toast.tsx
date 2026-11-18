@@ -12,9 +12,10 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { View as RNView } from 'react-native';
-import { Easing, LinearTransition } from 'react-native-reanimated';
+import { LinearTransition } from 'react-native-reanimated';
 import { DissolveIn, useDissolve, type VariantName } from 'react-native-dissolve';
 import { Animated, Pressable, Text, View, cn } from './tw';
+import { CALM } from './motion';
 
 export type ToastTone = 'default' | 'success' | 'error';
 
@@ -49,7 +50,7 @@ type Ctx = { show: (o: ToastOptions) => number; hide: (id: number) => void };
 
 const ToastContext = createContext<Ctx | null>(null);
 const DOT: Record<ToastTone, string> = { default: 'bg-dissolve-muted', success: 'bg-dissolve-success', error: 'bg-dissolve-danger' };
-const layout = LinearTransition.duration(320).easing(Easing.bezier(0.32, 0.72, 0, 1));
+const layout = LinearTransition.duration(320).easing(CALM);
 const SHADOW = { shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 16, shadowOffset: { width: 0, height: 6 } };
 
 function ToastCard({ item, leaving, onGone, className }: { item: Item; leaving: boolean; onGone: (id: number) => void; className?: string }) {

@@ -2,10 +2,7 @@
 // long press (250 ms) or the handle lifts a row, the others slide on the calm curve, the row follows
 // 1:1 and leans with sideways speed, the list scrolls near its edges, the drop settles critically
 // damped. Grains: a faint trail at the slot it left, a puff at the edges of the one it lands in.
-import { CALM, IN_OUT_CUBIC, value, el, clamp, play, snapshot, FONT, rr } from './kit.js';
-
-const PKG = 'react-native-dissolve';
-const prop = (name, type, def, desc) => ({ name, type, def, desc });
+import { CALM, IN_OUT_CUBIC, value, el, clamp, play, rr, isLight, onTheme, availW, snapNode, prop, add } from './kit.js';
 const RM = matchMedia('(prefers-reduced-motion: reduce)');
 const MONO = "'Geist Mono', ui-monospace, monospace";
 
@@ -42,57 +39,10 @@ const TASKS = [
   { id: 'g', title: 'Read two chapters', meta: 'Anytime · Me', icon: 'book', tone: ['#8E8E93', '#98989D'] },
 ];
 
-const CSS = `
-.cp-ro { position: relative; --ro-lift: var(--raised); --ro-shade: 0, 0, 0; --ro-shade-a: 0.42; }
-[data-theme='light'] .cp-ro { --ro-lift: #FFFFFF; --ro-shade-a: 0.16; }
-.cp-ro-view { position: relative; }
-.cp-ro-scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
-.cp-ro-scroll::-webkit-scrollbar { display: none; }
-@media (pointer: coarse) { .cp-ro-scroll { overscroll-behavior: auto; } }
-.cp-ro-list { position: relative; }
-.cp-ro-scroll:not(.cp-ro-scrolls) { overflow: visible; }
-.cp-ro-row {
-  position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: center; min-height: 56px; box-sizing: border-box;
-  border-radius: 12px; cursor: grab; touch-action: pan-y;
-  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; will-change: transform; outline: none;
-}
-.cp-ro-row::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 0.5px; background: var(--line); }
-.cp-ro-row:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
-.cp-ro-row.lifted { cursor: grabbing; z-index: 10; background: var(--ro-lift); padding: 0 16px; margin: 0 -16px; }
-.cp-ro-row.lifted::after { display: none; }
-.cp-ro-icon, .cp-ro-meta { display: none; }
-.cp-ro-row { gap: 12px; }
-.cp-ro-rank { flex: none; width: 20px; font-size: 17px; line-height: 22px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.cp-ro-grip { flex: none; display: flex; flex-direction: column; gap: 3px; padding: 12px 0 12px 8px; cursor: grab; }
-.cp-ro-grip i { display: block; width: 18px; height: 2px; border-radius: 2px; background: var(--muted); }
-.cp-ro-text { flex: 1; min-width: 0; }
-.cp-ro-title { font-size: 17px; line-height: 22px; letter-spacing: -0.025em; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cp-ro-canvas { position: absolute; pointer-events: none; }
-.cp-ro-foot { display: none; }
-.cp-mode-tile .cp-ro-row { min-height: 44px; }
-.cp-mode-tile .cp-ro-title { font-size: 15px; }
-`;
-
-function injectCSS() {
-  if (document.getElementById('cp-ro-css')) return;
-  const s = document.createElement('style');
-  s.id = 'cp-ro-css';
-  s.textContent = CSS;
-  document.head.append(s);
-}
-
-function availW(body) {
-  const cs = getComputedStyle(body);
-  return body.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-}
-
-const light = () => document.documentElement.dataset.theme === 'light';
-
 /** Damped spring toward `to` as a promise, on a kit value (critically damped by default). */
 const settle = (v, to) => v.spring(to, SETTLE);
 
 function mountReorder(body, { sc, mode }) {
-  injectCSS();
   const tile = mode === 'tile';
   const stage = mode === 'stage';
   const W = Math.round(Math.min(tile ? 300 : 400, availW(body) || 340));
@@ -113,13 +63,6 @@ function mountReorder(body, { sc, mode }) {
   const PAD = 18;
   view.append(scroller, cv);
   root.append(view);
-  const foot = el('div', 'cp-ro-foot');
-  const reset = el('button', 'cp-reset', 'Reset');
-  reset.type = 'button';
-  reset.hidden = true;
-  const hint = el('span', 'cp-ro-hint', 'Touch and hold a row, then drag it.');
-  foot.append(reset, hint);
-  if (!tile) root.append(foot);
   body.append(root);
 
   // Grain canvas: the viewport plus a margin, so a puff at the first or last edge is not cut.
@@ -185,7 +128,7 @@ function mountReorder(body, { sc, mode }) {
     return r;
   }
 
-  const tone = (r) => r.t.tone[light() ? 0 : 1];
+  const tone = (r) => r.t.tone[isLight() ? 0 : 1];
   const paintTones = () => rows.forEach((r) => { r.icon.style.background = tone(r); });
 
   /** Tops in the committed order, and in the virtual one (the lifted row at its target). */
@@ -217,7 +160,6 @@ function mountReorder(body, { sc, mode }) {
       r.at = t;
     }
     order.forEach((id, i) => { const r = rows.get(id); if (r) r.rank.textContent = String(i + 1); });
-    reset.hidden = order.length === data.length && order.every((id, i) => id === data[i].id);
   }
 
   function measure() {
@@ -244,9 +186,7 @@ function mountReorder(body, { sc, mode }) {
   apply(false);
   sizeCanvas();
   paintTones();
-  const mo = new MutationObserver(() => { paintTones(); readInk(); });
-  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-  sc.onDispose(() => mo.disconnect());
+  onTheme(sc, () => { paintTones(); readInk(); });
 
   /* ---------- Grains ---------- */
 
@@ -255,7 +195,7 @@ function mountReorder(body, { sc, mode }) {
   function readInk() {
     const c = getComputedStyle(root).getPropertyValue('--text').trim();
     const m = c.match(/^#([0-9a-f]{6})$/i);
-    ink = m ? [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16)) : light() ? [18, 21, 26] : [242, 244, 247];
+    ink = m ? [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16)) : isLight() ? [18, 21, 26] : [242, 244, 247];
   }
   readInk();
 
@@ -438,7 +378,7 @@ function mountReorder(body, { sc, mode }) {
     if (!sc.alive) return;
     const lr = list.getBoundingClientRect();
     const h = heights[r.t.id], x = dx.v, y = top.v;
-    const src = snapshot(W, h, (c) => drawRow(c, r, W, h));
+    const src = snapRow(r, W, h);
     r.el.style.visibility = 'hidden';
     const dust = sc.track(play({ source: src, x: lr.left + x, y: lr.top + y, w: W, h, preset: 'dust', duration: 1300 }));
     await sc.wait(420);
@@ -454,23 +394,15 @@ function mountReorder(body, { sc, mode }) {
     await dust.done;
   }
 
-  /** Canvas replica of a row, for the dust. */
-  function drawRow(c, r, w, h) {
-    const re = r.el.getBoundingClientRect();
-    c.textBaseline = 'middle';
-    for (const n of [r.rank, r.el.querySelector('.cp-ro-title')]) {
-      const st = getComputedStyle(n), b = n.getBoundingClientRect();
-      c.font = `${st.fontWeight} ${st.fontSize} ${FONT}`;
-      c.fillStyle = st.color;
-      c.fillText(n.textContent, b.left - re.left, h / 2);
-    }
-    const grip = r.el.querySelector('.cp-ro-grip i');
-    if (grip) {
-      const g = grip.getBoundingClientRect();
-      c.fillStyle = getComputedStyle(grip).backgroundColor;
-      for (let k = -1; k <= 1; k++) { rr(c, g.left - re.left, h / 2 + k * 5 - 1, g.width, 2, 1); c.fill(); }
-    }
-  }
+  /** Canvas replica of a row, for the dust: rank, title and the three bars of the grip. */
+  const snapRow = (r, w, h) => snapNode(r.el, [
+    { node: r.rank },
+    { node: r.el.querySelector('.cp-ro-title') },
+    { node: r.el.querySelector('.cp-ro-grip i'), draw: (c, g, n) => {
+      c.fillStyle = getComputedStyle(n).backgroundColor;
+      for (let k = -1; k <= 1; k++) { rr(c, g.x, h / 2 + k * 5 - 1, g.w, 2, 1); c.fill(); }
+    } },
+  ], { size: { w, h }, scale: 1 });
 
   /** Keyboard: Alt + arrows move the focused row one slot. */
   function nudge(id, by) {
@@ -525,7 +457,8 @@ function mountReorder(body, { sc, mode }) {
   list.addEventListener('touchmove', noScroll, { passive: false });
   sc.onDispose(() => { if (press) clearTimeout(press.timer); });
 
-  reset.addEventListener('click', () => {
+  /** Brings back every deleted row, in the starting order. */
+  function reset() {
     if (phase !== IDLE) return;
     for (const t of data) if (!rows.has(t.id)) {
       const r = addRow(t);
@@ -535,7 +468,7 @@ function mountReorder(body, { sc, mode }) {
     order = data.map((t) => t.id);
     measure();
     apply();
-  });
+  }
 
   /* ---------- Autoplay: hold a row, carry it two slots, drop it; the next run brings it back ---------- */
 
@@ -543,7 +476,7 @@ function mountReorder(body, { sc, mode }) {
   return {
     async run() {
       if (busy || phase !== IDLE || press) return;
-      if (order.length < 3) { reset.click(); await sc.wait(900); return; }
+      if (order.length < 3) { reset(); await sc.wait(900); return; }
       busy = true;
       const fi = down ? 0 : 2, ti = down ? 2 : 0;
       down = !down;
@@ -581,10 +514,6 @@ function mountReorder(body, { sc, mode }) {
    Content
    ====================================================================================== */
 
-const add = (usage) => `// npx ${PKG} add reorder-list
-import { ReorderList, ReorderHandle } from '@/components/dissolve/reorder-list';
-
-${usage}`;
 
 export const ENTRIES = {
   'reorder-list': {
@@ -594,8 +523,7 @@ export const ENTRIES = {
     hint: 'Press and hold a row, then drag it',
     tileHint: 'Hold and drag',
     mount: mountReorder,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="2.5" width="15" height="4.5" rx="2" opacity=".55"/><rect x="5" y="8.8" width="15" height="4.5" rx="2"/><rect x="2.5" y="15" width="15" height="4.5" rx="2" opacity=".55"/><path d="M9 11h6" opacity=".55"/></svg>',
-    code: add(`<ReorderList
+    code: add('reorder-list', 'ReorderList, ReorderHandle', `<ReorderList
   data={tasks}
   keyExtractor={(t) => t.id}
   onReorder={(next) => setTasks(next)}

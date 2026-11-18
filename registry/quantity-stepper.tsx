@@ -25,8 +25,8 @@ import { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withSequenc
 import * as Haptics from 'expo-haptics';
 import { NumberTicker } from './number-ticker';
 import { Animated, Pressable, View, cn, useToken } from './tw';
+import { CALM } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const MINUS = Skia.Path.MakeFromSVGString('M6 12h12')!;
 const PLUS = Skia.Path.MakeFromSVGString('M12 6v12M6 12h12')!;
 const TRASH = Skia.Path.MakeFromSVGString('M4.5 7h15M9.5 7V4.8h5V7M6.5 7l.8 12a1.8 1.8 0 0 0 1.8 1.7h5.8a1.8 1.8 0 0 0 1.8-1.7L17.5 7M10.2 10.8v5.8M13.8 10.8v5.8')!;

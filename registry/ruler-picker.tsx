@@ -17,7 +17,6 @@ import { PixelRatio, Platform, type AccessibilityActionEvent, type LayoutChangeE
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Canvas, Picture, RoundedRect, Skia, createPicture, matchFont } from '@shopify/react-native-skia';
 import {
-  Easing,
   cancelAnimation,
   useAnimatedReaction,
   useDerivedValue,
@@ -31,8 +30,8 @@ import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { NumberTicker } from './number-ticker';
 import { Text, View, cn, useToken } from './tw';
+import { CALM } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 /** How far past a bound the ruler follows the finger. */
 const RUBBER = 0.3;
 /** Minimum gap between two haptic ticks, ms. */
@@ -157,7 +156,7 @@ export function RulerPicker({
   const ink = useToken('foreground');
   const muted = useToken('muted');
   const needle = useToken('primary');
-  const reduce = useReducedMotion();
+  const reduced = useReducedMotion();
 
   const decimals = useMemo(() => decimalsOf(step), [step]);
   const count = Math.max(1, Math.round((max - min) / step));
@@ -198,11 +197,16 @@ export function RulerPicker({
     const o = offset.value;
     const speed = (Math.abs(o - last.value) / dt) * 1000;
     last.value = o;
-    const target = reduce ? 0 : Math.min(speed / 1500, 1);
+    const target = reduced ? 0 : Math.min(speed / 1500, 1);
     const next = target > wake.value ? target : Math.max(target, wake.value - dt / 300);
     if (next !== wake.value) wake.value = next;
   });
 
+  const paint = useMemo(() => {
+    const p = Skia.Paint();
+    p.setAntiAlias(true);
+    return p;
+  }, []);
   const picture = useDerivedValue(() => {
     const o = offset.value;
     const w = wake.value;
@@ -210,8 +214,6 @@ export function RulerPicker({
       (c) => {
         if (!W) return;
         const cx = W / 2;
-        const paint = Skia.Paint();
-        paint.setAntiAlias(true);
         const first = Math.max(0, Math.floor((o - cx) / sp) - 1);
         const lastI = Math.min(count, Math.ceil((o + cx) / sp) + 1);
         const halfEvery = majorEvery % 2 === 0 ? majorEvery / 2 : 0;
@@ -306,8 +308,8 @@ export function RulerPicker({
     const i = toIndex(value);
     shown.current = i;
     live.value = 0;
-    offset.value = withTiming(i * sp, { duration: reduce ? 150 : 420, easing: CALM });
-  }, [value, toIndex, sp, reduce, offset, live]);
+    offset.value = withTiming(i * sp, { duration: reduced ? 150 : 420, easing: CALM });
+  }, [value, toIndex, sp, reduced, offset, live]);
 
   const rubber = (x: number) => {
     'worklet';
@@ -327,7 +329,7 @@ export function RulerPicker({
       scheduleOnRN(commit, i);
       return;
     }
-    offset.value = withTiming(target, { duration: reduce ? 150 : 300, easing: CALM }, (done) => {
+    offset.value = withTiming(target, { duration: reduced ? 150 : 300, easing: CALM }, (done) => {
       if (!done) return;
       live.value = 0;
       scheduleOnRN(commit, i);
@@ -353,14 +355,14 @@ export function RulerPicker({
       if (o < 0 || o > maxOff) {
         // Released past a bound: glide back, the bound is a step so no extra snap.
         const to = o < 0 ? 0 : maxOff;
-        offset.value = withTiming(to, { duration: reduce ? 150 : 420, easing: CALM }, (done) => {
+        offset.value = withTiming(to, { duration: reduced ? 150 : 420, easing: CALM }, (done) => {
           if (!done) return;
           live.value = 0;
           scheduleOnRN(commit, o < 0 ? 0 : count);
         });
         return;
       }
-      if (reduce) return settle();
+      if (reduced) return settle();
       offset.value = withDecay({ velocity: -e.velocityX, deceleration: 0.997, clamp: [0, maxOff] }, (done) => {
         if (done) settle();
       });
@@ -374,7 +376,7 @@ export function RulerPicker({
     const i = Math.min(count, Math.max(0, shown.current + delta));
     if (i === shown.current) return;
     live.value = 0;
-    offset.value = withTiming(i * sp, { duration: reduce ? 150 : 260, easing: CALM });
+    offset.value = withTiming(i * sp, { duration: reduced ? 150 : 260, easing: CALM });
     commit(i);
   };
   const onA11y = (e: AccessibilityActionEvent) => {

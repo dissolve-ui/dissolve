@@ -1,14 +1,12 @@
-import type { ViewRef } from '../types';
 import { useCallback, useRef, useState } from 'react';
-import type { View } from 'react-native';
-import { capGrain, capture, frames } from '../core';
+import { capGrain, capture, frames, MAX_GRAINS } from '../core';
 import { useDissolveContext } from '../context';
 import { getVariant } from '../variants/registry';
 import { runDissolve } from './useDissolve';
-import type { DissolveOptions } from '../types';
+import type { DissolveOptions, ViewRef } from '../types';
 
 /**
- * GROUP D. Full screen disintegration (docs/VARIANTS.md section 7, screen mode).
+ * Full screen disintegration (docs/VARIANTS.md section 7, screen mode).
  *
  *   const { ref, dissolveScreen } = useDissolveScreen();
  *   <View ref={ref} collapsable={false} style={{ flex: 1, backgroundColor: C.bg }}>...</View>
@@ -48,7 +46,7 @@ const SCREEN_GRAINS = 5000;
  */
 export function screenGrain(w: number, h: number, base: number, max = SCREEN_GRAINS) {
   const spec = Math.max(base, Math.ceil(Math.sqrt((w * h) / 10000)));
-  return capGrain(w, h, spec, Math.min(Math.max(1, max), 6000));
+  return capGrain(w, h, spec, Math.min(Math.max(1, max), MAX_GRAINS));
 }
 
 export function useDissolveScreen() {
@@ -90,7 +88,7 @@ export function useDissolveScreen() {
             grain,
             field: rest.field ?? 'cascade',
           },
-          { image: shot.image, box: shot.box, onFinish },
+          { image: shot.image, box: shot.box, owned: [shot.image], onFinish },
         );
         // Let the overlay paint the identical first frame before the real screen goes away.
         await frames(2);

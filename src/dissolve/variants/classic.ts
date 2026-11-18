@@ -1,43 +1,8 @@
-import { AlphaType, ColorType } from '@shopify/react-native-skia';
-import type { AtlasVariant, Burst } from '../types';
+import { palette } from '../core';
+import type { AtlasVariant } from '../types';
 
 /**
- * Dominant color of a snapshot: colors are bucketed (3 bits per channel), each pixel
- * weighted by its saturation so a colored bubble wins over white text or a gray backdrop.
- * Returns the average color of the heaviest bucket, plus the raw pixels for per-grain lookups.
- */
-function palette(burst: Burst) {
-  const img = burst.image;
-  const W = img.width();
-  const H = img.height();
-  const px = img.readPixels(0, 0, { width: W, height: H, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Unpremul }) as Uint8Array | null;
-  if (!px) return null;
-  const count = new Float32Array(512);
-  const sum = new Float32Array(512 * 3);
-  const stepPx = Math.max(1, Math.floor(Math.sqrt((W * H) / 20000)));
-  for (let y = 0; y < H; y += stepPx) {
-    for (let x = 0; x < W; x += stepPx) {
-      const i = (y * W + x) * 4;
-      if (px[i + 3] < 128) continue;
-      const r = px[i], g = px[i + 1], b = px[i + 2];
-      const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
-      const w = 0.15 + (mx === 0 ? 0 : (mx - mn) / mx);
-      const q = ((r >> 5) << 6) | ((g >> 5) << 3) | (b >> 5);
-      count[q] += w;
-      sum[q * 3] += r * w;
-      sum[q * 3 + 1] += g * w;
-      sum[q * 3 + 2] += b * w;
-    }
-  }
-  let best = 0;
-  for (let q = 1; q < 512; q++) if (count[q] > count[best]) best = q;
-  const c = count[best] || 1;
-  return { px, W, H, dom: [sum[best * 3] / c / 255, sum[best * 3 + 1] / c / 255, sum[best * 3 + 2] / c / 255] };
-}
-
-/**
- * The five original presets, moved verbatim into the variant structure.
- * Owned by the master agent. The engine resets the output to the rest pose
+ * The five original presets. The engine resets the output to the rest pose
  * (a = 1 - smoothstep(t)) before each step, so steps only override what they move.
  */
 
@@ -49,7 +14,7 @@ export const dust: AtlasVariant = {
   spread: 0.62,
   jitter: 0.1,
   timing: (g, P) => ({ delay: (g.lx / P.w) * 0.62 + (1 - g.ly / P.h) * 0.04 + g.r1 * 0.1, life: 0.42 }),
-  step: (t, d, k, P, _a0, _a1, o) => {
+  step: (t, d, k, _P, _a0, _a1, o) => {
     'worklet';
     const r2 = d[k + 3];
     const r3 = d[k + 4];
@@ -86,14 +51,15 @@ export const ember: AtlasVariant = {
   // Per grain glow color: its own color mixed with the view's dominant color, lifted a bit.
   extra: 3,
   prepare: (d, stride, count, P, burst) => {
-    const pal = palette(burst);
+    const pal = palette(burst.image);
     for (let i = 0; i < count; i++) {
       const k = i * stride;
       let r = 1, g = 1, b = 1;
       if (pal) {
-        const x = Math.min(pal.W - 1, Math.floor(d[k] * P.pr));
-        const y = Math.min(pal.H - 1, Math.floor(d[k + 1] * P.pr));
-        const j = (y * pal.W + x) * 4;
+        // Grain center in the downscaled snapshot.
+        const x = Math.min(pal.w - 1, Math.floor(d[k] * P.pr * pal.scale));
+        const y = Math.min(pal.h - 1, Math.floor(d[k + 1] * P.pr * pal.scale));
+        const j = (y * pal.w + x) * 4;
         const own = pal.px[j + 3] < 128 ? pal.dom : [pal.px[j] / 255, pal.px[j + 1] / 255, pal.px[j + 2] / 255];
         r = own[0] * 0.4 + pal.dom[0] * 0.6;
         g = own[1] * 0.4 + pal.dom[1] * 0.6;

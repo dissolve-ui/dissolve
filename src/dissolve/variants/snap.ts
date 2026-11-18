@@ -1,8 +1,9 @@
 import * as Haptics from 'expo-haptics';
+import { eo } from '../core';
 import type { AtlasVariant } from '../types';
 
 /**
- * GROUP A. snap: the view disintegrates from the point you touched (docs/VARIANTS.md section 1).
+ * snap: the view disintegrates from the point you touched (docs/VARIANTS.md section 1).
  *
  * The wave starts at P.ox / P.oy (the origin, in local coords, the view center when no origin
  * is given) and reaches the farthest corner at progress 0.55. Each grain is blown outward
@@ -61,8 +62,7 @@ export const snap: AtlasVariant = {
   step: (t, d, k, _P, _a0, _a1, o) => {
     'worklet';
     // Ease out cubic: the blast is strongest right when the wave hits the grain.
-    const u = 1 - t;
-    const e = 1 - u * u * u;
+    const e = eo(t);
     o.cx += d[k + 8] * e;
     o.cy += d[k + 9] * e - 20 * t * t;
     o.s = 1 - 0.6 * t;

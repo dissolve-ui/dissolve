@@ -11,7 +11,7 @@
 .cp-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
 .cp-panel {
   /* Masonry, Pinterest style: each card keeps its natural height, columns fill top to bottom. */
-  display: flex; flex-direction: column; min-width: 0;
+  position: relative; display: flex; flex-direction: column; min-width: 0;
   border-radius: 24px; background: var(--surface);
 }
 .cp-panel-head {
@@ -29,8 +29,10 @@
 .cp-panel:hover .cp-name { color: var(--text); }
 .cp-panel-body { flex: 1; min-height: 190px; padding: 24px 20px 32px; }
 
-/* Every mounted demo body centers its component. */
+/* Every mounted demo body centers its component. A tile too small for one scales it down (fitTile). */
 .cp-body { display: grid; place-items: center; }
+.cp-fit { position: relative; flex: none; }
+.cp-fit > * { position: absolute; left: 0; top: 0; }
 .cp-mode-stage { width: 100%; max-width: 440px; }
 .cp-stage { height: auto; min-height: 360px; }
 .cp-stage .stage-slot { padding: 44px 24px 68px; }
@@ -161,3 +163,4 @@
 .cp-fx-body { display: grid; place-items: center; min-height: 170px; }
 .cp-fx-body .stage-slot { width: 100%; box-sizing: border-box; padding: 0; min-height: 0; display: grid; place-items: center; }
 .cp-grid-home { margin-top: 72px; }
+

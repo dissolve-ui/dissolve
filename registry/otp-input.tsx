@@ -18,6 +18,7 @@ import {
   interpolate,
   interpolateColor,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withDelay,
   withRepeat,
@@ -28,8 +29,8 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useDissolve } from 'react-native-dissolve';
 import { Animated, View, cn, useToken } from './tw';
+import { CALM } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const SOFT = Easing.bezier(0.45, 0, 0.2, 1);
 /** How much of the success or danger token tints a box fill. */
 const TINT = 0.12;
@@ -66,16 +67,21 @@ export type OTPInputProps = {
 
 type Phase = 'idle' | 'pending' | 'success' | 'error';
 
-/** One caret, remounted on every keystroke so its blink restarts fully lit, like UIKit. */
+/** One caret, remounted on every keystroke so its blink restarts fully lit, like UIKit. Steady under reduced motion. */
 function Caret({ height }: { height: number }) {
+  const reduced = useReducedMotion();
   const o = useSharedValue(1);
   useEffect(() => {
+    if (reduced) {
+      o.value = 1;
+      return;
+    }
     o.value = withRepeat(
       withSequence(withDelay(480, withTiming(0, { duration: 160, easing: SOFT })), withDelay(320, withTiming(1, { duration: 160, easing: SOFT }))),
       -1,
     );
     return () => cancelAnimation(o);
-  }, [o]);
+  }, [o, reduced]);
   const st = useAnimatedStyle(() => ({ opacity: o.value }));
   return <Animated.View className="w-0.5 rounded-[1px] bg-dissolve-foreground" style={[{ height }, st]} />;
 }
@@ -194,6 +200,7 @@ export function OTPInput({
   boxClassName,
   digitClassName,
 }: OTPInputProps) {
+  const reduced = useReducedMotion();
   const text = useToken('foreground');
   const box = useToken('surface');
   const glow = useToken('surface-2');
@@ -252,7 +259,8 @@ export function OTPInput({
       if (isAsync) {
         setPhase('pending');
         sweep.value = 0;
-        sweep.value = withRepeat(withTiming(1, { duration: 1100, easing: Easing.inOut(Easing.quad) }), -1);
+        // Under reduced motion the pending state is the plain row, no travelling highlight.
+        if (!reduced) sweep.value = withRepeat(withTiming(1, { duration: 1100, easing: Easing.inOut(Easing.quad) }), -1);
       }
       try {
         res = await out;
@@ -278,7 +286,7 @@ export function OTPInput({
       setPhase('error');
       if (haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       const swing = (x: number, d: number) => withTiming(x, { duration: d, easing: Easing.inOut(Easing.sin) });
-      shake.value = withSequence(swing(-11, 55), swing(9, 85), swing(-6, 80), swing(4, 75), swing(-2, 70), swing(0, 65));
+      if (!reduced) shake.value = withSequence(swing(-11, 55), swing(9, 85), swing(-6, 80), swing(4, 75), swing(-2, 70), swing(0, 65));
       await new Promise((r) => setTimeout(r, 520));
       if (!alive.current || id !== run.current) return;
       await dissolve({ preset: 'dust', duration: 900, grain: 2, origin: 'left', haptics: false });
@@ -288,7 +296,7 @@ export function OTPInput({
       setPhase('idle');
       input.current?.focus();
     },
-    [onComplete, sweep, haptics, blurOnSuccess, shake, dissolve, setCode, reset],
+    [onComplete, sweep, reduced, haptics, blurOnSuccess, shake, dissolve, setCode, reset],
   );
 
   const onChangeText = (next0: string) => {

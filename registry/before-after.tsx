@@ -12,12 +12,12 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Canvas, Path, Skia } from '@shopify/react-native-skia';
-import { Easing, interpolate, useAnimatedReaction, useAnimatedStyle, useSharedValue, withTiming, Extrapolation } from 'react-native-reanimated';
+import { interpolate, useAnimatedReaction, useAnimatedStyle, useSharedValue, withTiming, Extrapolation } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { Animated, Text, View, cn, useToken } from './tw';
+import { CALM } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const ARROWS = Skia.Path.MakeFromSVGString('M9.5 7.5L5 12l4.5 4.5M14.5 7.5L19 12l-4.5 4.5')!;
 const KNOB = 40;
 

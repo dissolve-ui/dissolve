@@ -1,25 +1,17 @@
-import type { ViewRef } from '../types';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import type { GestureResponderEvent, View } from 'react-native';
+import type { GestureResponderEvent } from 'react-native';
 import { Gesture } from 'react-native-gesture-handler';
-import {
-  cancelAnimation,
-  Easing,
-  useAnimatedStyle,
-  useFrameCallback,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import { cancelAnimation, Easing, useFrameCallback, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { DEFAULT_END, frames } from '../core';
-import { useDissolveContext } from '../context';
 import { getVariant } from '../variants/registry';
 import { runDissolve } from './useDissolve';
-import type { BurstHandle, VariantName } from '../types';
+import { CALM, useBurstOwner } from './useGestureBurst';
+import type { VariantName } from '../types';
 
 /**
- * GROUP C. Hold to destroy (docs/VARIANTS.md section 6), built for the 'charge' variant.
+ * Hold to destroy (docs/VARIANTS.md section 6), built for the 'charge' variant.
  *
  * Touch down: the view is captured and an overlay is added with an external progress,
  * aux0 = charge 0..1 and aux1 = a clock in ms (useFrameCallback, only while it matters).
@@ -55,27 +47,18 @@ export type HoldOptions = {
 
 type Phase = 'idle' | 'arming' | 'charging' | 'cooling' | 'committing' | 'done';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
-
 export function useDissolveHold(opts: HoldOptions = {}) {
-  const ctx = useDissolveContext();
-  const ref = useRef<ViewRef>(null);
+  const { ctx, ref, hidden, optsRef, s, drop, style } = useBurstOwner(opts);
   /** 0..1 while held (aux0 of the burst). Usable for a progress ring. */
   const charge = useSharedValue(0);
   /** Clock in ms (aux1 of the burst). */
   const clock = useSharedValue(0);
   /** Raw burst progress, 0..end of the variant. */
   const progress = useSharedValue(0);
-  /** 1 while the overlay stands in for the real view. */
-  const hidden = useSharedValue(0);
 
-  const optsRef = useRef(opts);
-  optsRef.current = opts;
-
-  const s = useRef({
+  const h = useRef({
     phase: 'idle' as Phase,
     down: false,
-    handle: null as BurstHandle | null,
     tick: null as ReturnType<typeof setTimeout> | null,
   }).current;
 
@@ -84,36 +67,35 @@ export function useDissolveHold(opts: HoldOptions = {}) {
   }, false);
 
   const stopTicks = useCallback(() => {
-    if (s.tick) clearTimeout(s.tick);
-    s.tick = null;
-  }, [s]);
+    if (h.tick) clearTimeout(h.tick);
+    h.tick = null;
+  }, [h]);
 
   const startTicks = useCallback(() => {
     stopTicks();
     if (optsRef.current.haptics === false) return;
     const loop = () => {
-      if (s.phase !== 'charging') return;
+      if (h.phase !== 'charging') return;
       const c = charge.value;
       if (c > 0.7) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       else Haptics.selectionAsync();
-      s.tick = setTimeout(loop, 120 - 90 * c);
+      h.tick = setTimeout(loop, 120 - 90 * c);
     };
     loop();
-  }, [s, charge, stopTicks]);
+  }, [h, optsRef, charge, stopTicks]);
 
   const finish = useCallback(() => {
-    if (s.phase !== 'committing') return;
-    s.phase = 'done';
+    if (h.phase !== 'committing') return;
+    h.phase = 'done';
     ticker.setActive(false);
-    s.handle?.remove();
-    s.handle = null;
+    drop();
     charge.value = 0;
     optsRef.current.onCommit?.();
-  }, [s, ticker, charge]);
+  }, [h, optsRef, drop, ticker, charge]);
 
   const commit = useCallback(() => {
-    if (s.phase !== 'charging') return;
-    s.phase = 'committing';
+    if (h.phase !== 'charging') return;
+    h.phase = 'committing';
     stopTicks();
     const o = optsRef.current;
     if (o.haptics !== false) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -127,10 +109,10 @@ export function useDissolveHold(opts: HoldOptions = {}) {
     progress.value = withTiming(end, { duration: o.duration ?? 900, easing: Easing.linear }, (fin) => {
       if (fin) scheduleOnRN(finish);
     });
-  }, [s, hidden, progress, stopTicks, finish]);
+  }, [h, s, optsRef, hidden, progress, stopTicks, finish]);
 
   const startCharge = useCallback(() => {
-    s.phase = 'charging';
+    h.phase = 'charging';
     hidden.value = s.handle ? 1 : 0;
     if (s.handle) ticker.setActive(true);
     const holdMs = optsRef.current.holdMs ?? 1200;
@@ -139,34 +121,33 @@ export function useDissolveHold(opts: HoldOptions = {}) {
       if (fin) scheduleOnRN(commit);
     });
     startTicks();
-  }, [s, hidden, ticker, charge, commit, startTicks]);
+  }, [h, s, optsRef, hidden, ticker, charge, commit, startTicks]);
 
   const settle = useCallback(() => {
-    if (s.phase !== 'cooling') return;
+    if (h.phase !== 'cooling') return;
     // Real view back first, overlay dropped once it has painted.
     hidden.value = 0;
     ticker.setActive(false);
     frames(2).then(() => {
-      if (s.phase !== 'cooling') return;
-      s.handle?.remove();
-      s.handle = null;
-      s.phase = 'idle';
+      if (h.phase !== 'cooling') return;
+      drop();
+      h.phase = 'idle';
       optsRef.current.onCancel?.();
     });
-  }, [s, hidden, ticker]);
+  }, [h, optsRef, drop, hidden, ticker]);
 
   const begin = useCallback(
     async (x: number, y: number) => {
-      if (s.phase === 'committing' || s.phase === 'done') return;
-      s.down = true;
-      if (s.phase === 'cooling') {
+      if (h.phase === 'committing' || h.phase === 'done') return;
+      h.down = true;
+      if (h.phase === 'cooling') {
         // Pressed again while calming down: keep the same overlay and charge from here.
         cancelAnimation(charge);
         startCharge();
         return;
       }
-      if (s.phase !== 'idle') return;
-      s.phase = 'arming';
+      if (h.phase !== 'idle') return;
+      h.phase = 'arming';
       progress.value = 0;
       charge.value = 0;
       const o = optsRef.current;
@@ -185,49 +166,42 @@ export function useDissolveHold(opts: HoldOptions = {}) {
           await frames(2);
         }
       }
-      if (!s.down) {
-        s.handle?.remove();
-        s.handle = null;
-        s.phase = 'idle';
+      if (!h.down) {
+        drop();
+        h.phase = 'idle';
         return;
       }
       startCharge();
     },
-    [ctx, s, charge, clock, progress, startCharge],
+    [ctx, ref, h, s, optsRef, drop, charge, clock, progress, startCharge],
   );
 
   const release = useCallback(() => {
-    s.down = false;
-    if (s.phase !== 'charging') return;
-    s.phase = 'cooling';
+    h.down = false;
+    if (h.phase !== 'charging') return;
+    h.phase = 'cooling';
     stopTicks();
     const c = charge.value;
     charge.value = withTiming(0, { duration: 220 + 320 * c, easing: CALM }, (fin) => {
       if (fin) scheduleOnRN(settle);
     });
-  }, [s, charge, stopTicks, settle]);
+  }, [h, charge, stopTicks, settle]);
 
   const reset = useCallback(() => {
     stopTicks();
-    s.handle?.remove();
-    s.handle = null;
-    s.phase = 'idle';
-    s.down = false;
+    drop();
+    h.phase = 'idle';
+    h.down = false;
     ticker.setActive(false);
     cancelAnimation(charge);
     cancelAnimation(progress);
     charge.value = 0;
     progress.value = 0;
     hidden.value = 0;
-  }, [s, ticker, charge, progress, hidden, stopTicks]);
+  }, [h, drop, ticker, charge, progress, hidden, stopTicks]);
 
-  useEffect(
-    () => () => {
-      stopTicks();
-      s.handle?.remove();
-    },
-    [s, stopTicks],
-  );
+  // The overlay itself is removed on unmount by useBurstOwner.
+  useEffect(() => stopTicks, [stopTicks]);
 
   const maxDistance = opts.maxDistance ?? 24;
   const gesture = useMemo(
@@ -256,8 +230,6 @@ export function useDissolveHold(opts: HoldOptions = {}) {
     }),
     [begin, release],
   );
-
-  const style = useAnimatedStyle(() => ({ opacity: hidden.value ? 0 : 1 }));
 
   return { ref, gesture, pressHandlers, charge, progress, style, reset };
 }

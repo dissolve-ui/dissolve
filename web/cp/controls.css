@@ -19,8 +19,6 @@
   --cc-sheet: #F2F3F6;
 }
 .cc button { -webkit-tap-highlight-color: transparent; }
-.cc-fit { position: relative; flex: none; }
-.cc-fit > * { position: absolute; left: 0; top: 0; }
 
 /* ---------- Rolling digits ---------- */
 
@@ -68,14 +66,13 @@
 
 /* ---------- BarChart ---------- */
 
-.cc-bc { display: flex; flex-direction: column; gap: 6px; }
+.cc-bc { display: flex; flex-direction: column; }
 .cc-seg { align-self: flex-end; display: inline-flex; padding: 2px; border-radius: 999px; background: var(--cc-fill); }
 .cc-seg-btn {
   height: 26px; padding: 0 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: var(--muted);
   transition: background .25s cubic-bezier(0.32, 0.72, 0, 1), color .25s;
 }
 .cc-seg-btn.on { background: var(--cc-card); color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
-.cc-bc { gap: 0; }
 .cc-bc .cc-seg { margin-bottom: 6px; }
 .cc-bc-lane { position: relative; pointer-events: none; }
 .cc-bc-plot { position: relative; touch-action: pan-y; user-select: none; -webkit-user-select: none; outline: none; cursor: crosshair; }
@@ -95,14 +92,6 @@
 .cc-mp {
   position: relative; overflow: hidden; border-radius: 38px; background: var(--cc-frame);
   box-shadow: inset 0 0 0 1px var(--line); isolation: isolate; text-align: left;
-}
-.cc-mp-lib { position: absolute; inset: 0; padding: 22px 20px; }
-.cc-mp-lib-h { margin: 0 0 14px; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
-.cc-mp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 12px; }
-.cc-mp-grid i { display: block; aspect-ratio: 1; border-radius: 12px; background: center / cover; }
-.cc-mp-grid span { display: block; margin-top: 6px; font-size: 13px; font-weight: 500; color: var(--text-2); }
-.cc-mp-backdrop { position: absolute; inset: 0; background: var(--cc-frame); opacity: 0; pointer-events: none; }
-.cc-mp {
   /* Liquid glass imitation: tinted translucent fill, blur and saturation of what is behind,
      a specular rim (bright top edge, softer bottom) and a faint inner shadow. */
   --cc-glass: color-mix(in srgb, var(--cc-sheet) 52%, transparent);
@@ -110,6 +99,12 @@
   --cc-glass-rim: rgba(255, 255, 255, 0.10);
   --cc-glass-in: rgba(0, 0, 0, 0.28);
 }
+.cc-mp-lib { position: absolute; inset: 0; padding: 22px 20px; }
+.cc-mp-lib-h { margin: 0 0 14px; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+.cc-mp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 12px; }
+.cc-mp-grid i { display: block; aspect-ratio: 1; border-radius: 12px; background: center / cover; }
+.cc-mp-grid span { display: block; margin-top: 6px; font-size: 13px; font-weight: 500; color: var(--text-2); }
+.cc-mp-backdrop { position: absolute; inset: 0; background: var(--cc-frame); opacity: 0; pointer-events: none; }
 [data-theme='light'] .cc-mp {
   --cc-glass: color-mix(in srgb, var(--cc-frame) 58%, transparent);
   --cc-glass-hi: rgba(255, 255, 255, 0.9);

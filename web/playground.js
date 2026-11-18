@@ -1,8 +1,8 @@
 // Variant playground: a live stage driven by a control panel, mirroring app/playground.tsx.
 // The code blocks under it always show the exact snippet for the current settings.
-import { play, snapshot, morph } from './engine/atlas.js';
+import { morph } from './engine/atlas.js';
+import { play, snapshot, PKG, boxOf, hide, show as reveal, onTheme, redraw } from './cp/kit.js';
 import { drawCard, binSvg, attachFling, holdController, attachHold, peelController, attachPeel, attachScrub } from './demo.js';
-import { PKG } from './variants-content.js';
 
 /* ---------- variant facts (src/dissolve/variants/registry.ts) ---------- */
 
@@ -74,7 +74,7 @@ function defaults(id) {
 const ORIGIN_TOUCH = '{ x: e.nativeEvent.locationX, y: e.nativeEvent.locationY }';
 
 /** Exact native snippet for the current settings (port of snippet() in app/playground.tsx). */
-export function nativeSnippet(id, s) {
+function nativeSnippet(id, s) {
   const c = caps(id, s);
   const hapticsDef = s.direction === 'in' ? false : true;
   if (id === 'charge') {
@@ -192,7 +192,7 @@ ${lines.join('\n')}
 }
 
 /** Same settings on the Canvas 2D port (web/engine/atlas.js). */
-export function webSnippet(id, s) {
+function webSnippet(id, s) {
   const c = caps(id, s);
   if (id === 'morph') {
     return `import { morph } from './engine/atlas.js';
@@ -309,10 +309,14 @@ export function mountPlayground(root, id, { highlight }) {
   const W = Math.max(220, Math.min(320, scene.clientWidth - 32)), H = 84;
   const mk = (key) => {
     const c = snapshot(W, H, (ctx) => drawCard(ctx, W, H, key));
+    cards.push([c, key]);
     c.style.width = W + 'px'; c.style.height = H + 'px';
     c.className = 'demo-card';
     return c;
   };
+  // Cards are drawn in the theme of the moment: draw them again, in place, when it flips.
+  const cards = [];
+  const offTheme = onTheme(null, () => cards.forEach(([c, key]) => redraw(c, (ctx) => drawCard(ctx, W, H, key))));
   const card = mk(id);
   card.setAttribute('role', 'button');
   card.setAttribute('tabindex', '0');
@@ -336,9 +340,7 @@ export function mountPlayground(root, id, { highlight }) {
   }
   scene.replaceChildren(...nodes);
 
-  const rect = (el) => { const r = el.getBoundingClientRect(); return { source: el, x: r.left, y: r.top, w: r.width, h: r.height }; };
-  const hide = (el) => { el.style.transition = 'none'; el.style.opacity = '0'; };
-  const show = (el, fade = true) => { el.style.transition = fade ? '' : 'none'; el.style.opacity = '1'; el.style.transform = ''; };
+  const show = (el, fade = true) => { reveal(el, fade); el.style.transform = ''; };
   const wait = (ms) => new Promise((r) => { timer = setTimeout(r, ms); });
   const buzz = () => { if (s.haptics) navigator.vibrate?.(12); };
   const bump = () => {
@@ -350,7 +352,7 @@ export function mountPlayground(root, id, { highlight }) {
 
   function engineOpts(dir, touch) {
     const c = caps(id, s);
-    const o = { ...rect(card), preset: id, duration: s.duration, direction: dir };
+    const o = { ...boxOf(card), preset: id, duration: s.duration, direction: dir };
     if (c.grain) o.grain = s.grain;
     if (c.origin && s.origin !== 'auto') o.origin = s.origin === 'touch' ? (touch ?? { x: o.w / 2, y: o.h / 2 }) : s.origin;
     if (id === 'fling') o.velocity = FLINGS[s.fling].v;
@@ -368,7 +370,7 @@ export function mountPlayground(root, id, { highlight }) {
       if (id === 'morph') {
         // Play goes to the other view, reverse: true when B is showing.
         const rev = onB, target = rev ? card : cardB;
-        const a = rect(card), b = rect(cardB);
+        const a = boxOf(card), b = boxOf(cardB);
         hide(card); hide(cardB);
         await track(morph(a, b, { grain: s.grain, duration: s.duration, reverse: rev })).done;
         if (!alive) return;
@@ -496,5 +498,5 @@ export function mountPlayground(root, id, { highlight }) {
     refresh(true);
   }
   refresh(false);
-  return () => { alive = false; stop(); };
+  return () => { alive = false; offTheme(); stop(); };
 }

@@ -1,40 +1,14 @@
 // Web version of the mobile Gallery screen (app/gallery.tsx): every effect on real content.
 // Each dissolvable item is drawn into a canvas, so the snapshot handed to the engine is exact.
-import { play, snapshot, morph } from './engine/atlas.js';
-
-import { IMG, ready, FONT, cover } from './images.js';
+import { morph } from './engine/atlas.js';
+import { ready } from './images.js';
+import { play, snapshot, IMG, FONT, cover, pal, rr, wrap, text, isLight, boxOf, hide, show, onTheme, redraw, scope } from './cp/kit.js';
 import { CLAUDE_PATH, OPENAI_PATH } from './docs.js';
 
 const PAINTINGS = ['temple', 'lake', 'pines', 'arch', 'valley', 'pond', 'cypress', 'tuscany', 'aqueduct'];
 const IN_PRESETS = ['gather', 'rain', 'print'];
 
 /* ---------- drawing helpers ---------- */
-
-export const isLight = () => document.documentElement.dataset.theme === 'light';
-export const pal = () => isLight()
-  ? { card: '#FFFFFF', ink: '#12151A', text: '#535A64', muted: '#8E959F', line: 'rgba(0,0,0,0.08)', them: '#EEF0F3', me: '#2F63E0', meText: '#FFFFFF' }
-  : { card: '#1E2024', ink: '#F2F4F7', text: '#A9AFB8', muted: '#858B94', line: 'rgba(255,255,255,0.07)', them: '#26292E', me: '#3A6FE6', meText: '#FFFFFF' };
-
-export function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
-
-export function wrap(ctx, text, maxW) {
-  const words = text.split(' '), lines = [];
-  let cur = '';
-  for (const w of words) {
-    const t = cur ? cur + ' ' + w : w;
-    if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t;
-  }
-  if (cur) lines.push(cur);
-  return lines;
-}
-
-export function text(ctx, str, x, y, { size = 14, weight = 400, color, align = 'left', mono = false } = {}) {
-  ctx.font = `${weight} ${size}px ${mono ? "'Geist Mono', monospace" : FONT}`;
-  ctx.fillStyle = color;
-  ctx.textAlign = align;
-  ctx.fillText(str, x, y);
-  ctx.textAlign = 'left';
-}
 
 /** Draws one line that never runs past maxW: shrinks down to minSize, then ends with an ellipsis. */
 function fitText(ctx, str, x, y, maxW, { size = 14, minSize = size - 2, weight = 400, color, mono = false } = {}) {
@@ -78,41 +52,46 @@ function icon(ctx, name, x, y, size = 28) {
 
 /* ---------- item lifecycle ---------- */
 
-/** A canvas element of w x h css px drawn by fn. */
+/** A canvas element of w x h css px drawn by fn. redrawItems() draws it again (theme switch). */
+const DRAW = new WeakMap();
 export function item(w, h, fn, cls = '') {
   const c = snapshot(w, h, (ctx) => fn(ctx, w, h));
+  DRAW.set(c, (ctx) => fn(ctx, w, h));
   c.style.width = w + 'px';
   c.style.height = h + 'px';
   c.className = 'sc-item ' + cls;
   return c;
 }
 
-export const rectOf = (el) => { const r = el.getBoundingClientRect(); return { source: el, x: r.left, y: r.top, w: r.width, h: r.height }; };
-export const hide = (el) => { el.style.transition = 'none'; el.style.opacity = '0'; };
-export const show = (el, fade = true) => { el.style.transition = fade ? '' : 'none'; el.style.opacity = '1'; };
+/** Redraws every item() canvas under root, in the current theme. */
+export function redrawItems(root) {
+  root.querySelectorAll('canvas.sc-item').forEach((c) => { const fn = DRAW.get(c); if (fn) redraw(c, fn); });
+}
 
 /** Tap to dissolve, then fade back so the demo replays (Dissolvable in the mobile app). */
-export function dissolvable(el, preset, { duration = 1500, touch = false, target, onArrive, back = 0.8 } = {}) {
+function dissolvable(sc, el, preset, { duration = 1500, touch = false, target, onArrive, back = 0.8 } = {}) {
   el.dataset.preset = preset;
   el.addEventListener('click', async (e) => {
     if (el.dataset.busy) return;
     el.dataset.busy = '1';
-    const r = rectOf(el);
+    const r = boxOf(el);
     const opts = { ...r, preset, duration };
     if (touch) opts.origin = { x: e.clientX - r.x, y: e.clientY - r.y };
     if (target) { const t = target().getBoundingClientRect(); opts.target = { x: t.left, y: t.top, width: t.width, height: t.height }; }
     hide(el);
-    if (onArrive) setTimeout(onArrive, duration * 0.72);
+    if (onArrive) sc.wait(duration * 0.72).then(onArrive);
     await play(opts).done;
-    setTimeout(() => { show(el); delete el.dataset.busy; }, duration * back);
+    await sc.wait(duration * back);
+    show(el);
+    delete el.dataset.busy;
   });
 }
 
 /** Plays an entrance on an element already in the layout. */
-export async function appear(el, preset, extra = {}) {
+async function appear(el, preset, extra = {}) {
   hide(el);
   await new Promise(requestAnimationFrame);
-  await play({ ...rectOf(el), preset, direction: 'in', ...extra }).done;
+  await play({ ...boxOf(el), preset, direction: 'in', ...extra }).done;
   show(el, false);
 }
 
@@ -146,12 +125,12 @@ function drawBento(ctx, w, h, b) {
   lines.forEach((l, i) => text(ctx, l, 18, by + i * 19, { size: 13.5, color: 'rgba(255,255,255,0.72)' }));
 }
 
-function mountBento(root) {
+function mountBento(root, sc) {
   root.querySelectorAll('[data-bento]').forEach((slot) => {
     const b = BENTO[+slot.dataset.bento];
     const el = item(slot.clientWidth, slot.clientHeight, (ctx, w, h) => drawBento(ctx, w, h, b));
     slot.replaceChildren(el);
-    dissolvable(el, b.preset, { touch: b.touch });
+    dissolvable(sc, el, b.preset, { touch: b.touch });
   });
 }
 
@@ -185,7 +164,7 @@ function drawMail(ctx, w, h, m) {
   text(ctx, 'Archive', px + 58, py + ph - 25, { size: 13, weight: 600, color: isLight() ? '#fff' : '#12151A', align: 'center' });
 }
 
-function mountInbox(root) {
+function mountInbox(root, sc) {
   const bin = root.querySelector('#sc-bin');
   const badge = root.querySelector('#sc-bin-count');
   let count = 0;
@@ -200,7 +179,7 @@ function mountInbox(root) {
   row.replaceChildren(...MAILS.map((m) => {
     const el = item(w, h, (ctx, W, H) => drawMail(ctx, W, H, m));
     const streaming = m.preset === 'stream';
-    dissolvable(el, m.preset, { duration: 1400, target: streaming ? () => bin : undefined, onArrive: streaming ? arrive : undefined });
+    dissolvable(sc, el, m.preset, { duration: 1400, target: streaming ? () => bin : undefined, onArrive: streaming ? arrive : undefined });
     return el;
   }));
 }
@@ -208,13 +187,13 @@ function mountInbox(root) {
 /* ---------- 03 Thread ---------- */
 
 function bubble(me, txt, maxW, name) {
-  const c = pal();
   const ctx0 = document.createElement('canvas').getContext('2d');
   ctx0.font = `400 14.5px ${FONT}`;
   const lines = wrap(ctx0, txt, maxW - 28);
   const tw = Math.max(...lines.map((l) => ctx0.measureText(l).width), name ? 60 : 0);
   const w = Math.ceil(tw + 28), h = 18 + lines.length * 20 + (name ? 17 : 0);
   return item(w, h, (ctx) => {
+    const c = pal();
     ctx.fillStyle = me ? c.me : c.them;
     rr(ctx, 0, 0, w, h, 18); ctx.fill();
     let y = 14;
@@ -234,8 +213,9 @@ function album(w) {
 }
 
 function photoMsg(w) {
-  const c = pal(), ih = w * 0.7, h = ih + 58;
+  const ih = w * 0.7, h = ih + 58;
   return item(w, h, (ctx) => {
+    const c = pal();
     ctx.fillStyle = c.me; rr(ctx, 0, 0, w, h, 18); ctx.fill();
     ctx.save(); rr(ctx, 4, 4, w - 8, ih, 15); ctx.clip(); cover(ctx, IMG.cypress, 4, 4, w - 8, ih); ctx.restore();
     text(ctx, 'And this one for the about page', 14, ih + 26, { size: 14, color: c.meText });
@@ -246,9 +226,7 @@ function photoMsg(w) {
 const REPLIES = ['Love it, ship it', 'Can you send the Figma link?', 'Perfect, talk tomorrow', 'The light is so good'];
 const MINE = ['Sending the export now', 'Keeping the warm light', 'On it', 'Here is v2'];
 
-const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-
-function mountThread(root) {
+function mountThread(root, sc) {
   // A real chat: fixed height, anchored to the bottom, old messages scroll out of view.
   const box = root.querySelector('#sc-thread');
   const list = document.createElement('div');
@@ -262,7 +240,7 @@ function mountThread(root) {
   const unsendable = (el, preset, touch = false) => el.addEventListener('click', async (e) => {
     if (el.dataset.busy) return;
     el.dataset.busy = '1';
-    const r = rectOf(el);
+    const r = boxOf(el);
     const opts = { ...r, preset, duration: 1100 };
     if (touch) opts.origin = { x: e.clientX - r.x, y: e.clientY - r.y };
     hide(el);
@@ -270,7 +248,7 @@ function mountThread(root) {
     const rw = el.parentElement;
     rw.style.height = rw.offsetHeight + 'px';
     requestAnimationFrame(() => rw.classList.add('gone'));
-    setTimeout(() => rw.remove(), 320);
+    sc.wait(320).then(() => rw.remove());
   });
   const trim = () => { while (list.offsetHeight > box.clientHeight * 1.6 && list.children.length > 2) list.firstElementChild.remove(); };
   // New row: make room with a short slide, then let the grains arrive.
@@ -284,7 +262,7 @@ function mountThread(root) {
     void list.offsetHeight;
     list.style.transition = 'transform .28s cubic-bezier(0.22, 1, 0.36, 1)';
     list.style.transform = '';
-    await wait(300);
+    await sc.wait(300);
     trim();
   };
 
@@ -307,7 +285,7 @@ function mountThread(root) {
     await add(mine, true);
     const s = send.getBoundingClientRect();
     await appear(mine, 'stream', { duration: 900, target: { x: s.left, y: s.top, width: s.width, height: s.height } });
-    await wait(450);
+    await sc.wait(450);
     const p = IN_PRESETS[i % IN_PRESETS.length];
     const reply = bubble(false, REPLIES[i % REPLIES.length], maxW, `Maya · ${p}`);
     unsendable(reply, 'vortex');
@@ -321,8 +299,8 @@ function mountThread(root) {
 /* ---------- 04 Arrivals ---------- */
 
 function arrivalRow(w, img, preset) {
-  const c = pal();
   return item(w, 68, (ctx) => {
+    const c = pal();
     ctx.fillStyle = c.card; rr(ctx, 0, 0, w, 68, 16); ctx.fill();
     ctx.strokeStyle = c.line; rr(ctx, 0.5, 0.5, w - 1, 67, 15.5); ctx.stroke();
     ctx.save(); rr(ctx, 10, 10, 48, 48, 11); ctx.clip(); cover(ctx, IMG[img], 10, 10, 48, 48); ctx.restore();
@@ -350,8 +328,8 @@ function mountArrivals(root) {
 /* ---------- 05 Gestures ---------- */
 
 function gCard(w, img, title, sub) {
-  const c = pal();
   return item(w, 76, (ctx) => {
+    const c = pal();
     ctx.fillStyle = c.card; rr(ctx, 0, 0, w, 76, 18); ctx.fill();
     ctx.strokeStyle = c.line; rr(ctx, 0.5, 0.5, w - 1, 75, 17.5); ctx.stroke();
     ctx.save(); rr(ctx, 12, 12, 52, 52, 12); ctx.clip(); cover(ctx, IMG[img], 12, 12, 52, 52); ctx.restore();
@@ -360,39 +338,44 @@ function gCard(w, img, title, sub) {
   });
 }
 
-function respawn(el, ms = 1500) { setTimeout(() => { show(el); delete el.dataset.busy; }, ms); }
+function respawn(sc, el, ms = 1500) { sc.wait(ms).then(() => { show(el); delete el.dataset.busy; }); }
 
-function mountGestures(root) {
+function mountGestures(root, sc) {
   const slotS = root.querySelector('#sc-scrub'), slotH = root.querySelector('#sc-hold');
   const w = slotS.clientWidth;
-  mountScrub(slotS);
-  mountHold(slotH, w);
+  mountScrub(slotS, sc);
+  mountHold(slotH, w, sc);
 }
 
-/** Scrub card: dust driven by the finger or cursor, reversible until you let go past half. */
-export function mountScrub(slotS) {
+/**
+ * Scrub card: dust driven by the finger or cursor, reversible until you let go past half.
+ * On its own (the gallery panel) it follows the theme itself. Returns a dispose function.
+ */
+export function mountScrub(slotS, sc) {
+  const own = !sc;
+  sc ??= scope();
   const w = slotS.clientWidth;
   // Scrub: dust driven by the finger, reversible until you let go past half.
-  const sc = gCard(w, 'lake', 'Drag me sideways', 'scrub · go back and the grains return');
-  sc.classList.add('grab');
-  slotS.replaceChildren(sc);
+  const card = gCard(w, 'lake', 'Drag me sideways', 'scrub · go back and the grains return');
+  card.classList.add('grab');
+  slotS.replaceChildren(card);
   // Touch: the card is touch-action: pan-y, a vertical swipe scrolls the page. The scrub starts
   // once the finger leaves the press sideways, then the page holds still.
   let h = null, x0 = 0, p = 0, pend = null;
   const begin = (e, x) => {
-    sc.dataset.busy = '1';
-    try { sc.setPointerCapture(e.pointerId); } catch {}
+    card.dataset.busy = '1';
+    try { card.setPointerCapture(e.pointerId); } catch {}
     x0 = x; p = 0;
-    h = play({ ...rectOf(sc), preset: 'dust', hold: true, duration: 1300 });
-    hide(sc);
+    h = play({ ...boxOf(card), preset: 'dust', hold: true, duration: 1300 });
+    hide(card);
   };
-  sc.addEventListener('pointerdown', (e) => {
-    if (sc.dataset.busy) return;
+  card.addEventListener('pointerdown', (e) => {
+    if (card.dataset.busy) return;
     if (e.pointerType === 'touch') pend = { x: e.clientX, y: e.clientY };
     else begin(e, e.clientX);
   });
-  sc.addEventListener('touchmove', (e) => { if (h && e.cancelable) e.preventDefault(); }, { passive: false });
-  sc.addEventListener('pointermove', (e) => {
+  card.addEventListener('touchmove', (e) => { if (h && e.cancelable) e.preventDefault(); }, { passive: false });
+  card.addEventListener('pointermove', (e) => {
     if (pend) {
       const dx = Math.abs(e.clientX - pend.x);
       if (dx <= 6 || dx <= Math.abs(e.clientY - pend.y)) return;
@@ -407,20 +390,22 @@ export function mountScrub(slotS) {
     pend = null;
     if (!h) return;
     const cur = h; h = null;
-    if (p > 0.45) { cur.release(); cur.done.then(() => respawn(sc)); return; }
+    if (p > 0.45) { cur.release(); cur.done.then(() => respawn(sc, card)); return; }
     const from = p, t0 = performance.now();
     const back = (now) => {
       const k = Math.min(1, (now - t0) / 260);
       cur.set(from * (1 - k * (2 - k)) * cur.end);
-      if (k < 1) requestAnimationFrame(back); else { cur.cancel(); show(sc, false); delete sc.dataset.busy; }
+      if (k < 1) requestAnimationFrame(back); else { cur.cancel(); show(card, false); delete card.dataset.busy; }
     };
     requestAnimationFrame(back);
   };
-  sc.addEventListener('pointerup', scrubEnd);
-  sc.addEventListener('pointercancel', scrubEnd);
+  card.addEventListener('pointerup', scrubEnd);
+  card.addEventListener('pointercancel', scrubEnd);
+  if (own) onTheme(sc, () => redrawItems(slotS));
+  return sc.dispose;
 }
 
-function mountHold(slotH, w) {
+function mountHold(slotH, w, sc) {
   // Hold: charge heats the card, bursts at full charge, let go early to cancel.
   const hc = gCard(w, 'aqueduct', 'Delete this project', 'charge · hold to confirm, let go to cancel');
   slotH.replaceChildren(hc);
@@ -429,14 +414,15 @@ function mountHold(slotH, w) {
     if (!hh) return;
     const c = Math.min(1, (now - t0) / 1200);
     hh.aux.a0 = c; hh.aux.a1 = now - t0;
-    if (c >= 1) { const cur = hh; hh = null; cur.release(); cur.done.then(() => respawn(hc)); return; }
+    if (c >= 1) { const cur = hh; hh = null; cur.release(); cur.done.then(() => respawn(sc, hc)); return; }
     requestAnimationFrame(tick);
   };
   // Touch: wait a beat before charging, a swipe that scrolls the page cancels the pointer first.
   let wait = 0;
+  sc.onDispose(() => clearTimeout(wait));
   const charge = () => {
     hc.dataset.busy = '1';
-    hh = play({ ...rectOf(hc), preset: 'charge', hold: true });
+    hh = play({ ...boxOf(hc), preset: 'charge', hold: true });
     hide(hc);
     t0 = performance.now();
     requestAnimationFrame(tick);
@@ -468,10 +454,11 @@ const NOTES = [
   { app: 'Photos', text: 'Lisbon, 3 years ago', img: 'valley' },
 ];
 
-function mountCascade(root) {
+function mountCascade(root, sc) {
   const list = root.querySelector('#sc-notes');
-  const w = list.clientWidth, c = pal();
+  const w = list.clientWidth;
   const rows = NOTES.map((n) => item(w, 58, (ctx) => {
+    const c = pal();
     ctx.fillStyle = c.card; rr(ctx, 0, 0, w, 58, 16); ctx.fill();
     ctx.strokeStyle = c.line; rr(ctx, 0.5, 0.5, w - 1, 57, 15.5); ctx.stroke();
     ctx.save(); rr(ctx, 10, 10, 38, 38, 10); ctx.clip(); cover(ctx, IMG[n.img], 10, 10, 38, 38); ctx.restore();
@@ -484,24 +471,26 @@ function mountCascade(root) {
     if (busy) return;
     busy = true;
     // Rows leave in a diagonal wave: each one starts a beat after the one above.
-    await Promise.all(rows.map((el, i) => new Promise((res) => setTimeout(async () => {
-      const r = rectOf(el);
+    await Promise.all(rows.map(async (el, i) => {
+      await sc.wait(i * 110);
+      const r = boxOf(el);
       hide(el);
       await play({ ...r, preset: 'dust', duration: 1400 }).done;
-      res();
-    }, i * 110))));
-    setTimeout(() => { rows.forEach((el) => show(el)); busy = false; }, 1200);
+    }));
+    await sc.wait(1200);
+    rows.forEach((el) => show(el));
+    busy = false;
   };
 }
 
 /* ---------- 07 Morph ---------- */
 
 function pill(label, filled) {
-  const c = pal();
   const ctx0 = document.createElement('canvas').getContext('2d');
   ctx0.font = `600 14px ${FONT}`;
   const w = Math.ceil(ctx0.measureText(label).width + 36), h = 38;
   return item(w, h, (ctx) => {
+    const c = pal();
     if (filled) { ctx.fillStyle = isLight() ? '#12151A' : '#F2F4F7'; rr(ctx, 0, 0, w, h, 19); ctx.fill(); }
     else { ctx.strokeStyle = c.line; ctx.lineWidth = 1.5; rr(ctx, 0.75, 0.75, w - 1.5, h - 1.5, 18.25); ctx.stroke(); }
     text(ctx, label, w / 2, 24, { size: 14, weight: 600, color: filled ? (isLight() ? '#fff' : '#12151A') : c.ink, align: 'center' });
@@ -510,7 +499,6 @@ function pill(label, filled) {
 
 function mountMorph(root) {
   const host = root.querySelector('#sc-morph');
-  const c = pal();
   const avatar = item(52, 52, (ctx) => { ctx.save(); rr(ctx, 0, 0, 52, 52, 26); ctx.clip(); cover(ctx, IMG.pond, 0, 0, 52, 52); ctx.restore(); }, 'sc-static');
   const info = document.createElement('div');
   info.className = 'sc-profile-info';
@@ -525,7 +513,7 @@ function mountMorph(root) {
   slot.addEventListener('click', async () => {
     if (busy) return;
     busy = true;
-    const ra = rectOf(a), rb = rectOf(b);
+    const ra = boxOf(a), rb = boxOf(b);
     hide(a); hide(b);
     await morph(ra, rb, { grain: 2, duration: 1100, reverse: onB }).done;
     show(onB ? a : b, false);
@@ -634,8 +622,6 @@ ${head('08', 'Every variant', 'The principal exits and entrances. Every other va
   <div class="gallery" id="sc-all"></div>`;
 }
 
-export const head2 = (i, title, note, right = '') => head(i, title, note, right);
-
 /** Hero command bar: the source buttons swap the command, one click copy with a check. */
 function mountInstall(root) {
   const box = root.querySelector('[data-hx]');
@@ -663,12 +649,12 @@ function mountInstall(root) {
  * Grains gather in from below on load, flee the pointer and spring back, and a click bursts them.
  */
 const TITLE_FACE = new FontFace('Allo Display', 'url(fonts/allo/AlloVariable.woff2)', { weight: '100 900', variationSettings: "'ROND' 100" });
-const CALM_T = (t) => 1 - Math.pow(1 - t, 3.2);
 
 /** Title ink from the theme token: the computed color lags behind while the theme cross-fades. */
 const readInk = () => getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#fff';
 
-function mountTitle(root) {
+/** Returns a dispose function. */
+function mountTitle(root, sc) {
   const h1 = root.querySelector('.hx-title');
   const cv = h1?.querySelector('canvas');
   if (!cv) return;
@@ -712,7 +698,7 @@ function mountTitle(root) {
     if (started) kick();
   }
 
-  function kick() { if (started && !raf && alive) raf = requestAnimationFrame(frame); }
+  function kick() { if (started && !raf && alive && sc.alive) raf = requestAnimationFrame(frame); }
 
   function frame(now) {
     raf = 0;
@@ -767,26 +753,35 @@ function mountTitle(root) {
     }
     kick();
   });
-  new MutationObserver(() => { ink = readInk(); kick(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  onTheme(sc, () => { ink = readInk(); kick(); });
   let rt = 0;
-  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => h1.isConnected && build(), 150); });
+  const onResize = () => { clearTimeout(rt); rt = setTimeout(() => h1.isConnected && build(), 150); };
+  addEventListener('resize', onResize);
+  sc.onDispose(() => { removeEventListener('resize', onResize); clearTimeout(rt); cancelAnimationFrame(raf); raf = 0; alive = false; });
   const go = () => { started = true; t0 = 0; kick(); };
   Promise.all([TITLE_FACE.load().then((f) => document.fonts.add(f)).catch(() => {}), ready])
-    .then(() => { build(); requestAnimationFrame(() => requestAnimationFrame(go)); });
+    .then(() => { if (!sc.alive) return; build(); requestAnimationFrame(() => requestAnimationFrame(go)); });
 }
 
-export async function mountShowcase(root) {
+/** Mounts the hero (gallery) or the scenes (effects page). Returns a dispose function. */
+export function mountShowcase(root) {
+  const sc = scope();
   if (root.querySelector('.hx-title')) {
-    mountTitle(root);
+    mountTitle(root, sc);
     mountInstall(root);
   }
-  if (!root.querySelector('.sc-bento')) return;
-  await ready;
-  mountBento(root);
-  mountInbox(root);
-  mountThread(root);
-  mountArrivals(root);
-  mountGestures(root);
-  mountCascade(root);
-  mountMorph(root);
+  if (!root.querySelector('.sc-bento')) return sc.dispose;
+  ready.then(() => {
+    if (!sc.alive) return;
+    mountBento(root, sc);
+    mountInbox(root, sc);
+    mountThread(root, sc);
+    mountArrivals(root);
+    mountGestures(root, sc);
+    mountCascade(root, sc);
+    mountMorph(root);
+    // Every scene is a canvas: draw them again in the new theme, in place.
+    onTheme(sc, () => redrawItems(root));
+  });
+  return sc.dispose;
 }

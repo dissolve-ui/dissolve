@@ -15,7 +15,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View as RNView, type LayoutChangeEvent, type NativeSyntheticEvent, type TextLayoutEventData } from 'react-native';
 import { Canvas, Path, Skia } from '@shopify/react-native-skia';
 import {
-  Easing,
   interpolateColor,
   useAnimatedStyle,
   useDerivedValue,
@@ -30,8 +29,8 @@ import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { useDissolve } from 'react-native-dissolve';
 import { Animated, Pressable, View, cn, useToken } from './tw';
+import { CALM } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const CHECK = Skia.Path.MakeFromSVGString('M6 12.5l4 4L18 8')!;
 
 export type TaskCheckProps = {

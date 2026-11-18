@@ -251,7 +251,7 @@ function HoldCard({ effect, onDone }: { effect: EffectEntry; onDone: () => void 
 
 /* ---------- peel: a sticker ---------- */
 
-function PeelSample({ effect, trigger }: SampleProps) {
+function PeelSample({ trigger }: SampleProps) {
   const [k, setK] = useState(0);
   useEffect(() => {
     if (trigger) setK((n) => n + 1);
@@ -280,7 +280,7 @@ function PeelCard({ onDone }: { onDone: () => void }) {
 
 /* ---------- morph: one view into another ---------- */
 
-function MorphSample({ effect, trigger }: SampleProps) {
+function MorphSample({ trigger }: SampleProps) {
   const { refA, refB, styleA, styleB, phase, morphing, morph } = useDissolveMorph();
   const bg = useToken('background');
   const success = useToken('success');

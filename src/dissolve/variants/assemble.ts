@@ -2,7 +2,7 @@ import { backOut, eo, ss } from '../core';
 import type { AtlasVariant, BurstParams } from '../types';
 
 /**
- * GROUP B. assemble: generic entrances gather / rain / print (docs/VARIANTS.md section 4).
+ * assemble: generic entrances gather / rain / print (docs/VARIANTS.md section 4).
  * natural 'in': a grain is at rest when t = 1. Played with direction 'out' the engine
  * reverses the timeline, so they also work as exits.
  *

@@ -1,10 +1,7 @@
 // Inputs: SlideToConfirm, OTPInput, NumberTicker (src/dissolve/components/*), ported raw.
 // Same timings, curves and thresholds as the native sources. Only the component, centered.
-import { CALM, QUAD, IN_OUT_CUBIC, value, el, clamp, mix, rectOf, play, snapshot, FONT, isLight } from './kit.js';
+import { CALM, QUAD, IN_OUT_CUBIC, value, el, clamp, mix, play, snapshot, FONT, isLight, loop, PKG, DIR, prop } from './kit.js';
 
-const PKG = 'react-native-dissolve';
-const DIR = '@/components/dissolve';
-const prop = (name, type, def, desc) => ({ name, type, def, desc });
 const SOFT_CSS = 'cubic-bezier(0.45, 0, 0.2, 1)';
 
 /* ======================================================================================
@@ -71,18 +68,16 @@ function mountSlide(body, { sc, mode }) {
   // Shimmer: an 80 px light band sweeps across the label, linear, every 2.2 s.
   text.style.backgroundImage = `linear-gradient(90deg, ${C.text}, ${C.shine}, ${C.text})`;
   text.style.backgroundColor = C.text;
+  // Asleep while the track is off screen: the band picks up where it was.
   let last = performance.now();
-  const loop = (now) => {
-    if (!sc.alive) return;
-    const dt = now - last;
+  loop(sc, track, (now) => {
+    const dt = Math.min(64, now - last);
     last = now;
     sweep = (sweep + dt / 2200) % 1;
     if (!textW) textW = text.offsetWidth;
     text.style.backgroundPosition = `${(-80 + (textW + 160) * sweep).toFixed(1)}px 0`;
     if (phase === 'loading') { angle = (angle + (dt / 900) * 360) % 360; render(); }
-    requestAnimationFrame(loop);
-  };
-  requestAnimationFrame(loop);
+  });
 
   const setPhase = (next) => {
     phase = next;
@@ -525,7 +520,7 @@ export const ENTRIES = {
     hint: 'Drag the knob to the end',
     tileHint: 'Slide to pay',
     mount: mountSlide,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="6.5" width="19" height="9" rx="4.5"/><circle cx="15.5" cy="11" r="2.6"/><path d="M5.5 11h5" opacity=".55"/></svg>',
+    remountOnTheme: true,
     code: `// npx ${PKG} add slide-to-confirm
 import { SlideToConfirm } from '${DIR}/slide-to-confirm';
 
@@ -553,7 +548,7 @@ import { SlideToConfirm } from '${DIR}/slide-to-confirm';
     hint: 'Type a code. 123456 is the right one',
     tileHint: 'Type a code',
     mount: mountOTP,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1.5" y="6" width="5" height="10" rx="1.8"/><rect x="8.5" y="6" width="5" height="10" rx="1.8"/><rect x="15.5" y="6" width="5" height="10" rx="1.8" opacity=".55"/><path d="M4 11h0M11 11h0" stroke-width="2.4"/></svg>',
+    remountOnTheme: true,
     code: `// npx ${PKG} add otp-input
 import { OTPInput } from '${DIR}/otp-input';
 
@@ -586,7 +581,6 @@ import { OTPInput } from '${DIR}/otp-input';
     hint: 'Change the value',
     tileHint: 'Digits roll',
     mount: mountTicker,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3.5" width="7" height="15" rx="2"/><rect x="12" y="3.5" width="7" height="15" rx="2"/><path d="M6.5 8.5v5M14.2 9l1.3-.8v5.3" opacity=".55"/></svg>',
     code: `// npx ${PKG} add number-ticker
 import { NumberTicker } from '${DIR}/number-ticker';
 

@@ -7,7 +7,10 @@ import { OPTIONS, PRACTICES, PEERS, INSTALL, PROVIDER, PKG } from './variants-co
 import { showcaseHTML, effectsHTML, mountShowcase, mountScrub } from './showcase.js';
 import { ready } from './images.js';
 import { introductionPage, installationPage, cliPage, themingPage, agentPromptPage, agentsStripHTML } from './docs.js';
-import { COMPONENTS, COMPONENT_ORDER, mountComponent, autoplay, componentsSectionHTML, mountComponentsSection, propsTable, componentPrompt, clearToasts } from './components.js';
+import { COMPONENTS, COMPONENT_ORDER, mountComponent, componentsSectionHTML, galleryCols, mountComponentsSection, propsTable, componentPrompt } from './components.js';
+import { autoplay, sequence } from './autoplay.js';
+import { clearToasts } from './cp/core.js';
+import { onWidth } from './cp/kit.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -311,13 +314,18 @@ function tiles() {
 /* ---------- Router ---------- */
 
 let teardown = [];
+let galleryDispose = null, lastCols = 0;
+
+const routeId = () => location.hash.replace(/^#\/?/, '') || 'gallery';
+const isGallery = (id) => !(VARIANTS[id] || PAGES[id] || COMPONENTS[id]) || id === 'gallery';
 
 function route(keepScroll) {
-  const id = location.hash.replace(/^#\/?/, '') || 'gallery';
+  const id = routeId();
   const view = $('#view');
-  // Stop everything the previous render started (bursts, loops, timers).
+  // Stop everything the previous render started (bursts, loops, timers, observers).
   teardown.forEach((f) => f());
   teardown = [];
+  galleryDispose = null;
   cancelAll();
   clearToasts();
   const comp = COMPONENTS[id];
@@ -328,8 +336,7 @@ function route(keepScroll) {
   if (keepScroll !== true) window.scrollTo(0, 0);
   wire(view);
   if (VARIANTS[id]) {
-    mountDemo($('#main-stage'), id);
-    teardown.push(mountPlayground(view, id, { highlight }), mountTiles(view, id));
+    teardown.push(mountDemo($('#main-stage'), id).dispose, mountPlayground(view, id, { highlight }), mountTiles(view, id));
     const cp = view.querySelector('[data-copy-prompt]');
     cp?.addEventListener('click', () => {
       navigator.clipboard?.writeText(promptFor(id, view)).catch(() => {});
@@ -338,28 +345,50 @@ function route(keepScroll) {
     });
   }
   if (comp) teardown.push(mountComponentPage(view, id));
-  if (id === 'gallery' || id === 'effects' || !(VARIANTS[id] || PAGES[id] || comp)) {
+  if (isGallery(id) || id === 'effects') {
     document.body.classList.add('is-showcase');
-    mountShowcase(view);
+    teardown.push(mountShowcase(view));
     if (id !== 'effects') {
-      teardown.push(mountComponentsSection(view));
-      view.querySelectorAll('[data-fx]').forEach((el) => {
-        if (el.dataset.fx === 'scrub') return mountScrub(el.querySelector('.stage-slot'));
-        const api = mountDemo(el, el.dataset.fx, { size: 'sm', autoplay: false });
-        teardown.push(autoplay(el, api, { threshold: 0.35, rank: Number(el.dataset.rank) }));
-      });
+      lastCols = galleryCols();
+      galleryDispose = mountGallery(view);
+      teardown.push(() => galleryDispose?.());
     }
   } else document.body.classList.remove('is-showcase');
   if (id === 'effects') {
     $('#sc-all').innerHTML = tiles();
     const demos = [...view.querySelectorAll('#sc-all [data-demo], #sc-all [data-cp-tile]')].map((el) => {
-      if (el.dataset.demo) return { el, api: mountDemo(el, el.dataset.demo, { size: 'sm', autoplay: false }) };
-      const api = mountComponent(el.dataset.cpTile, el.querySelector('.stage-slot'), { mode: 'tile' });
+      const api = el.dataset.demo
+        ? mountDemo(el, el.dataset.demo, { size: 'sm', autoplay: false })
+        : mountComponent(el.dataset.cpTile, el.querySelector('.stage-slot'), { mode: 'tile' });
       teardown.push(api.dispose);
-      return { el, api, component: true };
+      return { el, api, component: !el.dataset.demo };
     });
-    sequence($('#sc-all'), demos);
+    teardown.push(sequence($('#sc-all'), demos));
   }
+}
+
+/**
+ * A demo that mounts again once its box width changes a lot (the gallery reflows on resize).
+ * mount() returns { run, dispose }; so does this.
+ */
+function refitting(el, mount) {
+  let cur = mount();
+  const off = onWidth(null, el, () => { cur.dispose(); cur = mount(); });
+  return { run: () => cur.run(), dispose: () => { off(); cur.dispose(); } };
+}
+
+/** The gallery grid: every component panel and the engine effects among them. Returns a dispose function. */
+function mountGallery(view) {
+  const stops = [mountComponentsSection(view)];
+  view.querySelectorAll('[data-fx]').forEach((el) => {
+    const slot = el.querySelector('.stage-slot');
+    const api = el.dataset.fx === 'scrub'
+      ? refitting(el, () => ({ run() {}, dispose: mountScrub(slot) }))
+      : refitting(el, () => mountDemo(el, el.dataset.fx, { size: 'sm', autoplay: false }));
+    stops.push(api.dispose);
+    if (el.dataset.fx !== 'scrub') stops.push(autoplay(el, api, { threshold: 0.35, rank: Number(el.dataset.rank) }));
+  });
+  return () => stops.forEach((f) => f());
 }
 
 /** Mounts the live parts of a component page (stage, autoplay, buttons). Returns a dispose function. */
@@ -374,45 +403,6 @@ function mountComponentPage(root, id) {
     setTimeout(() => cp.classList.remove('done'), 900);
   });
   return () => { stopAuto(); stage.dispose(); };
-}
-
-/**
- * Plays the "Every variant" tiles one after another instead of all at once, so each
- * variant's timing reads on its own. Only tiles that are shown (filters) and on screen
- * take part. The cycle loops while the grid is visible and stops when the page changes.
- */
-function sequence(grid, demos, { gap = 700, rest = 1600 } = {}) {
-  let visible = false, running = false;
-  const onScreen = (el) => {
-    if (el.closest('[hidden]') || el.offsetParent === null) return false;
-    const r = el.getBoundingClientRect();
-    return r.bottom > 60 && r.top < innerHeight - 40;
-  };
-  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  async function loop() {
-    if (running) return;
-    running = true;
-    while (visible && document.body.contains(grid)) {
-      let played = 0;
-      for (const d of demos) {
-        if (!visible || !document.body.contains(grid)) break;
-        if (!d.api?.run || d.el.dataset.demo === 'peel' || !onScreen(d.el)) continue;
-        const r = d.api.run();
-        played += 1;
-        // A component demo is a short story (press, wait, settle): let it finish before the next tile.
-        if (d.component) await Promise.race([r, wait(7000)]);
-        await wait(gap);
-      }
-      await wait(played ? rest : 400);
-    }
-    running = false;
-  }
-  const io = new IntersectionObserver(([en]) => {
-    visible = en.isIntersecting;
-    if (!document.body.contains(grid)) return io.disconnect();
-    if (visible) loop();
-  }, { threshold: 0.15 });
-  io.observe(grid);
 }
 
 function wire(root) {
@@ -450,20 +440,32 @@ const applyTheme = (t) => {
   document.querySelector('meta[name=theme-color]').content = t === 'light' ? '#F9FAFB' : '#121212';
 };
 applyTheme(localStorage.getItem('theme') ?? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+// Canvases follow the theme on their own (onTheme in cp/kit.js): no re-render here.
 $('#theme').addEventListener('click', () => {
   const t = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
   localStorage.setItem('theme', t);
   applyTheme(t);
-  route(true); // demo cards are canvas snapshots, redraw them in the new theme
 });
 $('#menu').addEventListener('click', () => document.body.classList.toggle('side-open'));
 $('#scrim').addEventListener('click', () => document.body.classList.remove('side-open'));
 addEventListener('hashchange', () => route());
+// Resize: the gallery panels refit themselves (onWidth), only a new column count rebuilds its grid.
+// The variant and effects pages lay their scenes out once, so a real width change renders them again.
 let lastW = innerWidth, rt = 0;
 addEventListener('resize', () => {
-  if (Math.abs(innerWidth - lastW) < 40) return;
   clearTimeout(rt);
-  rt = setTimeout(() => { lastW = innerWidth; route(true); }, 250);
+  rt = setTimeout(() => {
+    const id = routeId(), wide = Math.abs(innerWidth - lastW) >= 40;
+    if (wide) lastW = innerWidth;
+    if (isGallery(id)) {
+      const cols = galleryCols();
+      if (cols === lastCols || !galleryDispose) return;
+      lastCols = cols;
+      galleryDispose();
+      $('#view .cp-grid').outerHTML = componentsSectionHTML();
+      galleryDispose = mountGallery($('#view'));
+    } else if (wide && (VARIANTS[id] || id === 'effects')) route(true);
+  }, 250);
 });
 await Promise.all([ready, document.fonts.load('400 14px Allo'), document.fonts.load('500 14px Allo'), document.fonts.load('600 14px Allo'), document.fonts.ready]);
 route();

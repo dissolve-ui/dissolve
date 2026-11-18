@@ -1,8 +1,5 @@
 /* Surfaces: CardStack, Receipt, BeforeAfter (cp/surfaces.js). */
 
-.cp-fit { position: relative; flex: none; }
-.cp-fit > * { position: absolute; left: 0; top: 0; }
-
 /* ---------- CardStack ---------- */
 
 .cp-cs { position: relative; overflow: hidden; margin: 0 auto; }
@@ -21,24 +18,6 @@
 .cp-cs-tag { font: 400 9.5px/1.2 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.08em; opacity: 0.6; }
 .cp-cs-title { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; margin-top: 1px; line-height: 1.25; }
 .cp-cs-line { position: absolute; left: 18px; bottom: 16px; font: 400 13px/1 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.08em; opacity: 0.85; }
-
-.cp-cs-metal {
-  background:
-    linear-gradient(115deg, rgba(255,255,255,0) 20%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0) 80%),
-    linear-gradient(135deg, #3A3A3E 0%, #18181A 38%, #2C2C2F 62%, #121214 100%);
-  color: #F2F2F2;
-}
-.cp-cs-painting {
-  background:
-    linear-gradient(rgba(255,250,240,0.55), rgba(255,250,240,0) 40%),
-    linear-gradient(rgba(0,0,0,0) 55%, rgba(0,0,0,0.35)),
-    url(../assets/paintings/lake.jpg) center / cover;
-  color: #1C1C1E;
-}
-.cp-cs-painting .cp-cs-line { color: #fff; }
-.cp-cs-gradient { background: linear-gradient(135deg, #FF8A5B, #FF3D7F 50%, #6A5CFF); }
-.cp-cs-transit { background: linear-gradient(#1F5F4A 0 58px, #F7F4EC 58px); }
-.cp-cs-transit .cp-cs-line { color: #1C1C1E; opacity: 1; }
 
 /* ---------- BeforeAfter ---------- */
 

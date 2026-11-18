@@ -46,6 +46,9 @@ jobs:
             node --check "$f"
           done
 
+      - name: Metro bundle smoke test (iOS JS bundle, no Xcode needed)
+        run: npx expo export --platform ios --output-dir "$RUNNER_TEMP/expo-export"
+
       - name: Build the npm package
         run: npm run build:package
 

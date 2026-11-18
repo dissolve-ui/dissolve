@@ -1,13 +1,12 @@
-import type { ViewRef } from '../types';
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { frames, measure } from '../core';
+import { frames, HIDDEN_OPACITY, measure } from '../core';
 import { useDissolveContext } from '../context';
 import { runDissolve } from './useDissolve';
-import type { DissolveOptions, VariantName } from '../types';
+import type { DissolveOptions, VariantName, ViewRef } from '../types';
 
 /**
- * GROUP B. Entrances: the view materialises from grains (docs/VARIANTS.md section 4).
+ * Entrances: the view materialises from grains (docs/VARIANTS.md section 4).
  *
  * The snapshot problem: we must capture a view the user cannot see yet. Opacity 0 can
  * capture empty on iOS, and Android multiplies the captured view's own alpha into the
@@ -28,7 +27,6 @@ export type AppearOptions = Omit<DissolveOptions, 'preset'> & {
   delay?: number;
 };
 
-const HIDDEN = 0.01;
 const DEFAULT_DURATION = 1200;
 
 /** Wait until the view is laid out with a non empty size (max ~30 frames). */
@@ -110,7 +108,7 @@ export function useAppear() {
   /** Make the view visible again without an effect (or hide it before a new appear). */
   const reset = useCallback((show = false) => setVisible(show), []);
 
-  const wrapStyle: ViewStyle = { opacity: visible ? 1 : HIDDEN };
+  const wrapStyle: ViewStyle = { opacity: visible ? 1 : HIDDEN_OPACITY };
   return { ref, visible, appear, reset, wrapStyle };
 }
 
@@ -125,7 +123,7 @@ export type DissolveInProps = AppearOptions & {
 };
 
 /** Layout keys that must live on the wrapper so the pair sizes like a single view. */
-const OUTER_KEYS = [
+const OUTER_KEYS = new Set<string>([
   'flex',
   'flexGrow',
   'flexShrink',
@@ -163,7 +161,7 @@ const OUTER_KEYS = [
   'inset',
   'insetBlock',
   'insetInline',
-] as const;
+]);
 
 const FILL_KEYS = ['flex', 'flexGrow', 'flexBasis', 'height', 'minHeight'] as const;
 
@@ -172,7 +170,7 @@ function splitStyle(style: StyleProp<ViewStyle>) {
   const outer: Record<string, unknown> = {};
   const inner: Record<string, unknown> = {};
   for (const key of Object.keys(flat)) {
-    if ((OUTER_KEYS as readonly string[]).includes(key)) outer[key] = flat[key];
+    if (OUTER_KEYS.has(key)) outer[key] = flat[key];
     else inner[key] = flat[key];
   }
   return { outer: outer as ViewStyle, inner: inner as ViewStyle };

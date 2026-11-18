@@ -1,40 +1,10 @@
 // Controls: QuantityStepper, RulerPicker, BarChart, MiniPlayer (registry/*.tsx), ported raw.
 // Same geometry, timings and curves as the native sources. Only the component, centered.
-import { CALM, QUAD, value, el, clamp, rectOf, play, snapshot, IMG, FONT, cover, rr, claimTouch } from './kit.js';
+import { CALM, value, el, clamp, rectOf, play, IMG, FONT, cover, rr, claimTouch, isLight, onTheme, onScreen, availW, fitTile, snapNode, prop, add } from './kit.js';
 
-const PKG = 'react-native-dissolve';
-const prop = (name, type, def, desc) => ({ name, type, def, desc });
 const RM = matchMedia('(prefers-reduced-motion: reduce)');
 /** Durations collapse with reduced motion. */
 const D = (ms, floor = 0) => (RM.matches ? floor : ms);
-const IN = (t) => t * t;
-
-function availW(body) {
-  const cs = getComputedStyle(body);
-  return body.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-}
-
-/** Scales a node of natural size (w, h) down to fit the tile body. */
-function fitTile(body, node, w, h) {
-  const cs = getComputedStyle(body);
-  const aw = body.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-  const ah = body.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-  const s = Math.min(1, aw / w, ah / h);
-  const box = el('div', 'cc-fit');
-  box.style.width = w * s + 'px';
-  box.style.height = h * s + 'px';
-  node.style.transform = `scale(${s})`;
-  node.style.transformOrigin = '0 0';
-  box.append(node);
-  return box;
-}
-
-/** Calls fn whenever the site theme flips. */
-function onTheme(sc, fn) {
-  const mo = new MutationObserver(fn);
-  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-  sc.onDispose(() => mo.disconnect());
-}
 
 function sample(list, e) {
   const now = performance.now();
@@ -346,38 +316,15 @@ function mountStepper(body, { sc, mode }) {
   st.set(1, { instant: true });
 
   // The row exactly as drawn, for the dust.
-  function snapRow() {
-    const r = row.getBoundingClientRect();
-    const rel = (n) => { const b = n.getBoundingClientRect(); return { x: b.left - r.left, y: b.top - r.top, w: b.width, h: b.height }; };
-    const cs = (n) => getComputedStyle(n);
-    return snapshot(r.width, r.height, (ctx) => {
-      rr(ctx, 0, 0, r.width, r.height, 18);
-      ctx.fillStyle = cs(row).backgroundColor;
-      ctx.fill();
-      const a = rel(art);
-      ctx.save(); rr(ctx, a.x, a.y, a.w, a.h, 12); ctx.clip(); cover(ctx, IMG.tuscany, a.x, a.y, a.w, a.h); ctx.restore();
-      ctx.textBaseline = 'middle';
-      for (const n of text.children) {
-        const b = rel(n), s = cs(n);
-        ctx.font = `${s.fontWeight} ${s.fontSize} ${FONT}`;
-        ctx.fillStyle = s.color;
-        ctx.fillText(n.textContent, b.x, b.y + b.h / 2 + 0.5);
-      }
-      const p = rel(st.node);
-      rr(ctx, p.x, p.y, p.w, p.h, p.h / 2);
-      ctx.fillStyle = cs(st.node).backgroundColor;
-      ctx.fill();
-      const m = rel(st.minus), pl = rel(st.plus), n = rel(st.ticker.node);
-      strokeIcon(ctx, P_TRASH, m.x + m.w / 2, m.y + m.h / 2, st.m.icon, cs(st.minus.querySelector('.cc-qs-trash')).color, st.m.stroke * 0.85);
-      strokeIcon(ctx, P_PLUS, pl.x + pl.w / 2, pl.y + pl.h / 2, st.m.icon, cs(st.plus).color, st.m.stroke);
-      const ns = cs(st.ticker.node);
-      ctx.font = `${ns.fontWeight} ${ns.fontSize} ${FONT}`;
-      ctx.fillStyle = ns.color;
-      ctx.textAlign = 'center';
-      ctx.fillText(String(st.value), n.x + n.w / 2, n.y + n.h / 2 + 0.5);
-      ctx.textAlign = 'left';
-    });
-  }
+  const snapRow = () => snapNode(row, [
+    { node: row, fill: true, radius: 18 },
+    { node: art, draw: (ctx, a) => { ctx.save(); rr(ctx, a.x, a.y, a.w, a.h, 12); ctx.clip(); cover(ctx, IMG.tuscany, a.x, a.y, a.w, a.h); ctx.restore(); } },
+    ...[...text.children].map((node) => ({ node })),
+    { node: st.node, fill: true, radius: 'pill' },
+    { node: st.minus, draw: (ctx, m) => strokeIcon(ctx, P_TRASH, m.x + m.w / 2, m.y + m.h / 2, st.m.icon, getComputedStyle(st.minus.querySelector('.cc-qs-trash')).color, st.m.stroke * 0.85) },
+    { node: st.plus, draw: (ctx, p, n) => strokeIcon(ctx, P_PLUS, p.x + p.w / 2, p.y + p.h / 2, st.m.icon, getComputedStyle(n).color, st.m.stroke) },
+    { node: st.ticker.node, text: String(st.value), align: 'center' },
+  ]);
 
   async function remove() {
     if (busy) return;
@@ -777,7 +724,7 @@ function mountChart(body, { sc, mode }) {
     const back = bcRGB(ctx, bg && bg !== 'rgba(0, 0, 0, 0)' ? bg : v('--bg'));
     const mix = (t) => C.rgb.ink.map((c, i) => Math.round(c + (back[i] - c) * t));
     C.rgb.ink2 = mix(0.5); C.rgb.ink3 = mix(0.74);
-    const light = document.documentElement.dataset.theme === 'light';
+    const light = isLight();
     C.rgb.c1 = light ? [255, 55, 135] : [255, 79, 152];
     C.rgb.c2 = light ? [124, 92, 255] : [142, 114, 255];
     C.rgb.c3 = light ? [255, 196, 0] : [255, 210, 51];
@@ -1238,9 +1185,12 @@ function mountPlayer(body, { sc, mode }) {
     [pPlay, fPlay].forEach((b) => b.setAttribute('aria-label', playing ? 'Pause' : 'Play'));
   }
   const togglePlay = () => { playing = !playing; showPlay(); };
+  // Playback clock, 4 Hz, asleep while the player is off screen.
+  const seen = onScreen(sc, body);
   (async () => {
     while (sc.alive) {
       await sc.wait(250);
+      if (!seen.on) await seen.shown();
       if (playing) { progress = (progress + 0.25 / MP.LEN) % 1; showProgress(); }
     }
   })();
@@ -1356,11 +1306,6 @@ function mountPlayer(body, { sc, mode }) {
    Content
    ====================================================================================== */
 
-const add = (id, name, usage) => `// npx ${PKG} add ${id}
-import { ${name} } from '@/components/dissolve/${id}';
-
-${usage}`;
-
 export const ENTRIES = {
   'quantity-stepper': {
     title: 'QuantityStepper',
@@ -1369,7 +1314,6 @@ export const ENTRIES = {
     hint: 'Tap or hold the buttons, go down to the trash',
     tileHint: 'Tap the buttons',
     mount: mountStepper,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1.5" y="6.5" width="19" height="9" rx="4.5"/><path d="M5 11h3M14 11h3M15.5 9.5v3"/><path d="M11 9v4" opacity=".55"/></svg>',
     code: add('quantity-stepper', 'QuantityStepper', `const { ref, dissolving, dissolve } = useDissolve();
 
 <View ref={ref} collapsable={false} style={{ opacity: dissolving ? 0 : 1 }}>
@@ -1401,7 +1345,6 @@ export const ENTRIES = {
     hint: 'Drag or fling the ruler, or scroll over it',
     tileHint: 'Fling the ruler',
     mount: mountRuler,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 15h18" opacity=".55"/><path d="M4 15v-3M7 15v-2M10 15v-2M13 15v-2M16 15v-2M19 15v-3"/><path d="M11 5v10" stroke-width="2"/></svg>',
     code: add('ruler-picker', 'RulerPicker', `<RulerPicker
   value={kg}
   onChange={setKg}
@@ -1435,7 +1378,6 @@ export const ENTRIES = {
     hint: 'Hover or drag across the bars, switch the period',
     tileHint: 'Scrub the bars',
     mount: mountChart,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="11" width="3.5" height="8" rx="1.2" opacity=".55"/><rect x="9.25" y="5" width="3.5" height="14" rx="1.2"/><rect x="15.5" y="9" width="3.5" height="10" rx="1.2" opacity=".55"/></svg>',
     code: add('bar-chart', 'BarChart', `<BarChart
   data={[{ label: 'Mon', value: 8412 }, { label: 'Tue', value: 10230 }]}
   formatValue={(v) => \`\${v.toLocaleString()} steps\`}
@@ -1468,7 +1410,6 @@ export const ENTRIES = {
     hint: 'Tap the pill, drag it up or down, swipe it sideways',
     tileHint: 'Tap the pill',
     mount: mountPlayer,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="2" y="13" width="18" height="6" rx="3"/><rect x="3.8" y="14.4" width="3.2" height="3.2" rx="1"/><path d="M6 3h10a2 2 0 0 1 2 2v5H4V5a2 2 0 0 1 2-2z" opacity=".55"/></svg>',
     code: add('mini-player', 'MiniPlayer', `// Liquid glass surface: npx expo install expo-glass-effect
 // Last child of a full screen container: it covers it when open.
 <MiniPlayer

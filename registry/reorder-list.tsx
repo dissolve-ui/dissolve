@@ -14,6 +14,7 @@
  * Everything moves on the UI thread: rows are absolutely positioned from measured heights, so
  * React never re-renders per frame, and the new order is already on screen when your data
  * catches up. Rows can have different heights. Space them with `gap`, not vertical margins.
+ * Needs the DissolveProvider at the root.
  *
  * <ReorderList
  *   data={tasks}
@@ -29,7 +30,6 @@ import { PixelRatio, StyleSheet, View as RNView, type LayoutChangeEvent, type St
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Atlas, Canvas, FilterMode, MipmapMode, Skia, makeImageFromView, rect } from '@shopify/react-native-skia';
 import Reanimated, {
-  Easing,
   makeMutable,
   measure,
   scrollTo,
@@ -47,10 +47,11 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { frames, runDissolve, useDissolveContext, type DissolveCtx, type VariantName } from 'react-native-dissolve';
+import { frames, runDissolve, useDissolveContext, type VariantName } from 'react-native-dissolve';
 import { View, cn, useToken } from './tw';
+import { makeSprite, notify, toRGB } from './dots';
+import { CALM, wait } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 /** Rows making room. */
 const SLIDE_MS = 300;
 /** Critically damped (damping = 2 * sqrt(stiffness * mass)): lands without overshoot. */
@@ -84,7 +85,7 @@ export type ReorderListProps<T> = {
   renderItem: (info: ReorderListRenderInfo<T>) => ReactNode;
   /** Called once the dropped row has settled, with the reordered copy of `data`. */
   onReorder: (data: T[], from: number, to: number) => void;
-  /** Enables drag far to the side to delete: the row turns to dust, then this runs. Needs DissolveProvider. */
+  /** Enables drag far to the side to delete: the row turns to dust, then this runs. */
   onDelete?: (item: T, index: number) => void;
   /** Exit used by onDelete. Default 'dust'. */
   preset?: VariantName;
@@ -133,35 +134,6 @@ type ListCtx = {
 
 const ListContext = createContext<ListCtx | null>(null);
 const RowContext = createContext<{ grab: ReturnType<typeof Gesture.Pan> | null; k: string } | null>(null);
-
-function toRGB(c: string): [number, number, number] {
-  const s = c.trim();
-  if (s[0] === '#') {
-    const h = s.length === 4 ? s.slice(1).replace(/./g, (x) => x + x) : s.slice(1, 7);
-    return [parseInt(h.slice(0, 2), 16) / 255, parseInt(h.slice(2, 4), 16) / 255, parseInt(h.slice(4, 6), 16) / 255];
-  }
-  const m = s.match(/[\d.]+/g);
-  if (!m || m.length < 3) return [0.5, 0.5, 0.5];
-  return [Number(m[0]) / 255, Number(m[1]) / 255, Number(m[2]) / 255];
-}
-
-/** White antialiased disc of `d` pixels, tinted per grain by the Atlas colors (modulate). */
-function makeSprite(d: number) {
-  const size = d + 2;
-  const surface = Skia.Surface.MakeOffscreen(size, size) ?? Skia.Surface.Make(size, size);
-  if (!surface) return null;
-  const canvas = surface.getCanvas();
-  canvas.clear(Skia.Color('transparent'));
-  const paint = Skia.Paint();
-  paint.setAntiAlias(true);
-  paint.setColor(Skia.Color('white'));
-  canvas.drawCircle(size / 2, size / 2, d / 2, paint);
-  surface.flush();
-  const snap = surface.makeImageSnapshot();
-  return snap.makeNonTextureImage() ?? snap;
-}
-
-const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /** Drag handle: three bars. Inside a `handle` list it starts the drag at once. */
 export function ReorderHandle({ children, className }: { children?: ReactNode; className?: string }) {
@@ -332,13 +304,8 @@ export function ReorderList<T>({
   contentContainerStyle,
   itemClassName,
 }: ReorderListProps<T>) {
-  const reduce = useReducedMotion();
-  let ctx: DissolveCtx | null = null;
-  try {
-    ctx = useDissolveContext();
-  } catch {
-    ctx = null; // no provider: delete still works, without the dust
-  }
+  const reduced = useReducedMotion();
+  const ctx = useDissolveContext();
   const keys = data.map(keyExtractor);
   const keysSig = keys.join('\u0001');
   const [dragKey, setDragKey] = useState<string | null>(null);
@@ -369,13 +336,13 @@ export function ReorderList<T>({
   const running = useSharedValue(0);
   const alive = useSharedValue(0);
   const cursor = useSharedValue(0);
-  const fxOn = useSharedValue(!reduce && grains ? 1 : 0);
+  const fxOn = useSharedValue(!reduced && grains ? 1 : 0);
 
   useEffect(() => {
     canDelete.value = onDelete ? 1 : 0;
     gapSV.value = gap;
-    fxOn.value = !reduce && grains ? 1 : 0;
-  }, [onDelete, gap, reduce, grains, canDelete, gapSV, fxOn]);
+    fxOn.value = !reduced && grains ? 1 : 0;
+  }, [onDelete, gap, reduced, grains, canDelete, gapSV, fxOn]);
 
   const layout = useDerivedValue<Layout>(() => {
     const o = order.value;
@@ -496,7 +463,7 @@ export function ReorderList<T>({
         await wait(150);
         const ref = refs.get(k);
         const probe = listProbe.current;
-        if (c && !c.reduced && ref?.current && probe) {
+        if (!c.reduced && ref?.current && probe) {
           const [image, origin] = await Promise.all([
             makeImageFromView(ref as RefObject<any>),
             new Promise<{ x: number; y: number } | null>((res) => probe.measureInWindow((px, py) => res({ x: px, y: py }))),
@@ -652,8 +619,10 @@ export function ReorderList<T>({
   const onMove = (k: string, x: number, y: number) => {
     'worklet';
     if (active.value !== k || phase.value !== DRAG) return;
+    // Mutated in place: no object per move event.
     const f = fx.value;
-    fx.value = { ...f, x, y };
+    f.x = x;
+    f.y = y;
     follow();
   };
 
@@ -720,7 +689,8 @@ export function ReorderList<T>({
       // Sideways speed, smoothed, leans the row.
       const inst = (f.x - f.lastX) / dt;
       const vx = f.vx + (inst - f.vx) * (1 - Math.exp(-dt * 14));
-      fx.value = { ...f, lastX: f.x, vx };
+      f.lastX = f.x;
+      f.vx = vx;
       follow();
       const want = fxOn.value ? Math.max(-1, Math.min(1, vx / 700)) * MAX_TILT : 0;
       tilt.value += (want - tilt.value) * (1 - Math.exp(-dt * 12));
@@ -772,11 +742,8 @@ export function ReorderList<T>({
         cl[3] = a;
       }
       if (!any) alive.value = 0;
-      // Notify the canvas of the in place changes (same trick as Skia's buffer hooks).
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (transforms as any)._value = T;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (tints as any)._value = K;
+      notify(transforms);
+      notify(tints);
     }
 
     if (ph !== DRAG && !alive.value && tilt.value === 0 && running.value) running.value = 0;
@@ -843,7 +810,7 @@ export function ReorderList<T>({
           </Reanimated.View>
           {footer}
         </Reanimated.ScrollView>
-        {box.w && atlas.sprite && grains && !reduce ? (
+        {box.w && atlas.sprite && grains && !reduced ? (
           <Canvas style={[StyleSheet.absoluteFill, { width: box.w, height: box.h }]} pointerEvents="none">
             <Atlas
               image={atlas.sprite}

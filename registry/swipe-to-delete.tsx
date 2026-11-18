@@ -13,12 +13,12 @@
 import { useRef, type ReactNode } from 'react';
 import { StyleSheet, View as RNView, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { Easing, interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import { useDissolve, type VariantName } from 'react-native-dissolve';
 import { Animated, View, cn } from './tw';
+import { CALM } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 
 export type SwipeToDeleteProps = {
   children: ReactNode;
@@ -29,6 +29,8 @@ export type SwipeToDeleteProps = {
   /** Fraction of the row width to drag before release deletes. Default 0.4. */
   threshold?: number;
   disabled?: boolean;
+  /** Haptics of the dissolve when the row goes. Default true. */
+  haptics?: boolean;
   /** Outer wrapper classes (margins, layout). This is the part that collapses. */
   className?: string;
   /** Clipping row classes: corner radius goes here (rounded-2xl...), the action follows it. */
@@ -50,7 +52,7 @@ function TrashIcon() {
   );
 }
 
-export function SwipeToDelete({ children, onDelete, preset = 'dust', threshold = 0.4, disabled, className, rowClassName, actionClassName }: SwipeToDeleteProps) {
+export function SwipeToDelete({ children, onDelete, preset = 'dust', threshold = 0.4, disabled, haptics = true, className, rowClassName, actionClassName }: SwipeToDeleteProps) {
   const { ref, dissolving, dissolve } = useDissolve();
   const tx = useSharedValue(0);
   const w = useSharedValue(1);
@@ -58,7 +60,7 @@ export function SwipeToDelete({ children, onDelete, preset = 'dust', threshold =
   const measured = useRef(0);
 
   const commit = async () => {
-    await dissolve({ preset });
+    await dissolve({ preset, haptics });
     h.value = measured.current;
     h.value = withTiming(0, { duration: 280, easing: CALM }, (done) => {
       if (done) scheduleOnRN(onDelete);

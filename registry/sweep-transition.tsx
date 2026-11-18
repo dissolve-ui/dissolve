@@ -16,13 +16,14 @@
 import { useCallback, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from 'react';
 import { StyleSheet, View as RNView, type LayoutChangeEvent } from 'react-native';
 import { Canvas, Fill, Group, ImageShader, Shader, Skia, type SkImage } from '@shopify/react-native-skia';
-import { Easing, useAnimatedReaction, useDerivedValue, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useAnimatedReaction, useDerivedValue, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { capture, frames, type ViewRef } from 'react-native-dissolve';
 import { View, cn, useToken } from './tw';
+import { toRGB } from './dots';
+import { CALM, wait } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 
 export type SweepMode = 'vertical' | 'horizontal' | 'radial';
 
@@ -99,20 +100,7 @@ half4 main(float2 px) {
 
 const effect = Skia.RuntimeEffect.Make(SKSL)!;
 
-/** Token string (rgb(10 132 255), rgb(1, 2, 3 / 0.5), #rrggbb) to 0..1 channels for the shader. */
-function rgb(c: string): number[] {
-  const s = c.trim();
-  if (s[0] === '#') {
-    const h = s.length === 4 ? [...s.slice(1)].map((x) => x + x).join('') : s.slice(1, 7);
-    return [parseInt(h.slice(0, 2), 16) / 255, parseInt(h.slice(2, 4), 16) / 255, parseInt(h.slice(4, 6), 16) / 255];
-  }
-  const m = s.match(/[\d.]+/g);
-  if (!m || m.length < 3) return [0.04, 0.52, 1];
-  return [Number(m[0]) / 255, Number(m[1]) / 255, Number(m[2]) / 255];
-}
-
 const CAPTURE_TIMEOUT = 500;
-const wait = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
 
 const MODE_INDEX: Record<SweepMode, number> = { vertical: 0, horizontal: 1, radial: 2 };
 
@@ -209,7 +197,7 @@ export function SweepTransition({ ref, mode = 'vertical', duration = 720, bandWi
 
   useImperativeHandle(ref, () => ({ run, cancel, running: () => busy.current }), [run, cancel]);
 
-  const rim = rgb(accent);
+  const rim = toRGB(accent);
   const band = bandWidth;
   const uniforms = useDerivedValue(() => ({
     size: [size.w || 1, size.h || 1],

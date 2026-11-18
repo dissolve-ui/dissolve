@@ -37,8 +37,9 @@ import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { capture, frames, measure, runDissolve, useDissolve, useDissolveContext, type Origin, type VariantName } from 'react-native-dissolve';
 import { Animated, Pressable, Text, View, cn, useToken } from './tw';
+import { notify } from './dots';
+import { CALM, hash, wait } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 /** Room kept around the tile for the × and the grains flying in, in points. */
 const PAD = 6;
 const RADIUS = 16;
@@ -92,20 +93,12 @@ export type UploadTileProps = {
 
 type Phase = 'entering' | 'uploading' | 'done' | 'rejected' | 'leaving';
 
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 export function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   const mb = bytes / (1024 * 1024);
   return `${mb < 10 ? mb.toFixed(1) : Math.round(mb)} MB`;
 }
-
-/** Deterministic noise, same values as the web port. */
-const hash = (i: number, k: number) => {
-  const v = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
-  return v - Math.floor(v);
-};
 
 /**
  * Per grain: home center x, y, the progress where it starts landing, its start offset dx, dy.
@@ -158,9 +151,7 @@ function Assembly({ image, size, progress }: { image: SkImage; size: number; pro
         const cy = PAD + data[k + 1] + data[k + 4] * (1 - e);
         T[i].set(sc, 0, cx - (e * GRAIN) / 2, cy - (e * GRAIN) / 2);
       }
-      // Same trick Skia's buffer hooks use to notify the canvas of in-place changes.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (transforms as any)._value = T;
+      notify(transforms);
     },
   );
 

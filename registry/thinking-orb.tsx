@@ -12,9 +12,11 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Atlas, Canvas, FilterMode, MipmapMode, Skia, rect } from '@shopify/react-native-skia';
-import { Easing, makeMutable, useFrameCallback, useReducedMotion, useSharedValue, type SharedValue } from 'react-native-reanimated';
+import { makeMutable, useFrameCallback, useReducedMotion, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { View, cn, useToken } from './tw';
+import { makeSprite, notify, toRGB } from './dots';
+import { CALM_FN } from './motion';
 
 export type OrbState = 'idle' | 'thinking' | 'searching' | 'listening' | 'done' | 'error';
 
@@ -45,8 +47,9 @@ const STATE_ID: Record<OrbState, number> = {
   done: 4,
   error: 5,
 };
-const CALM = Easing.bezierFn(0.32, 0.72, 0, 1);
 const MORPH = 600;
+/** Error: the dots fall, rest, then reform (last delay 0.18 s + rest 1.25 s + reform 0.6 s), in ms. */
+const ERROR_MS = 2100;
 const STAGGER = 1.5;
 const FLEE = 40;
 /** Sprite resolution in pixels: drawn once, scaled down to the dot size by the Atlas. */
@@ -56,40 +59,6 @@ const SEED = 10;
 /** Per dot live pose: x y z (unit space), alpha, scale. */
 const POSE = 5;
 const TAU = Math.PI * 2;
-
-/** Parses the token strings (rgb(28 28 30), rgb(1, 2, 3), #rrggbb) into 0..1 channels. */
-function toRGB(c: string): [number, number, number] {
-  const s = c.trim();
-  if (s[0] === '#') {
-    const h =
-      s.length === 4
-        ? s
-            .slice(1)
-            .split('')
-            .map((x) => x + x)
-            .join('')
-        : s.slice(1, 7);
-    return [parseInt(h.slice(0, 2), 16) / 255, parseInt(h.slice(2, 4), 16) / 255, parseInt(h.slice(4, 6), 16) / 255];
-  }
-  const m = s.match(/[\d.]+/g);
-  if (!m || m.length < 3) return [0.5, 0.5, 0.5];
-  return [Number(m[0]) / 255, Number(m[1]) / 255, Number(m[2]) / 255];
-}
-
-/** White antialiased disc, tinted per dot by the Atlas colors (modulate). */
-function makeSprite() {
-  const surface = Skia.Surface.MakeOffscreen(SPR, SPR) ?? Skia.Surface.Make(SPR, SPR);
-  if (!surface) return null;
-  const canvas = surface.getCanvas();
-  canvas.clear(Skia.Color('transparent'));
-  const paint = Skia.Paint();
-  paint.setAntiAlias(true);
-  paint.setColor(Skia.Color('white'));
-  canvas.drawCircle(SPR / 2, SPR / 2, SPR / 2 - 1, paint);
-  surface.flush();
-  const snap = surface.makeImageSnapshot();
-  return snap.makeNonTextureImage() ?? snap;
-}
 
 /** Checkmark polyline in unit space (y down), sampled along its length on three lanes. */
 const CHECK = [
@@ -146,17 +115,22 @@ export function ThinkingOrb({ state = 'idle', size = 64, dots = 180, dotSize, le
   const reduced = useReducedMotion();
   const fg = useToken('foreground');
   const ink = toRGB(color ?? fg);
-  const ok = toRGB(useToken('success'));
-  const bad = toRGB(useToken('danger'));
-  const palette = useSharedValue([...ink, ...ok, ...bad]);
+  const ok = useToken('success');
+  const bad = useToken('danger');
+  // Ink, done and error colors as 9 flat channels.
+  const paletteKey = [...ink, ...toRGB(ok), ...toRGB(bad)].join();
+  const palette = useSharedValue(paletteKey.split(',').map(Number));
+  /** Bumped by anything that changes the drawing without moving a dot: wakes a resting orb. */
+  const wake = useSharedValue(0);
   useEffect(() => {
-    palette.value = [...ink, ...ok, ...bad];
-  }, [palette, ink.join(), ok.join(), bad.join()]); // eslint-disable-line react-hooks/exhaustive-deps
+    palette.value = paletteKey.split(',').map(Number);
+    wake.value += 1;
+  }, [palette, wake, paletteKey]);
 
   const n = Math.max(1, Math.round(dots));
   const { sprite, sprites, seed, transforms, colors, pose, from, off } = useMemo(
     () => ({
-      sprite: makeSprite(),
+      sprite: makeSprite(SPR - 2),
       sprites: new Array(n).fill(0).map(() => rect(0, 0, SPR, SPR)),
       seed: seeds(n),
       transforms: makeMutable(new Array(n).fill(0).map(() => Skia.RSXform(0, 0, -100, -100))),
@@ -194,6 +168,11 @@ export function ThinkingOrb({ state = 'idle', size = 64, dots = 180, dotSize, le
   const dot = dotSize ?? Math.max(2.5, size * 0.021);
   const cx = size / 2;
   const cy = size / 2;
+  useEffect(() => {
+    wake.value += 1;
+  }, [wake, size, dot, n]);
+  /** Last drawn frame: wake counter, input level, and whether anything was still moving. */
+  const drawn = useSharedValue({ wake: -1, lvl: -2, moving: 1 });
 
   useFrameCallback((info) => {
     'worklet';
@@ -221,10 +200,19 @@ export function ThinkingOrb({ state = 'idle', size = 64, dots = 180, dotSize, le
     const since = now - changedAt.value;
     const dur = reduced ? 150 : MORPH;
     const stag = reduced ? 0 : STAGGER;
+    const fon = finger.value.on;
+    const lv0 = lvl.value;
+    const last = drawn.value;
+
+    // Rest: the loop stays registered but skips the work once the pose can no longer change (the
+    // check, or any state under reduced motion where the clock is frozen) and the last frame drew it.
+    const morphed = since > dur + n * stag;
+    const still = morphed && (st === 4 || (reduced && (st !== 5 || since > ERROR_MS) && (st !== 3 || lv0 === last.lvl)));
+    if (still && !fon && !last.moving && last.wake === wake.value) return;
 
     // Color: whole orb, same calm curve.
     const tc = since / dur < 0 ? 0 : since / dur > 1 ? 1 : since / dur;
-    const ec = CALM(tc);
+    const ec = CALM_FN(tc);
     const ci = st === 4 ? 3 : st === 5 ? 6 : 0;
     const CF = colFrom.value;
     const r = CF[0] + (pal[ci] - CF[0]) * ec;
@@ -242,16 +230,16 @@ export function ThinkingOrb({ state = 'idle', size = 64, dots = 180, dotSize, le
     const ct = Math.cos(tilt);
     const stl = Math.sin(tilt);
     const breathe = 0.98 + 0.02 * Math.sin((T * TAU) / 2.4);
-    const lv = lvl.value >= 0 ? lvl.value : 0.35 + 0.25 * Math.sin(T * 2.3) + 0.1 * Math.sin(T * 5.1);
+    const lv = lv0 >= 0 ? lv0 : 0.35 + 0.25 * Math.sin(T * 2.3) + 0.1 * Math.sin(T * 5.1);
     const sweep = (T * TAU) % TAU;
     const perRing = Math.ceil(n / 3);
     const errT = since / 1000;
     const fx = finger.value.x;
     const fy = finger.value.y;
-    const fon = finger.value.on;
     const k = 1 - Math.exp(-dt / (fon ? 60 : 140));
     const T_ = transforms.value;
     const K_ = colors.value;
+    let offset = 0;
 
     for (let i = 0; i < n; i++) {
       const s = i * SEED;
@@ -308,7 +296,7 @@ export function ThinkingOrb({ state = 'idle', size = 64, dots = 180, dotSize, le
         const fall = Math.min(1.15, sy + 3.2 * tt * tt);
         const gx = rx * (1 + Math.min(tt, 0.9) * 0.35);
         let back = (errT - 1.25 - delay) / 0.6;
-        back = back < 0 ? 0 : back > 1 ? 1 : CALM(back);
+        back = back < 0 ? 0 : back > 1 ? 1 : CALM_FN(back);
         x = gx + (rx - gx) * back;
         y = fall + (sy - fall) * back;
         z = sz;
@@ -321,7 +309,7 @@ export function ThinkingOrb({ state = 'idle', size = 64, dots = 180, dotSize, le
       // Morph from the frozen pose at the state change.
       let tm = (since - i * stag) / dur;
       tm = tm < 0 ? 0 : tm > 1 ? 1 : tm;
-      const e = tm === 1 ? 1 : CALM(tm);
+      const e = tm === 1 ? 1 : CALM_FN(tm);
       const p = i * POSE;
       if (e < 1) {
         x = F[p] + (x - F[p]) * e;
@@ -356,6 +344,11 @@ export function ThinkingOrb({ state = 'idle', size = 64, dots = 180, dotSize, le
       const o = i * 2;
       O[o] += (tox - O[o]) * k;
       O[o + 1] += (toy - O[o + 1]) * k;
+      if (fon || Math.abs(O[o]) + Math.abs(O[o + 1]) > 0.01) offset = 1;
+      else {
+        O[o] = 0;
+        O[o + 1] = 0;
+      }
       px += O[o];
       py += O[o + 1];
 
@@ -367,11 +360,11 @@ export function ThinkingOrb({ state = 'idle', size = 64, dots = 180, dotSize, le
       cl[2] = b;
       cl[3] = a < 0 ? 0 : a > 1 ? 1 : a;
     }
-    // Notify the canvas of the in place changes (same trick as Skia's buffer hooks).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (transforms as any)._value = T_;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (colors as any)._value = K_;
+    last.wake = wake.value;
+    last.lvl = lv0;
+    last.moving = still && !offset ? 0 : 1;
+    notify(transforms);
+    notify(colors);
   });
 
   const pan = Gesture.Pan()

@@ -1,46 +1,16 @@
-import { AlphaType, ColorType } from '@shopify/react-native-skia';
+import { eo, palette } from '../core';
 import type { AtlasVariant, Burst } from '../types';
 
-/**
- * Dominant color of the snapshot (3 bits per channel buckets, saturation weighted), lifted a
- * little toward white. Copied from classic.ts (variant files do not import each other).
- */
+/** Dominant color of the snapshot lifted a little toward white, orange when unreadable. */
 function heatColor(burst: Burst): [number, number, number] {
-  try {
-    const img = burst.image;
-    const W = img.width();
-    const H = img.height();
-    const px = img.readPixels(0, 0, { width: W, height: H, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Unpremul }) as Uint8Array | null;
-    if (!px) return [1, 0.65, 0.2];
-    const count = new Float32Array(512);
-    const sum = new Float32Array(512 * 3);
-    const step = Math.max(1, Math.floor(Math.sqrt((W * H) / 20000)));
-    for (let y = 0; y < H; y += step) {
-      for (let x = 0; x < W; x += step) {
-        const i = (y * W + x) * 4;
-        if (px[i + 3] < 128) continue;
-        const r = px[i], g = px[i + 1], b = px[i + 2];
-        const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
-        const w = 0.15 + (mx === 0 ? 0 : (mx - mn) / mx);
-        const q = ((r >> 5) << 6) | ((g >> 5) << 3) | (b >> 5);
-        count[q] += w;
-        sum[q * 3] += r * w;
-        sum[q * 3 + 1] += g * w;
-        sum[q * 3 + 2] += b * w;
-      }
-    }
-    let best = 0;
-    for (let q = 1; q < 512; q++) if (count[q] > count[best]) best = q;
-    const c = (count[best] || 1) * 255;
-    const lift = (v: number) => v + (1 - v) * 0.3;
-    return [lift(sum[best * 3] / c), lift(sum[best * 3 + 1] / c), lift(sum[best * 3 + 2] / c)];
-  } catch {
-    return [1, 0.65, 0.2];
-  }
+  const pal = palette(burst.image);
+  if (!pal) return [1, 0.65, 0.2];
+  const lift = (v: number) => v + (1 - v) * 0.3;
+  return [lift(pal.dom[0]), lift(pal.dom[1]), lift(pal.dom[2])];
 }
 
 /**
- * GROUP C. charge: hold to destroy (docs/VARIANTS.md section 6).
+ * charge: hold to destroy (docs/VARIANTS.md section 6).
  *
  * Two phases share one step:
  * - Pre-phase (every grain while progress is 0, driven by aux): a0 = charge level 0..1,
@@ -161,8 +131,7 @@ export const charge: AtlasVariant = {
     }
     if (t > 0) {
       // Ease out cubic: the blast is strongest when the wave reaches the grain.
-      const u = 1 - t;
-      const e = 1 - u * u * u;
+      const e = eo(t);
       o.cx += d[k + 8] * e;
       o.cy += d[k + 9] * e - 20 * t * t;
       o.s = 1 - 0.6 * t;

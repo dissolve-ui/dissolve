@@ -719,8 +719,6 @@ VARIANTS.shatter = {
   },
 };
 
-export const PORTED = Object.keys(VARIANTS);
-
 /* ---------- params (core.ts buildParams) ---------- */
 
 function originPoint(o, w, h) {
@@ -820,9 +818,15 @@ document.body.appendChild(overlay);
 const ctx = overlay.getContext('2d');
 const bursts = new Set();
 // Liquid layer for goo variants (melt): grains are drawn offscreen, then composited through
-// blur + an alpha threshold (alpha * 18 - 7), the same recipe as the Skia gooey layer.
+// blur + an alpha threshold (alpha * 18 - 7), the same recipe as the Skia gooey layer. The layer is
+// a full screen bitmap: allocated when a goo burst starts, at the overlay size, freed once idle.
 const gooCanvas = document.createElement('canvas');
+gooCanvas.width = gooCanvas.height = 0;
 const gctx = gooCanvas.getContext('2d');
+function gooReady() {
+  if (gooCanvas.width !== overlay.width) gooCanvas.width = overlay.width;
+  if (gooCanvas.height !== overlay.height) gooCanvas.height = overlay.height;
+}
 const gooSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 gooSvg.setAttribute('width', '0'); gooSvg.setAttribute('height', '0');
 gooSvg.style.position = 'absolute';
@@ -838,8 +842,6 @@ function resize() {
   overlay.height = innerHeight * DPR;
   overlay.style.width = innerWidth + 'px';
   overlay.style.height = innerHeight + 'px';
-  gooCanvas.width = overlay.width;
-  gooCanvas.height = overlay.height;
 }
 resize();
 addEventListener('resize', resize);
@@ -958,7 +960,7 @@ function frame(now) {
     if (b.draw) { b.draw(p, offX, offY); continue; }
     const g = P.grain, sg = g * DPR, a0 = b.aux.a0, a1 = b.aux.a1;
     const x = v.goo ? gctx : ctx;
-    if (v.goo) { gctx.setTransform(1, 0, 0, 1, 0, 0); gctx.clearRect(0, 0, gooCanvas.width, gooCanvas.height); }
+    if (v.goo) { gooReady(); gctx.setTransform(1, 0, 0, 1, 0, 0); gctx.clearRect(0, 0, gooCanvas.width, gooCanvas.height); }
     for (let i = 0; i < b.count; i++) {
       const k = i * stride;
       let t = (p - d[k + 6]) / d[k + 7];
@@ -1007,7 +1009,10 @@ function frame(now) {
   }
   ctx.globalAlpha = 1;
   if (bursts.size) requestAnimationFrame(frame);
-  else { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, overlay.width, overlay.height); running = false; }
+  else {
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, overlay.width, overlay.height); running = false;
+    if (gooCanvas.width) gooCanvas.width = gooCanvas.height = 0;
+  }
 }
 
 /** Draws with fn(ctx) into a DPR canvas of w x h css px. */

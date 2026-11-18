@@ -24,7 +24,6 @@ import { PixelRatio, Platform, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Atlas, Canvas, FilterMode, MipmapMode, Picture, Skia, createPicture, matchFont, rect, type SkFont } from '@shopify/react-native-skia';
 import {
-  Easing,
   makeMutable,
   useAnimatedStyle,
   useDerivedValue,
@@ -38,10 +37,9 @@ import {
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { Animated, Text, View, cn, useToken } from './tw';
+import { makeSprite, notify, toRGB } from './dots';
+import { CALM, CALM_FN, hash } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
-/** Same curve as a plain function, so each dot can be eased inside the frame worklet. */
-const EASE = Easing.bezierFn(0.32, 0.72, 0, 1);
 /** Enter: dots fly in and assemble the bars. */
 const ENTER_MS = 640;
 /** Data change: dots fall from the old bars and gather into the new ones. */
@@ -150,12 +148,6 @@ function build(data: BarDatum[], stacked: boolean, fmt: (v: number) => string): 
   return { vals, top, ticks, tickText: ticks.map(fmt) };
 }
 
-/** Deterministic 0..1 noise, the same on every run and on the web port. */
-const hash = (i: number, k: number) => {
-  const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
-  return x - Math.floor(x);
-};
-
 /**
  * The dots of every bar: a grid sized to the dot budget, rows stretched to land exactly on the
  * value, a little jitter, the top corners rounded off. Ordered bar by bar, bottom to top, so dot i
@@ -222,46 +214,11 @@ function layoutDots(s: Shown, plotW: number, height: number, gap: number, barRad
   return { to, count: to.length / TO, dot: Math.max(1.8, pitch * DOT_FILL) };
 }
 
-/** Parses the token strings (rgb(28 28 30), rgb(1, 2, 3), #rrggbb) into 0..1 channels. */
 /** Mixes color a toward b by t (0 keeps a), as #rrggbb. */
 function mixHex(a: string, b: string, t: number) {
   const x = toRGB(a);
   const y = toRGB(b);
   return '#' + x.map((v, i) => Math.round((v + (y[i] - v) * t) * 255).toString(16).padStart(2, '0')).join('');
-}
-
-function toRGB(c: string): [number, number, number] {
-  const s = c.trim();
-  if (s[0] === '#') {
-    const h =
-      s.length === 4
-        ? s
-            .slice(1)
-            .split('')
-            .map((x) => x + x)
-            .join('')
-        : s.slice(1, 7);
-    return [parseInt(h.slice(0, 2), 16) / 255, parseInt(h.slice(2, 4), 16) / 255, parseInt(h.slice(4, 6), 16) / 255];
-  }
-  const m = s.match(/[\d.]+/g);
-  if (!m || m.length < 3) return [0.5, 0.5, 0.5];
-  return [Number(m[0]) / 255, Number(m[1]) / 255, Number(m[2]) / 255];
-}
-
-/** White antialiased disc of `d` pixels, tinted per dot by the Atlas colors (modulate). */
-function makeSprite(d: number) {
-  const size = d + 2;
-  const surface = Skia.Surface.MakeOffscreen(size, size) ?? Skia.Surface.Make(size, size);
-  if (!surface) return null;
-  const canvas = surface.getCanvas();
-  canvas.clear(Skia.Color('transparent'));
-  const paint = Skia.Paint();
-  paint.setAntiAlias(true);
-  paint.setColor(Skia.Color('white'));
-  canvas.drawCircle(size / 2, size / 2, d / 2, paint);
-  surface.flush();
-  const snap = surface.makeImageSnapshot();
-  return snap.makeNonTextureImage() ?? snap;
 }
 
 function Label({ text, index, pos, scrub }: { text: string; index: number; pos: SharedValue<number>; scrub: SharedValue<number> }) {
@@ -295,29 +252,38 @@ export function BarChart({
   className,
   bubbleClassName,
 }: BarChartProps) {
-  const reduce = useReducedMotion();
-  const palette: Record<BarToken, string> = {
-    primary: useToken('primary'),
-    foreground: useToken('foreground'),
-    accent: useToken('accent'),
-    success: useToken('success'),
-    muted: useToken('muted'),
-    danger: useToken('danger'),
-    'chart-1': useToken('chart-1'),
-    'chart-2': useToken('chart-2'),
-    'chart-3': useToken('chart-3'),
-    'foreground-2': '',
-    'foreground-3': '',
-  };
-  // Lighter steps of the ink, mixed toward the surface the chart sits on: calm, monochrome stacks.
+  const reduced = useReducedMotion();
+  // Hooks run on every render, so every token a series may use is read; only the series colors are resolved.
+  const primary = useToken('primary');
+  const foreground = useToken('foreground');
+  const accent = useToken('accent');
+  const success = useToken('success');
+  const muted = useToken('muted');
+  const danger = useToken('danger');
+  const chart1 = useToken('chart-1');
+  const chart2 = useToken('chart-2');
+  const chart3 = useToken('chart-3');
   const surface = useToken('surface');
-  palette['foreground-2'] = mixHex(palette.foreground, surface, 0.5);
-  palette['foreground-3'] = mixHex(palette.foreground, surface, 0.74);
-  const mutedTone = palette.muted;
   const border = useToken('border');
   const tokens = colors ?? (stacked ? (['chart-1', 'chart-2', 'chart-3'] as BarToken[]) : (['primary'] as BarToken[]));
-  const key = tokens.map((t) => palette[t]).join('|');
-  const mutedC = useMemo(() => Skia.Color(mutedTone), [mutedTone]);
+  const tokensKey = tokens.join('|');
+  const key = useMemo(() => {
+    const plain: Record<Exclude<BarToken, 'foreground-2' | 'foreground-3'>, string> = {
+      primary,
+      foreground,
+      accent,
+      success,
+      muted,
+      danger,
+      'chart-1': chart1,
+      'chart-2': chart2,
+      'chart-3': chart3,
+    };
+    // Lighter steps of the ink, mixed toward the surface the chart sits on: calm, monochrome stacks.
+    const color = (t: BarToken) => (t === 'foreground-2' ? mixHex(foreground, surface, 0.5) : t === 'foreground-3' ? mixHex(foreground, surface, 0.74) : plain[t]);
+    return (tokensKey.split('|') as BarToken[]).map(color).join('|');
+  }, [tokensKey, primary, foreground, accent, success, muted, danger, chart1, chart2, chart3, surface]);
+  const mutedC = useMemo(() => Skia.Color(muted), [muted]);
   const borderC = useMemo(() => Skia.Color(border), [border]);
   const font = useMemo<SkFont>(() => matchFont({ fontFamily: Platform.select({ ios: 'Helvetica Neue', default: 'sans-serif' }), fontSize: 10, fontWeight: '500' }), []);
   const pr = PixelRatio.get();
@@ -340,7 +306,7 @@ export function BarChart({
   const shown = useSharedValue<Shown>(initialShown);
   const prevShown = useSharedValue<Shown>(initialShown);
   const gridMix = useSharedValue(1);
-  const gridIn = useSharedValue(reduce ? 0 : 1);
+  const gridIn = useSharedValue(reduced ? 0 : 1);
   const scrub = useSharedValue(0);
   const pos = useSharedValue(0);
   const active = useSharedValue(-1);
@@ -387,13 +353,13 @@ export function BarChart({
       firstData.current = false;
       shown.value = next;
       prevShown.value = next;
-      if (reduce) gridIn.value = withTiming(1, { duration: REDUCED_MS });
+      if (reduced) gridIn.value = withTiming(1, { duration: REDUCED_MS });
       return;
     }
     prevShown.value = shown.value;
     shown.value = next;
     gridMix.value = 0;
-    gridMix.value = withTiming(1, { duration: reduce ? REDUCED_MS : 420, easing: CALM });
+    gridMix.value = withTiming(1, { duration: reduced ? REDUCED_MS : 420, easing: CALM });
     setLabels(data.map((d) => d.label));
     // formatAxis is read with the data, a change of data drives the motion.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -420,7 +386,7 @@ export function BarChart({
     const nc = Math.max(1, Math.floor(pc.length / 3));
     const base = height - 1;
     const fresh = applied.value !== pl.id;
-    const dur = reduce ? REDUCED_MS : pl.enter ? ENTER_MS : CHANGE_MS;
+    const dur = reduced ? REDUCED_MS : pl.enter ? ENTER_MS : CHANGE_MS;
 
     if (fresh) {
       if (!pl.id) return;
@@ -460,7 +426,7 @@ export function BarChart({
           tints.value[i][3] = 0;
           P[p + 2] = 0;
         }
-        if (reduce) {
+        if (reduced) {
           Q[i * 2] = F[p];
           Q[i * 2 + 1] = F[p + 1];
         }
@@ -473,7 +439,7 @@ export function BarChart({
 
     const fx = finger.value.x;
     const fy = finger.value.y;
-    const fon = finger.value.on && !reduce ? 1 : 0;
+    const fon = finger.value.on && !reduced ? 1 : 0;
     const sc = scrub.value;
     const ps = pos.value;
     const ver = palVer.value;
@@ -513,7 +479,7 @@ export function BarChart({
         tg = pc[ci + 1];
         tb = pc[ci + 2];
         bar = pl.to[t + 3];
-        delay = reduce ? 0 : pl.to[t + 4];
+        delay = reduced ? 0 : pl.to[t + 4];
         ta = 0.8 + 0.2 * z;
         ts = dot * (0.86 + 0.28 * z);
       } else {
@@ -522,7 +488,7 @@ export function BarChart({
       }
       let k = (since - delay) / dur;
       k = k < 0 ? 0 : k > 1 ? 1 : k;
-      const e = k === 1 ? 1 : EASE(k);
+      const e = k === 1 ? 1 : CALM_FN(k);
       const u = 1 - e;
       const x = u * u * F[p] + 2 * u * e * Q[i * 2] + e * e * tx;
       const y = u * u * F[p + 1] + 2 * u * e * Q[i * 2 + 1] + e * e * ty;
@@ -579,15 +545,20 @@ export function BarChart({
       cl[2] = b;
       cl[3] = alpha < 0 ? 0 : alpha > 1 ? 1 : alpha;
     }
-    sig.value = { sc, ps, ver, moving };
-    // Notify the canvas of the in place changes (same trick as Skia's buffer hooks).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (transforms as any)._value = T_;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (tints as any)._value = K_;
+    sg.sc = sc;
+    sg.ps = ps;
+    sg.ver = ver;
+    sg.moving = moving;
+    notify(transforms);
+    notify(tints);
   });
 
-  // Gridlines, axis labels and the guide above the active bar.
+  // Gridlines, axis labels and the guide above the active bar, drawn with one paint.
+  const paint = useMemo(() => {
+    const p = Skia.Paint();
+    p.setAntiAlias(true);
+    return p;
+  }, []);
   const picture = useDerivedValue(() => {
     const s = shown.value;
     const s0 = prevShown.value;
@@ -599,8 +570,6 @@ export function BarChart({
       (c) => {
         if (!W || !plotW) return;
         const base = height - 1;
-        const paint = Skia.Paint();
-        paint.setAntiAlias(true);
         const hair = 1 / pr;
         const grid = (g: Shown, alpha: number) => {
           if (alpha <= 0.01) return;
@@ -679,7 +648,7 @@ export function BarChart({
     const jump = active.value < 0 && scrub.value < 0.05;
     active.value = i;
     const cx = i * slot + slot / 2;
-    if (jump || reduce) {
+    if (jump || reduced) {
       pos.value = i;
       bubbleX.value = cx;
     } else {
@@ -695,7 +664,7 @@ export function BarChart({
         active.value = -1;
         finger.value = { x: e.x, y: e.y, on: 1 };
         select(e.x);
-        scrub.value = withTiming(1, { duration: reduce ? 150 : 160, easing: CALM });
+        scrub.value = withTiming(1, { duration: 160, easing: CALM });
       })
       .onUpdate((e) => {
         if (owner.value !== id) return;
@@ -707,7 +676,7 @@ export function BarChart({
         owner.value = 0;
         active.value = -1;
         finger.value = { x: finger.value.x, y: finger.value.y, on: 0 };
-        scrub.value = withTiming(0, { duration: reduce ? 150 : 250, easing: CALM });
+        scrub.value = withTiming(0, { duration: reduced ? 150 : 250, easing: CALM });
         scheduleOnRN(onRelease);
       });
   // Horizontal drag scrubs right away, a press and hold works too (vertical scroll stays free).

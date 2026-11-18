@@ -13,11 +13,13 @@
 import { useState, type ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import { Blur, Canvas, Circle, ColorMatrix, Group, Paint } from '@shopify/react-native-skia';
-import { Easing, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
+import { Easing, useAnimatedStyle, useDerivedValue, useReducedMotion, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Animated, Pressable, View, cn, useToken } from './tw';
 
 const SOFT = Easing.inOut(Easing.cubic);
+/** Reduced motion: the drops pour out and melt back in this fast. */
+const REDUCED_MS = 200;
 const PAD = 16;
 
 /**
@@ -105,6 +107,7 @@ function Action({ item, i, n, p, c, dir, distance, size, close }: { item: GooeyM
 }
 
 export function GooeyMenu({ items, size = 56, distance = 92, startAngle = -90, endAngle = -180, haptics = true, className, iconClassName }: GooeyMenuProps) {
+  const reduced = useReducedMotion();
   const color = useToken('primary');
 
   const [open, setOpen] = useState(false);
@@ -118,7 +121,7 @@ export function GooeyMenu({ items, size = 56, distance = 92, startAngle = -90, e
   const toggle = (next = !open) => {
     if (haptics) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setOpen(next);
-    p.value = withTiming(next ? 1 : 0, { duration: next ? 1000 : 820, easing: SOFT });
+    p.value = withTiming(next ? 1 : 0, { duration: reduced ? REDUCED_MS : next ? 1000 : 820, easing: SOFT });
   };
 
   const dirs = items.map((_, i) => {

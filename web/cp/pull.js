@@ -1,53 +1,8 @@
 // PullToRefresh (registry/pull-to-refresh.tsx), ported raw. Same ring, timings and curves as the
 // native source. On desktop the pull is a mouse drag down on the list, or a wheel past its top.
-import { CALM, value, el, clamp, play, snapshot, FONT, claimTouch } from './kit.js';
-
-const PKG = 'react-native-dissolve';
-const prop = (name, type, def, desc) => ({ name, type, def, desc });
+import { CALM, value, el, clamp, play, claimTouch, availW, fitTile, snapNode, onTheme, prop, add } from './kit.js';
 const RM = matchMedia('(prefers-reduced-motion: reduce)');
 const D = (ms, floor = 0) => (RM.matches ? floor : ms);
-
-const CSS = `
-.pr { position: relative; display: flex; flex-direction: column; overflow: hidden; text-align: left; isolation: isolate; user-select: none; -webkit-user-select: none; color: var(--text); }
-.pr-view { position: relative; flex: 1; overflow: hidden; touch-action: pan-y; cursor: grab; outline: none; }
-.pr-view.on { cursor: grabbing; }
-.pr-list { position: absolute; left: 0; right: 0; top: 0; will-change: transform; }
-.pr-row { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; }
-.pr-row + .pr-row::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 0.5px; background: var(--line); }
-.pr-name, .pr-amt { font-size: 17px; line-height: 22px; letter-spacing: -0.025em; white-space: nowrap; }
-.pr-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.pr-amt { flex: none; color: var(--muted); font-variant-numeric: tabular-nums; }
-.pr-cv { position: absolute; left: 0; top: 0; pointer-events: none; }
-.pr-fit { position: relative; flex: none; }
-.pr-fit > * { position: absolute; left: 0; top: 0; }
-`;
-function injectStyle() {
-  if (document.getElementById('pr-style')) return;
-  const s = document.createElement('style');
-  s.id = 'pr-style';
-  s.textContent = CSS;
-  document.head.append(s);
-}
-
-function availW(body) {
-  const cs = getComputedStyle(body);
-  return body.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-}
-
-/** Scales a node of natural size (w, h) down to fit the tile body. */
-function fitTile(body, node, w, h) {
-  const cs = getComputedStyle(body);
-  const aw = body.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-  const ah = body.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-  const s = Math.min(1, aw / w, ah / h);
-  const box = el('div', 'pr-fit');
-  box.style.width = w * s + 'px';
-  box.style.height = h * s + 'px';
-  node.style.transform = `scale(${s})`;
-  node.style.transformOrigin = '0 0';
-  box.append(node);
-  return box;
-}
 
 /* ======================================================================================
    PullToRefresh (pull-to-refresh.tsx)
@@ -72,7 +27,6 @@ const SEEDS = Array.from({ length: PR.N }, (_, i) => {
 });
 
 function mountPull(body, { sc, mode }) {
-  injectStyle();
   const tile = mode === 'tile';
   const CW = tile ? 300 : mode === 'stage' ? 340 : Math.round(Math.min(330, availW(body) || 320));
   const CH = tile ? 360 : mode === 'stage' ? 520 : 420;
@@ -105,9 +59,7 @@ function mountPull(body, { sc, mode }) {
   let ink = '#fff';
   const readInk = () => { ink = getComputedStyle(frame).getPropertyValue('--text').trim() || '#fff'; };
   readInk();
-  const mo = new MutationObserver(() => { readInk(); kick(); });
-  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-  sc.onDispose(() => mo.disconnect());
+  onTheme(sc, () => { readInk(); kick(); });
 
   // Pull state: raw finger travel, the rubber banded pull shown, the list scroll.
   let raw = 0, sy = 0, phase = 'idle', phaseAt = 0, closeAt = -1e9, armed = false, rot = -Math.PI / 2, dustCy = 0, flying = false;
@@ -221,25 +173,10 @@ function mountPull(body, { sc, mode }) {
   }
 
   // A row as drawn, for its entrance. Layout units, scaled to the on screen size (tiles).
-  function snapRow(row) {
-    const r = row.getBoundingClientRect(), s = r.width / row.offsetWidth || 1;
-    return snapshot(r.width, r.height, (x) => {
-      x.scale(s, s);
-      x.textBaseline = 'middle';
-      const text = (n, align = 'left') => {
-        const b = n.getBoundingClientRect(), ns = getComputedStyle(n);
-        const bx = (b.left - r.left) / s, by = (b.top - r.top) / s, bw = b.width / s, bh = b.height / s;
-        x.font = `${ns.fontWeight} ${ns.fontSize} ${FONT}`;
-        x.fillStyle = ns.color;
-        x.textAlign = align;
-        let str = n.textContent;
-        while (str.length > 1 && x.measureText(str).width > bw + 1) str = str.slice(0, -2) + '…';
-        x.fillText(str, align === 'right' ? bx + bw : bx, by + bh / 2 + 0.5);
-      };
-      text(row.querySelector('.pr-name'));
-      text(row.querySelector('.pr-amt'), 'right');
-    });
-  }
+  const snapRow = (row) => snapNode(row, [
+    { node: row.querySelector('.pr-name'), fit: true },
+    { node: row.querySelector('.pr-amt'), fit: true, align: 'right' },
+  ]);
 
   /** Adds the new row on top. The rows already there keep their node and glide down (FLIP). */
   function insert(t, hidden) {
@@ -425,11 +362,6 @@ function mountPull(body, { sc, mode }) {
    Content
    ====================================================================================== */
 
-const add = (id, name, usage) => `// npx ${PKG} add ${id}
-import { ${name} } from '@/components/dissolve/${id}';
-
-${usage}`;
-
 export const ENTRIES = {
   'pull-to-refresh': {
     title: 'PullToRefresh',
@@ -438,7 +370,6 @@ export const ENTRIES = {
     hint: 'Drag the list down and let go, or scroll up past the top',
     tileHint: 'Pull the list down',
     mount: mountPull,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M11 2.5v5M8.6 5.4 11 7.8l2.4-2.4"/><circle cx="11" cy="14.5" r="5" stroke-dasharray="0.1 2.6" stroke-width="2"/></svg>',
     code: add('pull-to-refresh', 'PullToRefresh, PullItem', `<PullToRefresh onRefresh={reload}>
   {items.map((item) => (
     <PullItem key={item.id} id={item.id}>

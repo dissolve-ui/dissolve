@@ -14,10 +14,10 @@ import { Canvas, Path, Skia } from '@shopify/react-native-skia';
 import { cancelAnimation, Easing, interpolateColor, useAnimatedStyle, useSharedValue, withRepeat, withSpring, withTiming } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Animated, Pressable, Text, View, cn, useToken } from './tw';
+import { CALM } from './motion';
 
 /** Critically damped: smooth like the Dynamic Island, no visible bounce. */
 const SPRING = { stiffness: 260, damping: 31, mass: 1 };
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const CHECK = Skia.Path.MakeFromSVGString('M5 12.5l4.2 4.2L19 7')!;
 
 export type MorphButtonProps = {

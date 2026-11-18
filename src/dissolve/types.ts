@@ -1,12 +1,9 @@
-import type { ComponentRef, ComponentType, ReactNode, RefObject } from 'react';
+import type { ComponentRef, ComponentType, RefObject } from 'react';
 import type { View } from 'react-native';
 import type { SkImage } from '@shopify/react-native-skia';
 import type { SharedValue } from 'react-native-reanimated';
 
-/**
- * Shared types of the engine. Owned by the master agent: builders import from here,
- * they never edit it. See docs/CONTRACT.md.
- */
+/** Shared types of the engine. */
 
 /** Ref to a native view. Works with the View typings of every React Native version. */
 export type ViewRef = ComponentRef<typeof View>;
@@ -16,27 +13,20 @@ export type Point = { x: number; y: number };
 
 /** Every variant name the registry knows about. */
 export type VariantName =
-  // classic presets (master)
   | 'dust'
   | 'sand'
   | 'ember'
   | 'pixel'
   | 'vortex'
-  // A
   | 'snap'
   | 'fling'
-  // B
   | 'stream'
   | 'gather'
   | 'rain'
   | 'print'
-  // C
   | 'charge'
-  // E
   | 'shatter'
-  // F
   | 'morph'
-  // casual
   | 'peel'
   | 'melt';
 
@@ -94,7 +84,7 @@ export type BurstParams = {
 };
 
 /**
- * One captured effect. Created by dissolve() or a builder hook via ctx.add().
+ * One captured effect. Created by dissolve() or an effect hook via ctx.add().
  */
 export type Burst = {
   key: string;
@@ -128,6 +118,11 @@ export type Burst = {
   /** Free payload for custom renderers (second image, mesh, rows...). */
   data?: unknown;
   /**
+   * Snapshots the engine owns: disposed once the burst is removed. Only images nothing
+   * else keeps a reference to belong here.
+   */
+  owned?: SkImage[];
+  /**
    * progress, aux0 and aux1 sampled when the burst was added (JS side, outside render).
    * Renderers build their initial pose from these instead of reading .value while rendering.
    */
@@ -146,16 +141,22 @@ export type BurstInput = Omit<Burst, 'key' | 'params' | 'grain' | 'direction' | 
   paramsOverride?: Partial<BurstParams>;
 };
 
-/** Extra burst fields for runDissolve(), used by builder hooks. */
+/** Extra burst fields for runDissolve(), used by the effect hooks. */
 export type RunExtra = {
   progress?: SharedValue<number>;
   aux0?: SharedValue<number>;
   aux1?: SharedValue<number>;
   data?: unknown;
   onFinish?: () => void;
-  /** Reuse an existing snapshot instead of capturing again (pre-captured on touch down). */
+  /** Reuse an existing snapshot instead of capturing again. */
   image?: SkImage;
   box?: Box;
+  /**
+   * Images handed over to the engine, disposed when the burst is removed (e.g. `image`
+   * when the caller captured it only for this burst). A snapshot runDissolve captures
+   * itself is always owned.
+   */
+  owned?: SkImage[];
 };
 
 export type BurstHandle = { key: string; remove: () => void };
@@ -173,6 +174,12 @@ export type Timing = { delay: number; life: number };
 export type GrainOut = { cx: number; cy: number; s: number; rot: number; r: number; g: number; b: number; a: number };
 
 /**
+ * Flat per grain buffer: BASE_STRIDE floats per grain plus the variant extras. A typed array
+ * so it reaches the UI thread as one bulk copy instead of one value per element.
+ */
+export type GrainData = Float64Array;
+
+/**
  * UI thread worklet, called once per grain per frame (only for grains whose local t
  * changed, or every grain when aux changed).
  * d is the flat per-grain buffer, k the offset of this grain:
@@ -181,7 +188,7 @@ export type GrainOut = { cx: number; cy: number; s: number; rot: number; r: numb
  * a0, a1 are the current values of burst.aux0 / aux1 (0 when unset).
  * MUST start with the 'worklet' directive and must not read any shared value.
  */
-export type StepFn = (t: number, d: number[], k: number, P: BurstParams, a0: number, a1: number, o: GrainOut) => void;
+export type StepFn = (t: number, d: GrainData, k: number, P: BurstParams, a0: number, a1: number, o: GrainOut) => void;
 
 /** Context of the optional async JS resolve hook, run before the burst is added. */
 export type ResolveCtx = {
@@ -231,7 +238,7 @@ export type AtlasVariant = VariantBase & {
    * JS thread, once, after timing. Free pass over the whole buffer to fill extras or
    * rewrite delay/life with global knowledge (sorting, paths...).
    */
-  prepare?: (d: number[], stride: number, count: number, P: BurstParams, burst: Burst) => void;
+  prepare?: (d: GrainData, stride: number, count: number, P: BurstParams, burst: Burst) => void;
   step: StepFn;
   /**
    * How the per-grain color (o.r, o.g, o.b, o.a) is applied to the grain.

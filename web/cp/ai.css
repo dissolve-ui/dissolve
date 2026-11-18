@@ -17,6 +17,8 @@
 [data-theme='light'] .cp-ai { --ai-success: #34C759; --ai-danger: #FF3B30; --ai-surface-2: var(--surface-2); }
 
 .cp-ai-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; padding: 3px; border-radius: var(--pill); background: var(--wash); }
+/* Six options in a gallery card: two even rows of three instead of a lone chip on the second line. */
+.cp-panel-body .cp-ai-chips-6, .cp-mode-tile .cp-ai-chips-6 { display: grid; grid-template-columns: repeat(3, 1fr); border-radius: 18px; }
 .cp-ai-chip {
   height: 26px; padding: 0 11px; border-radius: var(--pill); font: 500 12px/1 var(--sans); color: var(--muted);
   transition: color .2s, background .2s; -webkit-tap-highlight-color: transparent;

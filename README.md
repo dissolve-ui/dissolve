@@ -181,7 +181,7 @@ Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `mu
   cd web && python3 -m http.server 8000
   ```
 
-- Engine contract for variant authors: [docs/CONTRACT.md](docs/CONTRACT.md).
+- Engine contract for variant authors: the documented types in `src/dissolve/types.ts` (`AtlasVariant`, `StepFn`, `CustomVariant`).
 - Variant math and intent: [docs/VARIANTS.md](docs/VARIANTS.md).
 
 ## For coding agents

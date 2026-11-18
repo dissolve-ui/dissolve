@@ -12,8 +12,7 @@ import { peel } from './peel';
 import { melt } from './melt';
 
 /**
- * Static registry. Owned by the master agent: every builder export is already wired,
- * builders only edit their own variant files.
+ * Static registry.
  *
  * Dispatch: the variant is resolved HERE on the JS side, then its step worklet is captured
  * by the Particles reaction closure. The UI thread never looks anything up by name.

@@ -1,30 +1,22 @@
-import type { ViewRef } from '../types';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import type { View } from 'react-native';
+import { useCallback, useMemo } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
-import {
-  cancelAnimation,
-  Easing,
-  useAnimatedReaction,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import { Easing, useAnimatedReaction, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { rect, Skia, type SkImage } from '@shopify/react-native-skia';
-import { capture, DEFAULT_END, frames } from '../core';
-import { useDissolveContext } from '../context';
+import type { SkImage } from '@shopify/react-native-skia';
+import { capture, DEFAULT_END, frames, readScaled } from '../core';
 import { getVariant } from '../variants/registry';
 import { runDissolve } from './useDissolve';
-import type { Box, BurstHandle, Origin, VariantName } from '../types';
+import { useDragBurst } from './useGestureBurst';
+import type { Origin, VariantName } from '../types';
 
 /**
- * GROUP C. scrub: the view disintegrates under the finger and it is reversible
+ * scrub: the view disintegrates under the finger and it is reversible
  * (docs/VARIANTS.md section 5).
  *
- * Touch down pre-captures the view. Once the pan activates (8 pt along the axis) the
- * direction is known: the burst is added with an external progress and the wave starts
+ * Nothing is captured on touch down (a tap or a scroll start costs nothing). Once the pan
+ * activates (8 pt along the axis) the gesture is ours and the direction is known: the view
+ * is captured, the burst is added with an external progress and the wave starts
  * from the edge the finger leaves (dragging right starts from the left edge). Variants
  * that own their origin (snap, charge) start from the touch point instead.
  *
@@ -60,7 +52,6 @@ export type ScrubOptions = {
   onCancel?: () => void;
 };
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const BINS = 48;
 const ACROSS = 12;
 
@@ -73,15 +64,9 @@ function inkProfile(image: SkImage, axis: 'x' | 'y', fromEnd: boolean): number[]
   try {
     const bw = axis === 'x' ? BINS : ACROSS;
     const bh = axis === 'x' ? ACROSS : BINS;
-    // GPU surface when available (the snapshot may be texture backed), CPU otherwise.
-    const surface = Skia.Surface.MakeOffscreen(bw, bh) ?? Skia.Surface.Make(bw, bh);
-    if (!surface) return flat;
-    const paint = Skia.Paint();
-    surface.getCanvas().drawImageRect(image, rect(0, 0, image.width(), image.height()), rect(0, 0, bw, bh), paint);
-    surface.flush();
-    const px = surface.makeImageSnapshot().readPixels();
+    const px = readScaled(image, bw, bh);
     if (!px) return flat;
-    const scale = px instanceof Float32Array ? 1 : 1 / 255;
+    const scale = 1 / 255;
     const lum: number[] = [];
     for (let i = 0; i < bw * bh; i++) {
       const a = px[i * 4 + 3] * scale;
@@ -109,25 +94,17 @@ function inkProfile(image: SkImage, axis: 'x' | 'y', fromEnd: boolean): number[]
 }
 
 export function useDissolveScrub(opts: ScrubOptions = {}) {
-  const ctx = useDissolveContext();
-  const ref = useRef<ViewRef>(null);
+  const { ctx, ref, hidden, optsRef, s, drop, style, progress, phase, live, committed, settle, reset } =
+    useDragBurst(opts);
   const axis = opts.axis ?? 'x';
   const preset = opts.preset ?? 'dust';
   const v = getVariant(preset);
   const end = v.end ?? DEFAULT_END;
 
-  /** Raw progress 0..end of the variant. */
-  const progress = useSharedValue(0);
-  /** 1 while the overlay stands in for the real view (and the finger drives progress). */
-  const live = useSharedValue(0);
-  /**
-   * 0 idle, 1 dragging, 2 settling (commit or rewind running), 3 released before the
-   * overlay was up, 4 dragging without overlay (capture failed).
-   */
-  const phase = useSharedValue(0);
+  // phase: 0 idle, 1 dragging, 2 settling (commit or rewind running), 3 released before the
+  // overlay was up, 4 dragging without overlay (capture failed).
   /** Release decision waiting for the overlay (phase 3): 1 commit, 0 rewind. */
   const pending = useSharedValue(0);
-  const hidden = useSharedValue(0);
   /** Per gesture constants, set from JS once the burst exists. */
   const sign = useSharedValue(1);
   const range = useSharedValue(1);
@@ -137,34 +114,11 @@ export function useDissolveScrub(opts: ScrubOptions = {}) {
   const acc = useSharedValue(0);
   const lastTick = useSharedValue(0);
 
-  const optsRef = useRef(opts);
-  optsRef.current = opts;
-
-  const s = useRef({
-    shot: null as Promise<{ image: SkImage; box: Box } | null> | null,
-    handle: null as BurstHandle | null,
-  }).current;
-
   const tick = useCallback((kind: number) => {
     if (kind === 2) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     else if (kind === 3) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
     else Haptics.selectionAsync();
   }, []);
-
-  const prime = useCallback(() => {
-    if (ctx.reduced) return;
-    s.shot = capture(ref);
-  }, [ctx, s]);
-
-  const committed = useCallback(() => {
-    s.handle?.remove();
-    s.handle = null;
-    s.shot = null;
-    // The overlay is gone: a new drag on the hidden view must not drive a dead progress.
-    live.value = 0;
-    phase.value = 0;
-    optsRef.current.onCommit?.();
-  }, [s, phase, live]);
 
   /** No overlay (capture failed): settle a pending release without the effect. */
   const fallback = useCallback(() => {
@@ -174,13 +128,14 @@ export function useDissolveScrub(opts: ScrubOptions = {}) {
     }
     // Still dragging: mark the drag as dead, onEnd settles it without the effect.
     phase.value = phase.value === 1 ? 4 : 0;
-  }, [phase, pending, hidden]);
+  }, [phase, pending, hidden, optsRef]);
 
   const start = useCallback(
     async (dirSign: number, sx: number, sy: number) => {
       const o = optsRef.current;
       sign.value = dirSign;
-      const shot = s.shot ? await s.shot : null;
+      // Captured only now that the pan is ours (not on every touch down).
+      const shot = await capture(ref);
       if (!shot) {
         fallback();
         return;
@@ -214,7 +169,7 @@ export function useDissolveScrub(opts: ScrubOptions = {}) {
         ctx,
         ref,
         { preset, grain: o.grain, origin, duration: o.duration ?? 1500, haptics: false },
-        { progress, image: shot.image, box: shot.box },
+        { progress, image: shot.image, box: shot.box, owned: [shot.image] },
       );
       if (!res) {
         fallback();
@@ -238,23 +193,11 @@ export function useDissolveScrub(opts: ScrubOptions = {}) {
         return;
       }
       // Released short while the overlay was coming up: nothing was shown, drop it.
-      res.handle.remove();
-      s.handle = null;
+      drop();
       phase.value = 0;
     },
-    [ctx, s, axis, preset, v, end, progress, sign, range, reach, ink, lastBin, acc, phase, pending, hidden, live, committed, fallback],
+    [ctx, ref, s, optsRef, drop, axis, preset, v, end, progress, sign, range, reach, ink, lastBin, acc, phase, pending, hidden, live, committed, fallback],
   );
-
-  const rewound = useCallback(() => {
-    hidden.value = 0;
-    frames(2).then(() => {
-      s.handle?.remove();
-      s.handle = null;
-      s.shot = null;
-      phase.value = 0;
-      optsRef.current.onCancel?.();
-    });
-  }, [s, hidden, phase]);
 
   const finishReduced = useCallback(
     (commit: boolean) => {
@@ -264,7 +207,7 @@ export function useDissolveScrub(opts: ScrubOptions = {}) {
         optsRef.current.onCommit?.();
       }
     },
-    [phase, hidden],
+    [phase, hidden, optsRef],
   );
 
   // Density haptics: read every shared value here, in the reaction itself.
@@ -301,13 +244,6 @@ export function useDissolveScrub(opts: ScrubOptions = {}) {
     },
   );
 
-  useEffect(
-    () => () => {
-      s.handle?.remove();
-    },
-    [s],
-  );
-
   const threshold = opts.threshold ?? 0.55;
   const flingV = opts.velocity ?? 800;
   const duration = opts.duration ?? 1500;
@@ -319,11 +255,6 @@ export function useDissolveScrub(opts: ScrubOptions = {}) {
     if (axis === 'x') g.activeOffsetX([-8, 8]).failOffsetY([-14, 14]);
     else g.activeOffsetY([-8, 8]).failOffsetX([-14, 14]);
     return g
-      .onBegin(() => {
-        'worklet';
-        if (phase.value !== 0) return;
-        scheduleOnRN(prime);
-      })
       .onStart((e) => {
         'worklet';
         if (phase.value !== 0) return;
@@ -374,12 +305,7 @@ export function useDissolveScrub(opts: ScrubOptions = {}) {
             },
           );
         } else {
-          progress.value = withTiming(0, { duration: 260 + 260 * (p / end), easing: CALM }, (fin) => {
-            if (fin) {
-              live.value = 0;
-              scheduleOnRN(rewound);
-            }
-          });
+          settle(progress, 0, 260 + 260 * (p / end));
         }
       })
       .onFinalize(() => {
@@ -393,29 +319,11 @@ export function useDissolveScrub(opts: ScrubOptions = {}) {
             return;
           }
           phase.value = 2;
-          progress.value = withTiming(0, { duration: 320, easing: CALM }, (fin) => {
-            if (fin) {
-              live.value = 0;
-              scheduleOnRN(rewound);
-            }
-          });
+          settle(progress, 0, 320);
         }
       });
-  }, [axis, threshold, flingV, duration, end, reduced, phase, sign, range, reach, progress, live, prime, start, tick, committed, rewound, finishReduced, pending, hapticsOn]);
+  }, [axis, threshold, flingV, duration, end, reduced, phase, sign, range, reach, progress, live, start, tick, committed, settle, finishReduced, pending, hapticsOn]);
 
-  /** Show the real view again after a commit (e.g. when the item is restored). */
-  const reset = useCallback(() => {
-    cancelAnimation(progress);
-    s.handle?.remove();
-    s.handle = null;
-    s.shot = null;
-    progress.value = 0;
-    live.value = 0;
-    phase.value = 0;
-    hidden.value = 0;
-  }, [s, progress, live, phase, hidden]);
-
-  const style = useAnimatedStyle(() => ({ opacity: hidden.value ? 0 : 1 }));
-
+  // reset(): show the real view again after a commit (e.g. when the item is restored).
   return { ref, gesture, progress, style, reset };
 }

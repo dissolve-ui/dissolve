@@ -12,11 +12,13 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { Canvas, Path, RoundedRect, Skia } from '@shopify/react-native-skia';
-import { Easing, interpolateColor, useAnimatedStyle, useDerivedValue, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import { Easing, interpolateColor, useAnimatedStyle, useDerivedValue, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Animated, Pressable, Text, View, cn, useToken } from './tw';
 
 const SOFT = Easing.bezier(0.45, 0, 0.2, 1);
+/** Reduced motion: the split and the fuse take this long. */
+const REDUCED_MS = 150;
 
 export type SplitButtonProps = {
   label: string;
@@ -56,6 +58,7 @@ export function SplitButton({
   const cancelColor = useToken('surface-2');
   const confirmColor = color;
 
+  const reduced = useReducedMotion();
   const [W, setW] = useState(0);
   const [open, setOpen] = useState(false);
   const p = useSharedValue(0);
@@ -63,9 +66,10 @@ export function SplitButton({
   const tone = useSharedValue(0);
 
   useEffect(() => {
-    p.value = withTiming(open ? 1 : 0, { duration, easing: SOFT });
-    tone.value = open ? withDelay(duration * 0.78, withTiming(1, { duration: 220 })) : withTiming(0, { duration: 180 });
-  }, [open, p, tone, duration]);
+    const d = reduced ? REDUCED_MS : duration;
+    p.value = withTiming(open ? 1 : 0, { duration: d, easing: SOFT });
+    tone.value = open ? withDelay(d * 0.78, withTiming(1, { duration: reduced ? REDUCED_MS : 220 })) : withTiming(0, { duration: 180 });
+  }, [open, p, tone, duration, reduced]);
 
   const R = height / 2;
   const cy = R;
