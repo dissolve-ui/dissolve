@@ -15,11 +15,11 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LayoutChangeEvent, TextStyle } from 'react-native';
-import { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import { useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { scheduleOnUI } from 'react-native-worklets';
 import { Animated, Text, View, cn } from './tw';
+import { CALM } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 /** Two turns of the wheel plus a closing 0, so a column can roll either way from any digit. */
 const WHEEL = Array.from({ length: 21 }, (_, i) => DIGITS[i % 10]);

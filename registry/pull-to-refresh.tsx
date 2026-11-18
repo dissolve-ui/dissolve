@@ -48,7 +48,6 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import { Platform, StyleSheet, View as RNView, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated, {
-  Easing,
   LinearTransition,
   makeMutable,
   useAnimatedScrollHandler,
@@ -63,6 +62,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { capture, frames, measure, runDissolve, useDissolveContext } from 'react-native-dissolve';
 import { Animated, View, cn, useToken } from './tw';
+import { CALM, CALM_FN, clamp01, hash, wait } from './motion';
 
 export type PullToken = 'foreground' | 'muted' | 'primary' | 'accent' | 'success' | 'chart-1' | 'chart-2';
 
@@ -104,9 +104,6 @@ export type PullItemProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
-/** The same curve as a plain function, for the frame loop. */
-const bezierFn = Easing.bezierFn;
 /** Items that stay glide to their new place on the calm curve, no spring. */
 const MOVE = LinearTransition.duration(420).easing(CALM);
 const IOS = Platform.OS === 'ios';
@@ -141,13 +138,6 @@ const DONE = 2;
 const DUSTING = 0;
 const FLYING = 1;
 
-/** Deterministic 0..1 noise, so the ring looks the same on every pull. */
-const hash = (i: number, k: number) => {
-  'worklet';
-  const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
-  return x - Math.floor(x);
-};
-
 function seeds() {
   const out: number[] = new Array(N * SEED).fill(0);
   for (let i = 0; i < N; i++) {
@@ -179,16 +169,7 @@ const PullContext = createContext<PullCtx | null>(null);
 export function PullToRefresh({ children, onRefresh, threshold = 80, haptics = true, color = 'foreground', rebuild = true, contentContainerStyle, className }: PullToRefreshProps) {
   const ctx = useDissolveContext();
   const reduced = useReducedMotion();
-  const palette: Record<PullToken, string> = {
-    foreground: useToken('foreground'),
-    muted: useToken('muted'),
-    primary: useToken('primary'),
-    accent: useToken('accent'),
-    success: useToken('success'),
-    'chart-1': useToken('chart-1'),
-    'chart-2': useToken('chart-2'),
-  };
-  const ink = palette[color] ?? palette.foreground;
+  const ink = useToken(color);
 
   const { seed, draw, pose, aim } = useMemo(
     () => ({
@@ -326,7 +307,7 @@ export function PullToRefresh({ children, onRefresh, threshold = 80, haptics = t
     const since = now - phaseAt.value;
 
     const vis = visualOf();
-    const g = Tv > 0 ? (vis / Tv > 1 ? 1 : vis / Tv) : 0;
+    const g = Tv > 0 ? clamp01(vis / Tv) : 0;
     // The loader sits in the middle of the gap, then rides T/2 above the list once the ring is closed.
     const cy = vis < Tv ? vis / 2 : vis - Tv / 2;
     const cx = W / 2;
@@ -335,7 +316,7 @@ export function PullToRefresh({ children, onRefresh, threshold = 80, haptics = t
     // Ring rotation: follows the pull a little, spins up while refreshing.
     if (ph === IDLE) rot.value = -Math.PI / 2 + (vis / Tv) * 0.9;
     else if (ph === SPIN && !reduced) {
-      const ramp = since / 400 > 1 ? 1 : since / 400;
+      const ramp = clamp01(since / 400);
       rot.value += SPEED * ramp * dt;
     }
     const r0 = rot.value;
@@ -343,15 +324,12 @@ export function PullToRefresh({ children, onRefresh, threshold = 80, haptics = t
     let pulse = 1;
     const sc = now - closeAt.value;
     if (!reduced && sc < 300) pulse = 1 + 0.16 * Math.sin((Math.PI * sc) / 300);
-    const spinMix = ph === SPIN && !reduced ? (since / 300 > 1 ? 1 : since / 300) : 0;
-    const fadeIn = vis / 14 > 1 ? 1 : vis / 14;
+    const spinMix = ph === SPIN && !reduced ? clamp01(since / 300) : 0;
+    const fadeIn = clamp01(vis / 14);
     const tSec = now / 1000;
-    const ease = flying ? bezierFn(0.32, 0.72, 0, 1) : null;
     const A = aim.value;
 
     const D = draw.value;
-    // The gap above the list: grains below its edge would sit over the rows.
-    const edge = vis;
     let visible = false;
     for (let i = 0; i < N; i++) {
       const s = i * SEED;
@@ -363,21 +341,20 @@ export function PullToRefresh({ children, onRefresh, threshold = 80, haptics = t
       if (ph === DONE) {
         let clip = 1;
         if (reduced) {
-          const k = since / 220 > 1 ? 1 : since / 220;
+          const k = clamp01(since / 220);
           x = P[p];
           y = P[p + 1];
           a = P[p + 2] * (1 - k);
-        } else if (ease) {
+        } else if (flying) {
           // Fly to the landing point on a new item, on a slight arc, then fade where it lands.
           const delay = S[s + 5] * FLY_STAGGER;
           const run = FLY - FLY_STAGGER;
           const t = (since - delay) / run;
-          const k = t < 0 ? 0 : t > 1 ? 1 : t;
-          const e = ease(k);
+          const e = CALM_FN(clamp01(t));
           x = P[p] + (A[i * 2] - P[p]) * e;
           y = P[p + 1] + (A[i * 2 + 1] - P[p + 1]) * e;
           const l = (since - delay - run) / LAND;
-          const f = l < 0 ? 0 : l > 1 ? 1 : l;
+          const f = clamp01(l);
           a = (P[p + 2] + (0.95 - P[p + 2]) * e) * (1 - f);
           size = P[p + 3] * (1 - 0.4 * f);
         } else {
@@ -386,17 +363,17 @@ export function PullToRefresh({ children, onRefresh, threshold = 80, haptics = t
           // Integrate in closed form so the path does not depend on the frame rate.
           x = P[p] + P[p + 4] * t;
           y = P[p + 1] + P[p + 5] * t + 0.5 * 980 * t * t;
-          const k = (since - delay) / (DUST - 110) < 0 ? 0 : (since - delay) / (DUST - 110) > 1 ? 1 : (since - delay) / (DUST - 110);
+          const k = clamp01((since - delay) / (DUST - 110));
           a = P[p + 2] * (1 - k) * (1 - k);
           size = P[p + 3] * (1 - 0.45 * k);
           // Dust stays in the band above the rows, soft edged.
-          clip = (H - y) / 8 < 0 ? 0 : (H - y) / 8 > 1 ? 1 : (H - y) / 8;
+          clip = clamp01((H - y) / 8);
         }
         a *= clip;
         if (a > 0.003) visible = true;
         D[i * 4] = x;
         D[i * 4 + 1] = y;
-        D[i * 4 + 2] = a < 0 ? 0 : a > 1 ? 1 : a;
+        D[i * 4 + 2] = clamp01(a);
         D[i * 4 + 3] = size;
         continue;
       }
@@ -409,8 +386,7 @@ export function PullToRefresh({ children, onRefresh, threshold = 80, haptics = t
         y = ry;
         a = g * 0.9;
       } else {
-        let gi = (g - S[s + 4] * 0.55) / 0.45;
-        gi = gi < 0 ? 0 : gi > 1 ? 1 : gi;
+        const gi = clamp01((g - S[s + 4] * 0.55) / 0.45);
         const e = 1 - (1 - gi) * (1 - gi) * (1 - gi);
         // A slow drift on the grains still on their way, so the cloud feels loose, not pinned.
         const wob = (1 - e) * 3;
@@ -433,10 +409,8 @@ export function PullToRefresh({ children, onRefresh, threshold = 80, haptics = t
       P[p + 3] = size;
       D[i * 4] = x;
       D[i * 4 + 1] = y;
-      // Soft clip at the top edge of the list.
-      const inside = (edge - y) / 2 < 0 ? 0 : (edge - y) / 2 > 1 ? 1 : (edge - y) / 2;
-      const shown = a * inside;
-      D[i * 4 + 2] = shown < 0 ? 0 : shown > 1 ? 1 : shown;
+      // Soft clip at the top edge of the list: grains below it would sit over the rows.
+      D[i * 4 + 2] = clamp01(a * clamp01((vis - y) / 2));
       D[i * 4 + 3] = size;
     }
     painted.value = now;
@@ -450,8 +424,6 @@ export function PullToRefresh({ children, onRefresh, threshold = 80, haptics = t
   function wake() {
     quiet.value = 0;
   }
-
-  const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
   /**
    * The new PullItems on screen: their final box (list back at the top) in window and root
@@ -772,7 +744,8 @@ const GRAINS = Array.from({ length: N }, (_, i) => i);
 /** One grain: a dot positioned from the shared draw buffer, re-read on every painted frame. */
 function Grain({ i, draw, painted, color }: { i: number; draw: SharedValue<number[]>; painted: SharedValue<number>; color: string }) {
   const style = useAnimatedStyle(() => {
-    painted.value; // eslint-disable-line @typescript-eslint/no-unused-expressions
+    // Read to subscribe: the style re-runs on every painted frame.
+    painted.value;
     const D = draw.value;
     const k = i * 4;
     const size = D[k + 3];

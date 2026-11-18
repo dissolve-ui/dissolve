@@ -14,8 +14,8 @@ import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { useDissolve, type VariantName } from 'react-native-dissolve';
 import { Animated, Pressable, Text, View, cn, useToken } from './tw';
+import { CALM } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const BAR = 3;
 const GAP = 2;
 const WAVE_H = 28;

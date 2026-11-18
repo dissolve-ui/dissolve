@@ -2,7 +2,20 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { join, relative } from 'node:path';
-import { existsSync, read, registryFiles, registryIndex, REGISTRY_DIR, ROOT, walk } from './helpers.mjs';
+import { existsSync, read, readJSON, registryFiles, registryIndex, REGISTRY_DIR, ROOT, walk } from './helpers.mjs';
+
+/**
+ * Shared helper files (index.json "helpers"): not components, never listed by the CLI, copied by
+ * `add` with the components that import them.
+ */
+const registryHelpers = () => readJSON(join(REGISTRY_DIR, 'index.json')).helpers ?? [];
+
+/** './name' imports of a registry file, resolved to registry file names. */
+const localImports = (file) =>
+  importsOf(read(join(REGISTRY_DIR, file)))
+    .filter((spec) => spec.startsWith('./') && spec !== './tw')
+    .map((spec) => ['.tsx', '.ts'].map((ext) => spec.slice(2) + ext).find((f) => existsSync(join(REGISTRY_DIR, f))))
+    .filter(Boolean);
 
 /** Packages a registry component may import (subpaths included). */
 const ALLOWED_PACKAGES = [
@@ -88,14 +101,52 @@ describe('registry/index.json', () => {
     assert.deepEqual(missing, [], `index.json entries without a file:\n  ${missing.join('\n  ')}`);
   });
 
-  test('every registry component file is listed in index.json', () => {
-    const listed = new Set(index.map((e) => e.file));
+  test('every registry file is listed in index.json, as a component or a helper', () => {
+    const listed = new Set([...index.map((e) => e.file), ...registryHelpers().map((h) => h.file)]);
     const unlisted = registryFiles().filter((f) => !listed.has(f));
     assert.deepEqual(
       unlisted,
       [],
-      `registry files missing from registry/index.json (add an entry with name, file, export, description):\n  ${unlisted.join('\n  ')}`,
+      `registry files missing from registry/index.json (add a component entry with name, file, export, description, or a helpers entry with file, description):\n  ${unlisted.join('\n  ')}`,
     );
+  });
+
+  test('helpers are well formed, exist, export something and are not components', () => {
+    const helpers = registryHelpers();
+    assert.ok(Array.isArray(helpers), '"helpers" is an array');
+    const components = new Set(index.map((e) => e.file));
+    const seen = new Set();
+    for (const h of helpers) {
+      for (const key of ['file', 'description']) {
+        assert.equal(typeof h[key], 'string', `${h.file ?? JSON.stringify(h)}: "${key}" must be a string`);
+        assert.ok(h[key].trim(), `${h.file}: "${key}" must not be empty`);
+      }
+      assert.match(h.file, /^[\w-]+\.tsx?$/, `${h.file}: file must be a .ts/.tsx file at the registry root`);
+      assert.notEqual(h.file, 'tw.tsx', 'tw.tsx is installed by init, not a helper');
+      assert.ok(!components.has(h.file), `${h.file} is both a component and a helper`);
+      assert.ok(!seen.has(h.file), `duplicate helper ${h.file}`);
+      seen.add(h.file);
+      assert.ok(existsSync(join(REGISTRY_DIR, h.file)), `helper registry/${h.file} does not exist`);
+      assert.ok(exportsOf(read(join(REGISTRY_DIR, h.file))).size > 0, `${h.file} exports nothing`);
+    }
+  });
+
+  test('every helper is imported by a component, and imports no component', () => {
+    const helpers = new Set(registryHelpers().map((h) => h.file));
+    const used = new Set();
+    const visit = (file) => {
+      for (const dep of localImports(file)) {
+        if (!helpers.has(dep) || used.has(dep)) continue;
+        used.add(dep);
+        visit(dep);
+      }
+    };
+    for (const entry of index) if (existsSync(join(REGISTRY_DIR, entry.file))) visit(entry.file);
+    const orphans = [...helpers].filter((f) => !used.has(f));
+    assert.deepEqual(orphans, [], `helpers no component imports (remove them or their index.json entry):\n  ${orphans.join('\n  ')}`);
+    const problems = [];
+    for (const f of helpers) for (const dep of localImports(f)) if (!helpers.has(dep)) problems.push(`${f} imports ./${dep}`);
+    assert.deepEqual(problems, [], `helpers may only import packages and other helpers:\n  ${problems.join('\n  ')}`);
   });
 
   test('declared export names exist in each file', () => {

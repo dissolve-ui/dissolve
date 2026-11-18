@@ -1,24 +1,8 @@
 // Surfaces: CardStack, BeforeAfter (src/dissolve/components/*), ported to the web.
 // Same geometry, timings and curves as the native sources. Shown raw: one instance, no screen around it.
-import { bezier, CALM, QUAD, value, el, clamp, rectOf, play, snapshot, FONT, rr, claimTouch } from './kit.js';
+import { bezier, CALM, QUAD, value, el, clamp, claimTouch, fitTile, PKG, DIR, prop } from './kit.js';
 
 const MONO = "'Geist Mono', ui-monospace, monospace";
-
-/** Scales a node of natural size (w, h) down to fit the tile body. */
-function fitTile(body, node, w, h) {
-  const cs = getComputedStyle(body);
-  const aw = body.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-  const ah = body.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-  const s = Math.min(1, aw / w, ah / h);
-  const box = el('div', 'cp-fit');
-  box.style.width = w * s + 'px';
-  box.style.height = h * s + 'px';
-  node.style.width = w + 'px';
-  node.style.transform = `scale(${s})`;
-  node.style.transformOrigin = '0 0';
-  box.append(node);
-  return box;
-}
 
 /** Pointer velocity from the last 80 ms of samples, px/s. */
 function velocity(samples) {
@@ -67,6 +51,7 @@ function mountCardStack(body, { sc, mode }) {
   frame.style.height = total + 'px';
   frame.setAttribute('role', 'group');
   frame.setAttribute('aria-label', 'Cards');
+  if (tile) frame.style.width = W + 'px';
   body.append(tile ? fitTile(body, frame, W, total) : frame);
 
   let focus = null;
@@ -346,9 +331,6 @@ function mountBeforeAfter(body, { sc, mode, initial = 0.42 }) {
    Content
    ====================================================================================== */
 
-const PKG = 'react-native-dissolve';
-const DIR = '@/components/dissolve';
-const prop = (name, type, def, desc) => ({ name, type, def, desc });
 
 export const ENTRIES = {
   'card-stack': {
@@ -358,7 +340,6 @@ export const ENTRIES = {
     hint: 'Tap a card, drag it down to restack',
     tileHint: 'Tap a card',
     mount: mountCardStack,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="9" width="16" height="10" rx="2.5"/><path d="M4.5 6.5h13M6 4h10" stroke-linecap="round" opacity=".55"/></svg>',
     code: `// npx ${PKG} add card-stack
 import { CardStack } from '${DIR}/card-stack';
 
@@ -387,7 +368,6 @@ import { CardStack } from '${DIR}/card-stack';
     hint: 'Drag the divider, or tap anywhere',
     tileHint: 'Drag the divider',
     mount: mountBeforeAfter,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="17" height="14" rx="3"/><path d="M11 2v18"/><path d="M8 9l-2 2 2 2M14 9l2 2-2 2" opacity=".55"/></svg>',
     code: `// npx ${PKG} add before-after
 import { Image } from 'expo-image';
 import { BeforeAfter } from '${DIR}/before-after';

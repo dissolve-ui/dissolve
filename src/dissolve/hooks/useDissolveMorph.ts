@@ -1,10 +1,9 @@
-import type { ViewRef } from '../types';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import type { View, ViewStyle } from 'react-native';
-import { capGrain, capture, frames } from '../core';
+import type { ViewStyle } from 'react-native';
+import { capGrain, capture, frames, HIDDEN_OPACITY } from '../core';
 import { useDissolveContext } from '../context';
 import { getVariant } from '../variants/registry';
-import type { DissolveOptions } from '../types';
+import type { DissolveOptions, ViewRef } from '../types';
 import { runDissolve } from './useDissolve';
 
 /**
@@ -29,7 +28,6 @@ export type MorphPhase = 'a' | 'morphing' | 'b';
 
 /** Two atlases per morph: keep the particle count at half the usual cap. */
 const MORPH_MAX_GRAINS = 3500;
-const HIDDEN = 0.01;
 
 export function useDissolveMorph() {
   const ctx = useDissolveContext();
@@ -51,6 +49,8 @@ export function useDissolveMorph() {
       try {
         const [from, to] = await Promise.all([capture(reverse ? refB : refA), capture(reverse ? refA : refB)]);
         if (!from || !to) {
+          from?.image.dispose();
+          to?.image.dispose();
           setPhase(done);
           return;
         }
@@ -68,6 +68,7 @@ export function useDissolveMorph() {
               image: from.image,
               box: from.box,
               data: { imageB: to.image, boxB: to.box },
+              owned: [from.image, to.image],
               // The real target shows under the last frame (identical), then the overlay goes.
               onFinish: () => {
                 finished = true;
@@ -75,17 +76,23 @@ export function useDissolveMorph() {
                 resolve();
               },
             },
-          ).then((res) => {
-            if (!res) {
+          )
+            .then((res) => {
+              if (!res) {
+                setPhase(done);
+                resolve();
+                return;
+              }
+              // The overlay paints the exact source first, then the real source hides.
+              frames(2).then(() => {
+                if (!finished) setPhase('morphing');
+              });
+            })
+            .catch(() => {
+              // No overlay was added (runDissolve freed the snapshots): land on the target.
               setPhase(done);
               resolve();
-              return;
-            }
-            // The overlay paints the exact source first, then the real source hides.
-            frames(2).then(() => {
-              if (!finished) setPhase('morphing');
             });
-          });
         });
       } finally {
         busy.current = false;
@@ -96,8 +103,8 @@ export function useDissolveMorph() {
 
   const reset = useCallback(() => setPhase('a'), []);
 
-  const styleA = useMemo<ViewStyle>(() => ({ opacity: phase === 'a' ? 1 : HIDDEN }), [phase]);
-  const styleB = useMemo<ViewStyle>(() => ({ opacity: phase === 'b' ? 1 : HIDDEN }), [phase]);
+  const styleA = useMemo<ViewStyle>(() => ({ opacity: phase === 'a' ? 1 : HIDDEN_OPACITY }), [phase]);
+  const styleB = useMemo<ViewStyle>(() => ({ opacity: phase === 'b' ? 1 : HIDDEN_OPACITY }), [phase]);
 
   return { refA, refB, phase, morphing: phase === 'morphing', styleA, styleB, morph, reset };
 }

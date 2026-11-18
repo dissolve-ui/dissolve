@@ -11,13 +11,13 @@ import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState,
 import { PixelRatio, StyleSheet, View as RNView, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Canvas, Path, Skia, type SkImage, type SkPath } from '@shopify/react-native-skia';
-import { Easing, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useAnimatedStyle, useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { frames, measure, runDissolve, useDissolveContext, type ViewRef } from 'react-native-dissolve';
 import { Animated, Pressable, Text, View, cn, useToken } from './tw';
+import { CALM } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 
 /** Flat stroke buffer: x, y, width per point. */
 type Stroke = number[];

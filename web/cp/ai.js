@@ -1,15 +1,13 @@
 // AI components: ThinkingOrb, ImageReveal, SweepTransition, UploadTile, TaskCheck (registry/*.tsx),
 // ported to the web. Same geometry, timings and curves as the native sources. Shown raw, centered.
-import { CALM, value, el, clamp, play, snapshot, IMG, FONT, cover, frame, rr } from './kit.js';
+import { CALM, value, el, clamp, play, snapshot, IMG, FONT, cover, frame, rr, DPR, PKG, DIR, prop, onTheme, loop } from './kit.js';
 import { ready } from '../images.js';
 
-const DPR = Math.min(2, window.devicePixelRatio || 1);
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
 const CALM_CSS = 'cubic-bezier(0.32, 0.72, 0, 1)';
 const GA = Math.PI * (3 - Math.sqrt(5)); // golden angle
-const add = (id) => `// npx react-native-dissolve add ${id}`;
-const imp = (name, id) => `import { ${name} } from '@/components/dissolve/${id}';`;
-const prop = (name, type, def, desc) => ({ name, type, def, desc });
+const cmd = (id) => `// npx ${PKG} add ${id}`;
+const imp = (name, id) => `import { ${name} } from '${DIR}/${id}';`;
 
 /* ======================================================================================
    Shared helpers
@@ -28,9 +26,7 @@ function themed(sc, node, onChange) {
     T.rgb = (k) => rgb(T[k]);
   };
   read();
-  const mo = new MutationObserver(() => { read(); onChange?.(); });
-  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-  sc.onDispose(() => mo.disconnect());
+  onTheme(sc, () => { read(); onChange?.(); });
   return T;
 }
 
@@ -54,26 +50,9 @@ function hidpi(cv, w, h) {
   cv.style.height = h + 'px';
 }
 
-/** rAF loop that sleeps while the node is off screen or while active() is false. kick() wakes it. */
-function loop(sc, node, fn, active = () => true) {
-  let vis = true, raf = 0;
-  const tick = (now) => {
-    raf = 0;
-    if (!sc.alive) return;
-    fn(now);
-    if (vis && active()) raf = requestAnimationFrame(tick);
-  };
-  const kick = () => { if (!raf && sc.alive) raf = requestAnimationFrame(tick); };
-  const io = new IntersectionObserver(([e]) => { vis = e.isIntersecting; if (vis) kick(); });
-  io.observe(node);
-  kick();
-  sc.onDispose(() => { io.disconnect(); cancelAnimationFrame(raf); });
-  return { kick };
-}
-
 /** A small segmented row of options under a demo. */
 function chips(options, current, onPick, label) {
-  const row = el('div', 'cp-ai-chips');
+  const row = el('div', options.length === 6 ? 'cp-ai-chips cp-ai-chips-6' : 'cp-ai-chips');
   row.setAttribute('role', 'group');
   row.setAttribute('aria-label', label);
   const btns = options.map(([v, text]) => {
@@ -1072,8 +1051,7 @@ export const ENTRIES = {
     hint: 'Pick a state, or tap the orb. Hover to push the dots',
     tileHint: 'Tap the orb',
     mount: mountOrb,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><ellipse cx="11" cy="11" rx="8" ry="3" opacity=".55"/><ellipse cx="11" cy="11" rx="3" ry="8" opacity=".55"/></svg>',
-    code: `${add('thinking-orb')}
+    code: `${cmd('thinking-orb')}
 ${imp('ThinkingOrb', 'thinking-orb')}
 
 <ThinkingOrb
@@ -1100,8 +1078,7 @@ ${imp('ThinkingOrb', 'thinking-orb')}
     hint: 'Tap the frame to generate, Fail to see the error',
     tileHint: 'Tap to generate',
     mount: mountReveal,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="3" width="16" height="16" rx="3"/><path d="M3 11h8V3M11 15h4v4M15 11v4" opacity=".55"/></svg>',
-    code: `${add('image-reveal')}
+    code: `${cmd('image-reveal')}
 ${imp('ImageReveal', 'image-reveal')}
 
 <ImageReveal
@@ -1130,8 +1107,7 @@ ${imp('ImageReveal', 'image-reveal')}
     hint: 'Tap the card to sweep, tap again mid sweep to cancel',
     tileHint: 'Tap the card',
     mount: mountSweep,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="16" height="16" rx="3"/><path d="M3 12.5h16"/><path d="M3 9.5h16" opacity=".4"/></svg>',
-    code: `${add('sweep-transition')}
+    code: `${cmd('sweep-transition')}
 import { useRef } from 'react';
 import { SweepTransition, type SweepTransitionHandle } from '@/components/dissolve/sweep-transition';
 
@@ -1161,8 +1137,7 @@ sweep.current?.run(() => setPlan('pro'), { revert: () => setPlan('free') });`,
     hint: 'Add files. Tap one while it uploads to cancel',
     tileHint: 'Add a file',
     mount: mountUpload,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="16" height="16" rx="4"/><path d="M11 15V7.5M8 10.5l3-3 3 3" opacity=".55"/></svg>',
-    code: `${add('upload-tile')}
+    code: `${cmd('upload-tile')}
 ${imp('UploadTray', 'upload-tile')}
 
 <UploadTray
@@ -1192,8 +1167,7 @@ ${imp('UploadTray', 'upload-tile')}
     hint: 'Tap a task. Tap again quickly to undo',
     tileHint: 'Tap a task',
     mount: mountTasks,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="9" height="9" rx="2.5"/><path d="M4.8 10.6l1.6 1.6 3-3.2"/><path d="M14 10.5h6" opacity=".55"/></svg>',
-    code: `${add('task-check')}
+    code: `${cmd('task-check')}
 ${imp('TaskCheck', 'task-check')}
 
 <TaskCheck

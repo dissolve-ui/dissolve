@@ -1,24 +1,20 @@
-import type { ViewRef } from '../types';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import type { View } from 'react-native';
+import { useCallback, useMemo } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
-import { cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { cancelAnimation, Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { capture, DEFAULT_END, frames } from '../core';
-import { useDissolveContext } from '../context';
 import { getVariant } from '../variants/registry';
 import { runDissolve } from './useDissolve';
-import type { Box, BurstHandle } from '../types';
-import type { SkImage } from '@shopify/react-native-skia';
+import { CALM, useDragBurst } from './useGestureBurst';
 
 /**
  * peel by hand: grab the view anywhere near its border and pull, it peels like a sticker.
  *
  * The anchor is picked from the touch point: the nearest corner when you grab close to one
  * (within 28 percent of both sides), otherwise the nearest point of the closest edge.
- * Touch down pre-captures the view. When the pan activates, a 'peel' burst is added in hand
- * mode (n: [1, ax, ay]) with aux0 / aux1 = where the anchor is now (local coords) and an
+ * When the pan activates (and only then, a plain tap captures nothing) the view is captured
+ * and a 'peel' burst is added in hand mode (n: [1, ax, ay]) with aux0 / aux1 = where the anchor is now (local coords) and an
  * external progress. The anchor tracks the finger, so the paper folds exactly under it.
  *
  * Release: commit when the corner travelled at least `threshold` of the view diagonal, or the
@@ -44,14 +40,11 @@ export type PeelOptions = {
   onCancel?: () => void;
 };
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
-
 export function useDissolvePeel(opts: PeelOptions = {}) {
-  const ctx = useDissolveContext();
-  const ref = useRef<ViewRef>(null);
+  const { ctx, ref, hidden, optsRef, s, drop, style, progress, phase, live, committed, settle, reset: resetBase } =
+    useDragBurst(opts);
   const end = getVariant('peel').end ?? DEFAULT_END;
 
-  const progress = useSharedValue(0);
   /** Corner position in local coords (aux0, aux1 of the burst). */
   const fx = useSharedValue(0);
   const fy = useSharedValue(0);
@@ -60,26 +53,10 @@ export function useDissolvePeel(opts: PeelOptions = {}) {
   /** Anchor point on the border, local coords. */
   const AX = useSharedValue(0);
   const AY = useSharedValue(0);
-  /** 0 idle, 1 dragging, 2 settling. */
-  const phase = useSharedValue(0);
-  const live = useSharedValue(0);
-  const hidden = useSharedValue(0);
-
-  const optsRef = useRef(opts);
-  optsRef.current = opts;
-  const s = useRef({
-    shot: null as Promise<{ image: SkImage; box: Box } | null> | null,
-    handle: null as BurstHandle | null,
-  }).current;
-
-  const prime = useCallback(() => {
-    if (ctx.reduced) return;
-    s.shot = capture(ref);
-  }, [ctx, s]);
 
   const start = useCallback(async (sx: number, sy: number) => {
     const o = optsRef.current;
-    const shot = s.shot ? await s.shot : null;
+    const shot = await capture(ref);
     if (!shot) {
       phase.value = 0;
       return;
@@ -110,7 +87,7 @@ export function useDissolvePeel(opts: PeelOptions = {}) {
       ctx,
       ref,
       { preset: 'peel', grain: o.grain, n: [1, ax, ay], duration: o.duration ?? 700, haptics: false },
-      { progress, aux0: fx, aux1: fy, image: shot.image, box: shot.box },
+      { progress, aux0: fx, aux1: fy, image: shot.image, box: shot.box, owned: [shot.image] },
     );
     if (!res) {
       phase.value = 0;
@@ -118,36 +95,19 @@ export function useDissolvePeel(opts: PeelOptions = {}) {
     }
     s.handle = res.handle;
     await frames(2);
+    if (phase.value !== 1) {
+      // Released while the overlay was coming up: nothing was shown, drop it.
+      drop();
+      return;
+    }
     hidden.value = 1;
     live.value = 1;
     if (o.haptics !== false) Haptics.selectionAsync();
-  }, [ctx, s, W, H, AX, AY, fx, fy, progress, hidden, live, phase]);
-
-  const committed = useCallback(() => {
-    s.handle?.remove();
-    s.handle = null;
-    s.shot = null;
-    live.value = 0;
-    phase.value = 0;
-    optsRef.current.onCommit?.();
-  }, [s, live, phase]);
-
-  const rewound = useCallback(() => {
-    hidden.value = 0;
-    frames(2).then(() => {
-      s.handle?.remove();
-      s.handle = null;
-      s.shot = null;
-      phase.value = 0;
-      optsRef.current.onCancel?.();
-    });
-  }, [s, hidden, phase]);
+  }, [ctx, ref, s, optsRef, drop, W, H, AX, AY, fx, fy, progress, hidden, live, phase]);
 
   const thump = useCallback(() => {
     if (optsRef.current.haptics !== false) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, []);
-
-  useEffect(() => () => s.handle?.remove(), [s]);
+  }, [optsRef]);
 
   const threshold = opts.threshold ?? 0.4;
   const flingV = opts.velocity ?? 900;
@@ -158,11 +118,6 @@ export function useDissolvePeel(opts: PeelOptions = {}) {
     () =>
       Gesture.Pan()
         .minDistance(6)
-        .onBegin(() => {
-          'worklet';
-          if (phase.value !== 0) return;
-          scheduleOnRN(prime);
-        })
         .onStart((e) => {
           'worklet';
           if (phase.value !== 0 || reduced) return;
@@ -204,46 +159,32 @@ export function useDissolvePeel(opts: PeelOptions = {}) {
               if (fin) scheduleOnRN(committed);
             });
           } else {
+            // Both axes on the same curve, fy reports the end.
             fx.value = withTiming(AX.value, { duration: 320, easing: CALM });
-            fy.value = withTiming(AY.value, { duration: 320, easing: CALM }, (fin) => {
-              if (fin) {
-                live.value = 0;
-                scheduleOnRN(rewound);
-              }
-            });
+            settle(fy, AY.value, 320);
           }
         })
         .onFinalize(() => {
           'worklet';
           if (phase.value === 1 && live.value === 1) {
             phase.value = 2;
+            // Both axes on the same curve, fy reports the end.
             fx.value = withTiming(AX.value, { duration: 320, easing: CALM });
-            fy.value = withTiming(AY.value, { duration: 320, easing: CALM }, (fin) => {
-              if (fin) {
-                live.value = 0;
-                scheduleOnRN(rewound);
-              }
-            });
+            settle(fy, AY.value, 320);
+          } else if (phase.value === 1) {
+            // Cancelled before the overlay was up: start() drops it.
+            phase.value = 0;
           }
         }),
-    [phase, live, fx, fy, W, H, AX, AY, progress, end, threshold, flingV, duration, reduced, prime, start, thump, committed, rewound],
+    [phase, live, fx, fy, W, H, AX, AY, progress, end, threshold, flingV, duration, reduced, start, thump, committed, settle],
   );
 
   /** Show the real view again after a commit. */
   const reset = useCallback(() => {
-    cancelAnimation(progress);
     cancelAnimation(fx);
     cancelAnimation(fy);
-    s.handle?.remove();
-    s.handle = null;
-    s.shot = null;
-    progress.value = 0;
-    live.value = 0;
-    phase.value = 0;
-    hidden.value = 0;
-  }, [s, progress, fx, fy, live, phase, hidden]);
-
-  const style = useAnimatedStyle(() => ({ opacity: hidden.value ? 0 : 1 }));
+    resetBase();
+  }, [fx, fy, resetBase]);
 
   return { ref, gesture, style, progress, reset };
 }

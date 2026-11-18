@@ -2,8 +2,8 @@ import { useMemo, type ReactElement } from 'react';
 import { StyleSheet } from 'react-native';
 import { Atlas, Canvas, Group, rect, Skia } from '@shopify/react-native-skia';
 import { makeMutable, useAnimatedReaction, useSharedValue, type SharedValue } from 'react-native-reanimated';
-import { DEFAULT_END, originField } from './core';
-import type { AtlasVariant, Burst, FieldFn, GrainOut } from './types';
+import { clampDelay, DEFAULT_END, notifyInPlace, originField } from './core';
+import type { AtlasVariant, Burst, FieldFn, GrainData, GrainOut } from './types';
 
 /** Base floats per grain: lx, ly, r1, r2, r3, r4, delay, life. Variant extras follow. */
 export const BASE_STRIDE = 8;
@@ -39,7 +39,9 @@ export function Particles({ burst, variant, progress, field, layer }: ParticlesP
 
   const { sprites, data, transforms, colors } = useMemo(() => {
     const sprites = [];
-    const data: number[] = new Array(count * stride).fill(0);
+    // Typed buffer: captured by the reaction worklet below, it reaches the UI thread as one
+    // bulk copy (a plain array would be serialised element by element).
+    const data: GrainData = new Float64Array(count * stride);
     const iw = image.width();
     const ih = image.height();
     const spread = variant.spread ?? 0.55;
@@ -67,6 +69,7 @@ export function Particles({ burst, variant, progress, field, layer }: ParticlesP
         let delay = tm.delay;
         if (field) delay = field(seed, P, burst, tm.life, end);
         else if (useOrigin) delay = originField(origin, seed.lx, seed.ly, P) * spread + seed.r1 * jitter;
+        delay = clampDelay(delay, tm.life, end);
         data[k] = seed.lx;
         data[k + 1] = seed.ly;
         data[k + 2] = seed.r1;
@@ -116,7 +119,6 @@ export function Particles({ burst, variant, progress, field, layer }: ParticlesP
     }
     return { sprites, data, transforms: makeMutable(xf), colors: makeMutable(cl) };
     // The burst is immutable for the lifetime of this component.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fallback = useSharedValue(0);
@@ -174,11 +176,8 @@ export function Particles({ burst, variant, progress, field, layer }: ParticlesP
       last.value = p;
       lastA0.value = a0;
       lastA1.value = a1;
-      // Same trick Skia's buffer hooks use to notify the canvas of in-place changes.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (transforms as any)._value = T;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (colors as any)._value = K;
+      notifyInPlace(transforms, T);
+      notifyInPlace(colors, K);
     },
   );
 

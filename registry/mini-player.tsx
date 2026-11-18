@@ -44,8 +44,8 @@ import {
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { Animated, Text, View, cn, useToken } from './tw';
+import { CALM } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 /** Small buttons only: a light overshoot. */
 const POP = { damping: 15, stiffness: 420, mass: 0.6 };
 const PILL_H = 64;

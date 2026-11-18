@@ -1,8 +1,7 @@
 // Interactive demo card for one variant, used by the variant stage and the gallery tiles.
-import { play, snapshot, morph, VARIANTS as ENGINE } from './engine/atlas.js';
-
-import { IMG, FONT, cover } from './images.js';
-import { item, pal, rr, text, rectOf, hide, show, isLight } from './showcase.js';
+import { morph, VARIANTS as ENGINE } from './engine/atlas.js';
+import { play, snapshot, IMG, FONT, cover, pal, rr, text, isLight, boxOf, hide, show, OUT_CUBIC, onTheme, redraw, scope } from './cp/kit.js';
+import { item } from './showcase.js';
 
 const ENTRANCES = ['gather', 'rain', 'print'];
 
@@ -71,10 +70,11 @@ export function drawCard(ctx, w, h, id) {
 export const binSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 5.5l-.62 10.03c-.16 2.56-.24 3.84-.88 4.76a4 4 0 0 1-1.2 1.13C15.84 22 14.56 22 12 22c-2.57 0-3.86 0-4.82-.59a4 4 0 0 1-1.2-1.13c-.64-.92-.72-2.2-.87-4.77L4.5 5.5"/><path d="M3 5.5h18M16.06 5.5l-.69-1.41c-.45-.94-.68-1.4-1.07-1.7a2 2 0 0 0-.27-.17C13.59 2 13.07 2 12.03 2c-1.06 0-1.6 0-2.04.23a2 2 0 0 0-.28.18c-.4.3-.62.79-1.06 1.76L8.05 5.5M9.5 16.5v-6M14.5 16.5v-6"/></svg><span class="bin-count" hidden>0</span>';
 
 /**
- * Mounts a demo into `host` (a positioned element). Returns { run } to trigger it.
- * size: 'lg' for the variant stage, 'sm' for gallery tiles.
+ * Mounts a demo into `host` (a positioned element). Returns { run, dispose }: run() triggers it.
+ * size: 'lg' for the variant stage, 'sm' for gallery tiles. The card redraws itself on a theme switch.
  */
 export function mountDemo(host, id, { size = 'lg', autoplay = true } = {}) {
+  const sc = scope();
   const slot = host.querySelector('.stage-slot') ?? host;
   const big = size === 'lg';
   const W = Math.max(200, Math.min(big ? 360 : 300, host.clientWidth - (big ? 48 : 28)));
@@ -85,6 +85,7 @@ export function mountDemo(host, id, { size = 'lg', autoplay = true } = {}) {
   card.className = 'demo-card';
   card.setAttribute('role', 'button');
   card.setAttribute('aria-label', `${HINTS[id]} (${id})`);
+  onTheme(sc, () => redraw(card, (ctx) => drawCard(ctx, W, H, id)));
   const nodes = [card];
   let bin = null;
   if (id === 'stream') {
@@ -96,29 +97,23 @@ export function mountDemo(host, id, { size = 'lg', autoplay = true } = {}) {
   slot.replaceChildren(...nodes);
 
   let busy = false;
-  if (id === 'morph') return mountMorph(host, card, W, H);
-  if (id === 'peel') return mountPeel(host, card);
-  const show = (fade = true) => {
-    card.style.transition = fade ? '' : 'none';
-    card.style.opacity = '1';
-    card.style.transform = '';
-  };
-  const hide = () => { card.style.transition = 'none'; card.style.opacity = '0'; };
-  const rectOf = () => { const r = card.getBoundingClientRect(); return { source: card, x: r.left, y: r.top, w: r.width, h: r.height }; };
-  const finish = (delay = 600) => setTimeout(() => { show(); busy = false; }, delay);
+  if (id === 'morph') return mountMorph(sc, host, card, W, H);
+  if (id === 'peel') return mountPeel(sc, host, card);
+  const reveal = (fade = true) => { show(card, fade); card.style.transform = ''; };
+  const finish = (delay = 600) => sc.wait(delay).then(() => { reveal(); busy = false; });
 
   async function run(extra = {}) {
     if (busy) return;
     busy = true;
-    const base = { ...rectOf(), preset: id, ...extra };
+    const base = { ...boxOf(card), preset: id, ...extra };
     if (id === 'stream' && bin) {
       const b = bin.getBoundingClientRect();
       base.target = { x: b.left, y: b.top, width: b.width, height: b.height };
     }
-    hide();
+    hide(card);
     if (ENTRANCES.includes(id)) {
       await play(base).done;
-      show(false);
+      reveal(false);
       busy = false;
       return;
     }
@@ -140,11 +135,11 @@ export function mountDemo(host, id, { size = 'lg', autoplay = true } = {}) {
     }
     if (id === 'stream' && bin) {
       play(base).done.then(() => finish(500));
-      setTimeout(() => {
+      sc.wait(1100).then(() => {
         const n = bin.querySelector('.bin-count');
         n.textContent = +n.textContent + 1; n.hidden = false;
-        bin.classList.add('bump'); setTimeout(() => bin.classList.remove('bump'), 400);
-      }, 1100);
+        bin.classList.add('bump'); sc.wait(400).then(() => bin.classList.remove('bump'));
+      });
       return;
     }
     await play(base).done;
@@ -179,16 +174,18 @@ export function mountDemo(host, id, { size = 'lg', autoplay = true } = {}) {
     const io = new IntersectionObserver(([en]) => {
       if (!en.isIntersecting) return;
       io.disconnect();
-      setTimeout(() => run(), typeof autoplay === 'number' ? autoplay : 700);
+      sc.wait(typeof autoplay === 'number' ? autoplay : 700).then(() => run());
     }, { threshold: 0.6 });
     io.observe(card);
+    sc.onDispose(() => io.disconnect());
   }
-  return { run };
+  return { run, dispose: sc.dispose };
 }
 
 /* ---------- morph: notification A rearranges its grains into notification B, and back ---------- */
-function mountMorph(host, cardA, W, H) {
+function mountMorph(sc, host, cardA, W, H) {
   const cardB = snapshot(W, H, (ctx) => drawCard(ctx, W, H, 'morphB'));
+  onTheme(sc, () => redraw(cardB, (ctx) => drawCard(ctx, W, H, 'morphB')));
   cardB.style.width = W + 'px'; cardB.style.height = H + 'px';
   cardB.className = 'demo-card demo-card-b';
   cardB.style.opacity = '0';
@@ -197,13 +194,12 @@ function mountMorph(host, cardA, W, H) {
   cardA.replaceWith(wrap);
   wrap.append(cardA, cardB);
   let busy = false, onB = false;
-  const box = (c) => { const r = c.getBoundingClientRect(); return { source: c, x: r.left, y: r.top, w: r.width, h: r.height }; };
   const run = async () => {
     if (busy) return;
     busy = true;
     const from = onB ? cardB : cardA, to = onB ? cardA : cardB;
-    const a = box(cardA), b = box(cardB);
-    for (const c of [cardA, cardB]) { c.style.transition = 'none'; c.style.opacity = '0'; }
+    const a = boxOf(cardA), b = boxOf(cardB);
+    hide(cardA); hide(cardB);
     await morph(a, b, { reverse: onB }).done;
     to.style.opacity = '1';
     onB = !onB;
@@ -211,18 +207,18 @@ function mountMorph(host, cardA, W, H) {
   };
   wrap.addEventListener('click', run);
   host.querySelector('[data-replay]')?.addEventListener('click', run);
-  return { run };
+  return { run, dispose: sc.dispose };
 }
 
 /* ---------- peel by hand: grab near any corner or edge, that point follows the pointer (useDissolvePeel) ---------- */
-function mountPeel(host, card) {
+function mountPeel(sc, host, card) {
   card.classList.add('grab');
   host.querySelector('[data-replay]')?.remove(); // driven by hand, nothing to replay
   const ctrl = peelController(card, () => ({
-    onCommit: () => setTimeout(() => { card.style.transition = ''; card.style.opacity = '1'; }, 500),
+    onCommit: () => sc.wait(500).then(() => show(card)),
   }));
   attachPeel(card, ctrl);
-  return { run() {} };
+  return { run() {}, dispose: sc.dispose };
 }
 
 /* ---------- shared gesture controllers (playground, tiles, stage) ---------- */
@@ -236,10 +232,6 @@ const tween = (ms, ease, onStep) => new Promise((res) => {
   };
   requestAnimationFrame(f);
 });
-const easeOut = (k) => 1 - (1 - k) ** 3;
-const box = (el) => { const r = el.getBoundingClientRect(); return { source: el, x: r.left, y: r.top, w: r.width, h: r.height }; };
-const hideEl = (el) => { el.style.transition = 'none'; el.style.opacity = '0'; };
-const showEl = (el) => { el.style.transition = 'none'; el.style.opacity = '1'; };
 
 // Touch: the cards are touch-action: pan-y, so a vertical swipe scrolls the page and cancels the
 // pointer. A drag becomes the card's own once it leaves the press sideways; from then on the page
@@ -299,10 +291,10 @@ export function holdController(el, get) {
     start(origin) {
       if (h) return;
       o = get();
-      const b = box(el);
+      const b = boxOf(el);
       if (!(b.w > 0)) return;
       gen++;
-      hideEl(el);
+      hide(el);
       h = play({ ...b, preset: 'charge', hold: true, grain: o.grain, duration: o.duration ?? 900, origin: origin ?? { x: b.w / 2, y: b.h / 2 } });
       t0 = performance.now();
       o.onStart?.();
@@ -312,9 +304,9 @@ export function holdController(el, get) {
       if (!h) return;
       const cur = h, c0 = cur.aux.a0, my = gen;
       h = null;
-      await tween(320, easeOut, (k) => { cur.aux.a0 = c0 * (1 - k); cur.aux.a1 += 16; o.onProgress?.(c0 * (1 - k)); });
+      await tween(320, OUT_CUBIC, (k) => { cur.aux.a0 = c0 * (1 - k); cur.aux.a1 += 16; o.onProgress?.(c0 * (1 - k)); });
       cur.cancel();
-      if (my === gen) showEl(el);
+      if (my === gen) show(el, false);
       o.onCancel?.();
     },
     cancel() { if (h) { h.cancel(); h = null; } },
@@ -345,7 +337,7 @@ export function peelController(el, get) {
     get busy() { return busy; },
     grab(px, py) {
       if (busy) return false;
-      const b = box(el);
+      const b = boxOf(el);
       if (!(b.w > 0)) return false;
       busy = true;
       o = get();
@@ -359,7 +351,7 @@ export function peelController(el, get) {
       }
       h = play({ ...b, preset: 'peel', n: [1, ax, ay], hold: true, grain: o.grain, duration: o.duration ?? 700 });
       h.aux.a0 = ax; h.aux.a1 = ay;
-      hideEl(el);
+      hide(el);
       o.onStart?.();
       return true;
     },
@@ -377,19 +369,19 @@ export function peelController(el, get) {
         busy = false;
         o.onCommit?.();
       } else {
-        await tween(320, easeOut, (k) => { cur.aux.a0 = sx + (ax - sx) * k; cur.aux.a1 = sy + (ay - sy) * k; });
+        await tween(320, OUT_CUBIC, (k) => { cur.aux.a0 = sx + (ax - sx) * k; cur.aux.a1 = sy + (ay - sy) * k; });
         cur.cancel();
-        showEl(el);
+        show(el, false);
         busy = false;
         o.onCancel?.();
       }
     },
     /** Scripted pull from the bottom right corner (Play button). */
     async pull(amount = 0.62) {
-      const b = box(el);
+      const b = boxOf(el);
       if (!api.grab(b.x + b.w - 2, b.y + b.h - 2)) return;
       const tx = -b.w * amount, ty = -b.h * amount * 1.6;
-      await tween(560, easeOut, (k) => api.move(b.x + b.w - 2 + tx * k, b.y + b.h - 2 + ty * k));
+      await tween(560, OUT_CUBIC, (k) => api.move(b.x + b.w - 2 + tx * k, b.y + b.h - 2 + ty * k));
       await api.drop();
     },
     cancel() { if (h) { h.cancel(); h = null; } busy = false; },
@@ -433,7 +425,7 @@ export function attachScrub(el, get, canStart = () => true) {
   el.addEventListener('pointerdown', (e) => {
     if (!canStart()) return;
     try { el.setPointerCapture(e.pointerId); } catch {}
-    st = { x0: e.clientX, y0: e.clientY, touch: e.pointerType === 'touch', last: e.clientX, t: performance.now(), v: 0, h: null, o: get(), b: box(el) };
+    st = { x0: e.clientX, y0: e.clientY, touch: e.pointerType === 'touch', last: e.clientX, t: performance.now(), v: 0, h: null, o: get(), b: boxOf(el) };
   });
   holdPage(el, () => !!st?.h);
   el.addEventListener('pointermove', (e) => {
@@ -449,7 +441,7 @@ export function attachScrub(el, get, canStart = () => true) {
       // drag range: distance to the far edge, at least 40 percent of the view
       const sx = st.x0 - st.b.x;
       st.range = Math.max(st.b.w * 0.4, st.right ? st.b.w - sx : sx);
-      hideEl(el);
+      hide(el);
       st.o.onStart?.();
     }
     st.frac = Math.max(0, Math.min(1, (st.right ? dx : -dx) / st.range));
@@ -466,9 +458,9 @@ export function attachScrub(el, get, canStart = () => true) {
       cur.o.onCommit?.();
     } else {
       const p0 = cur.frac * cur.reach;
-      await tween(360, easeOut, (k) => cur.h.set(p0 * (1 - k)));
+      await tween(360, OUT_CUBIC, (k) => cur.h.set(p0 * (1 - k)));
       cur.h.cancel();
-      showEl(el);
+      show(el, false);
       cur.o.onCancel?.();
     }
   };
@@ -552,7 +544,7 @@ function listScene({ title, hint, rows, h = 52, preset, opts = {}, extra, touch 
           el.addEventListener('click', async (e) => {
             if (el.dataset.busy) return;
             el.dataset.busy = '1';
-            const b = rectOf(el);
+            const b = boxOf(el);
             const o = { ...b, preset, ...opts };
             if (touch) o.origin = { x: e.clientX - b.x, y: e.clientY - b.y };
             if (extra) Object.assign(o, extra(el));
@@ -587,7 +579,7 @@ function oneScene({ title, hint, w = 1, h, draw, preset, opts = {}, touch = fals
       el.addEventListener('click', async (e) => {
         if (el.dataset.busy) return;
         el.dataset.busy = '1';
-        const b = rectOf(el);
+        const b = boxOf(el);
         const o = { ...b, preset, ...opts };
         if (touch) o.origin = { x: e.clientX - b.x, y: e.clientY - b.y };
         hide(el);
@@ -623,7 +615,7 @@ function appearList({ title, hint, label, make, h = 52, preset, max = 3, stagger
         while (list.children.length > max) list.firstChild.remove();
         await new Promise(requestAnimationFrame);
         await Promise.all(els.map((el, k) => new Promise((res) => x.later(async () => {
-          await x.track(play({ ...rectOf(el), preset, direction: 'in', ...opts })).done;
+          await x.track(play({ ...boxOf(el), preset, direction: 'in', ...opts })).done;
           if (x.alive()) show(el, false);
           res();
         }, k * stagger))));
@@ -679,7 +671,7 @@ tile('sand',
             if (el.dataset.busy) return;
             el.dataset.busy = '1';
             hide(el);
-            await x.track(play({ ...rectOf(el), preset: 'sand', grain: 2.5, duration: 1300 })).done;
+            await x.track(play({ ...boxOf(el), preset: 'sand', grain: 2.5, duration: 1300 })).done;
             if (!x.alive()) return;
             el.style.visibility = 'hidden';
             if (![...grid.children].some((c) => c.style.visibility !== 'hidden')) x.later(fill, 900);
@@ -751,7 +743,7 @@ tile('pixel',
             if (el.dataset.busy) return;
             el.dataset.busy = '1';
             hide(el);
-            await x.track(play({ ...rectOf(el), preset: 'pixel', grain: 6, duration: 1000 })).done;
+            await x.track(play({ ...boxOf(el), preset: 'pixel', grain: 6, duration: 1000 })).done;
             if (!x.alive()) return;
             pts += 100; score.textContent = `SCORE ${pts}`;
             el.style.visibility = 'hidden';
@@ -781,7 +773,7 @@ tile('vortex',
         const els = [...list.querySelectorAll('.tl-item')];
         await Promise.all(els.map((el, i) => new Promise((res) => x.later(async () => {
           hide(el);
-          await x.track(play({ ...rectOf(el), preset: 'vortex', duration: 1100 })).done;
+          await x.track(play({ ...boxOf(el), preset: 'vortex', duration: 1100 })).done;
           res();
         }, i * 140))));
         if (!x.alive()) return;
@@ -815,7 +807,7 @@ tile('vortex',
             if (el.dataset.busy) return;
             el.dataset.busy = '1';
             hide(el);
-            await x.track(play({ ...rectOf(el), preset: 'vortex', duration: 1200 })).done;
+            await x.track(play({ ...boxOf(el), preset: 'vortex', duration: 1200 })).done;
             if (!x.alive()) return;
             el.style.visibility = 'hidden';
             if (![...grid.children].some((c) => c.style.visibility !== 'hidden')) x.later(fill, 800);
@@ -858,7 +850,7 @@ tile('shatter',
         el.addEventListener('click', async (e) => {
           if (el.dataset.busy) return;
           el.dataset.busy = '1';
-          const b = rectOf(el);
+          const b = boxOf(el);
           hide(el);
           await x.track(play({ ...b, preset: 'shatter', origin: { x: e.clientX - b.x, y: e.clientY - b.y }, n: [200], duration: 1500 })).done;
           x.later(() => { show(el); delete el.dataset.busy; }, 700);
@@ -894,7 +886,7 @@ tile('stream',
         el.dataset.busy = '1';
         hide(el);
         x.later(folder.bump, 900);
-        await x.track(play({ ...rectOf(el), preset: 'stream', target: targetOf(folder), duration: 1400 })).done;
+        await x.track(play({ ...boxOf(el), preset: 'stream', target: targetOf(folder), duration: 1400 })).done;
         x.later(() => { show(el); delete el.dataset.busy; }, 600);
       });
     },
@@ -943,7 +935,7 @@ tile('gather',
         thread.append(slot(el, 'tl-slot' + (me ? ' tl-right' : '')));
         while (thread.children.length > 3) thread.firstChild.remove();
         await new Promise(requestAnimationFrame);
-        await x.track(play({ ...rectOf(el), preset: 'gather', direction: 'in', duration: 1000 })).done;
+        await x.track(play({ ...boxOf(el), preset: 'gather', direction: 'in', duration: 1000 })).done;
         if (x.alive()) show(el, false);
         send.disabled = false;
       };
@@ -1002,7 +994,7 @@ tile('rain',
         grid.replaceChildren(...els);
         await new Promise(requestAnimationFrame);
         await Promise.all(els.map((el, k) => new Promise((res) => x.later(async () => {
-          await x.track(play({ ...rectOf(el), preset: 'rain', direction: 'in', duration: 1100 })).done;
+          await x.track(play({ ...boxOf(el), preset: 'rain', direction: 'in', duration: 1100 })).done;
           if (x.alive()) show(el, false);
           res();
         }, k * 110))));
@@ -1063,7 +1055,7 @@ tile('print',
         b.disabled = true;
         hide(el);
         await new Promise(requestAnimationFrame);
-        await x.track(play({ ...rectOf(el), preset: 'print', direction: 'in', duration: 1600 })).done;
+        await x.track(play({ ...boxOf(el), preset: 'print', direction: 'in', duration: 1600 })).done;
         if (x.alive()) show(el, false);
         b.disabled = false;
       });
@@ -1084,7 +1076,7 @@ tile('print',
         b.disabled = true;
         hide(el);
         await new Promise(requestAnimationFrame);
-        await x.track(play({ ...rectOf(el), preset: 'print', direction: 'in', duration: 1500 })).done;
+        await x.track(play({ ...boxOf(el), preset: 'print', direction: 'in', duration: 1500 })).done;
         if (x.alive()) show(el, false);
         b.disabled = false;
       });
@@ -1107,7 +1099,7 @@ tile('snap',
           el.addEventListener('click', async (e) => {
             if (el.dataset.busy) return;
             el.dataset.busy = '1';
-            const b = rectOf(el);
+            const b = boxOf(el);
             hide(el);
             await x.track(play({ ...b, preset: 'snap', origin: { x: e.clientX - b.x, y: e.clientY - b.y }, n: [0.7], duration: 1100 })).done;
             if (!x.alive()) return;
@@ -1142,7 +1134,7 @@ tile('fling',
       const go = async (velocity) => {
         busy = true;
         hide(el);
-        await x.track(play({ ...rectOf(el), preset: 'fling', velocity })).done;
+        await x.track(play({ ...boxOf(el), preset: 'fling', velocity })).done;
         x.later(() => { show(el); busy = false; }, 500);
       };
       attachFling(el, { canStart: () => !busy, onTap: () => go({ x: 1800, y: -200 }), onFling: go });
@@ -1176,7 +1168,7 @@ tile('fling',
       const go = async (el, velocity) => {
         busy = true;
         hide(el);
-        const h = play({ ...rectOf(el), preset: 'fling', velocity });
+        const h = play({ ...boxOf(el), preset: 'fling', velocity });
         x.later(() => { el.remove(); if (!deck.children.length) x.later(fill, 500); busy = false; }, 250);
         await x.track(h).done;
       };
@@ -1242,7 +1234,7 @@ function morphPair(body, x, wA, h, drawA, drawB, hint) {
   pair.addEventListener('click', async () => {
     if (busy) return;
     busy = true;
-    const ra = rectOf(a), rb = rectOf(b);
+    const ra = boxOf(a), rb = boxOf(b);
     hide(a); hide(b);
     await x.track(morph(ra, rb, { grain: 2, duration: 900, reverse: onB })).done;
     if (!x.alive()) return;
@@ -1371,7 +1363,7 @@ tile('melt',
           if (el.dataset.busy) return;
           el.dataset.busy = '1';
           hide(el);
-          await x.track(play({ ...rectOf(el), preset: 'melt', duration: 2200 })).done;
+          await x.track(play({ ...boxOf(el), preset: 'melt', duration: 2200 })).done;
           x.later(() => { show(el); delete el.dataset.busy; }, 800);
         });
         row.append(el);
@@ -1392,9 +1384,12 @@ export function tilesHTML(id) {
   return `<div class="tiles">${t(a, 0)}${t(b, 1)}</div>`;
 }
 
-/** Mounts both scenes of the variant page. Returns a dispose function. */
+/**
+ * Mounts both scenes of the variant page. The scenes are drawn once in the theme of the moment,
+ * so a theme switch mounts them again. Returns a dispose function.
+ */
 export function mountTiles(root, id) {
-  const disposers = [];
+  const mounts = [];
   root.querySelectorAll('[data-tile]').forEach((el) => {
     const scene = TILES[id][+el.dataset.tile];
     const body = el.querySelector('.tile-body');
@@ -1403,22 +1398,22 @@ export function mountTiles(root, id) {
       x?.dispose();
       body.replaceChildren();
       body.className = 'tile-body';
-      const timers = new Set(), handles = new Set(), extra = [];
-      let alive = true;
+      const sc = scope();
       x = {
         W: body.clientWidth, H: body.clientHeight,
         hint: el.querySelector('.tile-hint'),
-        alive: () => alive,
-        track: (h) => { handles.add(h); h.done.then(() => handles.delete(h)); return h; },
-        later: (fn, ms) => { const t = setTimeout(() => { timers.delete(t); if (alive) fn(); }, ms); timers.add(t); },
-        onDispose: (fn) => extra.push(fn),
-        dispose: () => { alive = false; timers.forEach(clearTimeout); handles.forEach((h) => h.cancel()); extra.forEach((f) => f()); },
+        alive: () => sc.alive,
+        track: sc.track,
+        later: (fn, ms) => sc.wait(ms).then(fn),
+        onDispose: sc.onDispose,
+        dispose: sc.dispose,
       };
       scene.mount(body, x);
     };
     el.querySelector('.tile-reset').addEventListener('click', mount);
     mount();
-    disposers.push(() => x?.dispose());
+    mounts.push({ mount, dispose: () => x?.dispose() });
   });
-  return () => disposers.forEach((f) => f());
+  const off = onTheme(null, () => mounts.forEach((m) => m.mount()));
+  return () => { off(); mounts.forEach((m) => m.dispose()); };
 }

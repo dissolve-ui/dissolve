@@ -8,15 +8,16 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { Animated, View, cn } from './tw';
+import { CALM } from './motion';
 
-/** Calm iOS curve, no bounce: everything in the stack moves on it. */
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const FOCUS_MS = 560;
 const CYCLE_MS = 420;
+/** Reduced motion: every move is a short fade or slide, without stagger. */
+const REDUCED_MS = 150;
 /** Visible strip of each card in the compressed stack under the focused card. */
 const MINI = 9;
 /** Space between the focused card and the compressed stack. */
@@ -67,6 +68,7 @@ type CardProps = {
 };
 
 function Card({ index, y, scale, delay, seq, motion, dir, focused, canCycle, z, width, height, className, onTap, onDismiss, onCycle, children }: CardProps) {
+  const reduced = useReducedMotion();
   const ty = useSharedValue(y);
   const tx = useSharedValue(0);
   const sc = useSharedValue(scale);
@@ -80,6 +82,13 @@ function Card({ index, y, scale, delay, seq, motion, dir, focused, canCycle, z, 
       // The next card slides in from the side it was swiped toward.
       ty.value = y;
       sc.value = scale;
+      if (reduced) {
+        // No slide in from the side: the card fades in where it lands.
+        tx.value = 0;
+        op.value = 0;
+        op.value = withTiming(1, { duration: REDUCED_MS });
+        return;
+      }
       op.value = 1;
       tx.value = dir * off;
       tx.value = withTiming(0, { duration: CYCLE_MS, easing: CALM });
@@ -91,12 +100,13 @@ function Card({ index, y, scale, delay, seq, motion, dir, focused, canCycle, z, 
       ty.value = y;
       sc.value = scale;
       op.value = 0;
-      op.value = withDelay(80, withTiming(1, { duration: 320, easing: CALM }));
+      op.value = reduced ? withTiming(1, { duration: REDUCED_MS }) : withDelay(80, withTiming(1, { duration: 320, easing: CALM }));
       return;
     }
-    const t = { duration: FOCUS_MS, easing: CALM };
-    ty.value = withDelay(delay, withTiming(y, t));
-    sc.value = withDelay(delay, withTiming(scale, t));
+    const t = { duration: reduced ? REDUCED_MS : FOCUS_MS, easing: CALM };
+    const lag = reduced ? 0 : delay;
+    ty.value = withDelay(lag, withTiming(y, t));
+    sc.value = withDelay(lag, withTiming(scale, t));
     tx.value = withTiming(0, t);
     op.value = withTiming(1, { duration: 200 });
     // seq replays the move even when the target did not change (snap back after a drag).

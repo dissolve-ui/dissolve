@@ -9,12 +9,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Platform, StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Canvas, LinearGradient, Path, Skia, Text as SkText, matchFont, vec } from '@shopify/react-native-skia';
-import { Easing, interpolateColor, useAnimatedStyle, useDerivedValue, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { Easing, cancelAnimation, interpolateColor, useAnimatedStyle, useDerivedValue, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { Animated, View, cn, useToken } from './tw';
+import { CALM } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 const CHEVRON = Skia.Path.MakeFromSVGString('M9 6l6 6-6 6')!;
 const CHECK = Skia.Path.MakeFromSVGString('M5 12.5l4.2 4.2L19 7')!;
 
@@ -54,6 +54,7 @@ export function SlideToConfirm({
   const muted = useToken('muted');
   const success = useToken('success');
 
+  const reduced = useReducedMotion();
   const [W, setW] = useState(0);
   const [phase, setPhase] = useState<Phase>('idle');
   const pad = 5;
@@ -68,14 +69,24 @@ export function SlideToConfirm({
   const textW = useMemo(() => font.measureText(label).width, [font, label]);
   const doneW = useMemo(() => font.measureText(doneLabel).width, [font, doneLabel]);
 
+  // The shimmer only runs while the label shows, and not at all under reduced motion.
+  const shimmer = phase === 'idle' && W > 0 && !reduced;
   useEffect(() => {
+    if (!shimmer) return;
+    sweep.value = 0;
     sweep.value = withRepeat(withTiming(1, { duration: 2200, easing: Easing.linear }), -1);
-  }, [sweep]);
+    return () => {
+      cancelAnimation(sweep);
+      sweep.value = 0;
+    };
+  }, [shimmer, sweep]);
 
   useEffect(() => {
     tone.value = withTiming(phase === 'done' ? 1 : 0, { duration: 320 });
-    if (phase === 'loading') spin.value = withRepeat(withTiming(spin.value + 1, { duration: 900, easing: Easing.linear }), -1);
     if (phase === 'idle') x.value = withTiming(0, { duration: 420, easing: CALM });
+    if (phase !== 'loading') return;
+    spin.value = withRepeat(withTiming(spin.value + 1, { duration: 900, easing: Easing.linear }), -1);
+    return () => cancelAnimation(spin);
   }, [phase, tone, spin, x]);
 
   const confirm = async () => {

@@ -1,9 +1,9 @@
 import * as Haptics from 'expo-haptics';
-import { DEFAULT_END } from '../core';
+import { DEFAULT_END, eo } from '../core';
 import type { AtlasVariant, BurstParams } from '../types';
 
 /**
- * GROUP A. fling: carried away in the direction and speed of the swipe (docs/VARIANTS.md section 2).
+ * fling: carried away in the direction and speed of the swipe (docs/VARIANTS.md section 2).
  *
  * Input: P.vx / P.vy in pt/s (opts.velocity, e.g. velocityX / velocityY of a RNGH pan onEnd).
  * Without a velocity it flings to the right at 1000 pt/s.
@@ -79,8 +79,7 @@ export const fling: AtlasVariant = {
   step: (t, d, k, _P, _a0, _a1, o) => {
     'worklet';
     const e = t * t;
-    const u = 1 - t;
-    const m = 1 - u * u * u;
+    const m = eo(t);
     o.cx += d[k + 8] * e + d[k + 10] * m;
     o.cy += d[k + 9] * e + d[k + 11] * m;
     o.s = 1 - 0.5 * t;

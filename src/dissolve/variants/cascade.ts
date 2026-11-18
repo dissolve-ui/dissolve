@@ -2,7 +2,7 @@ import { DEFAULT_END } from '../core';
 import type { Burst, BurstParams, FieldFn, GrainSeed, VariantName } from '../types';
 
 /**
- * GROUP D. cascade: a delay field for lists and full screens (docs/VARIANTS.md section 7).
+ * cascade: a delay field for lists and full screens (docs/VARIANTS.md section 7).
  *
  *   dissolve({ preset: 'dust', field: 'cascade', rows })
  *
@@ -23,7 +23,10 @@ import type { Burst, BurstParams, FieldFn, GrainSeed, VariantName } from '../typ
  * sum exceeds the budget. Short lists keep the exact spec numbers.
  */
 
-/** Life of the variants whose timing we know, copied from their files (no cross imports). */
+/**
+ * Life of the classic variants (their timing returns a constant life). Only used when the
+ * caller does not pass the life, the engine always does.
+ */
 const KNOWN_LIFE: Partial<Record<VariantName, number>> = {
   dust: 0.42,
   sand: 0.5,

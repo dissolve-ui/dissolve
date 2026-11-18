@@ -16,8 +16,8 @@ import * as Haptics from 'expo-haptics';
 import { BlurView } from 'expo-blur';
 import { frames, measure, useDissolve, type Box, type Point, type ViewRef } from 'react-native-dissolve';
 import { Animated, Pressable, Text, View, cn } from './tw';
+import { CALM } from './motion';
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 /** Critically damped lift, a hair of give so the bubble feels picked up. */
 const LIFT = { damping: 26, stiffness: 340, mass: 0.9 };
 /** The pill opens almost without overshoot, the emojis inside pop (tiny elements). */

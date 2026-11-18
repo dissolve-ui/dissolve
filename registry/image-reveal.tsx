@@ -27,6 +27,8 @@ import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { frames, measure, runDissolve, useDissolveContext, type ViewRef } from 'react-native-dissolve';
 import { View, cn, useToken } from './tw';
+import { toRGBA } from './dots';
+import { CALM } from './motion';
 
 export type ImageRevealStatus = 'pending' | 'ready' | 'error';
 
@@ -50,7 +52,6 @@ export type ImageRevealProps = {
   className?: string;
 };
 
-const CALM = Easing.bezier(0.32, 0.72, 0, 1);
 /** Finest mosaic to sharp image crossfade, in ms. */
 const SHARPEN = 180;
 /** Share of the timeline the finest level takes (the other levels take 1 each). */
@@ -110,25 +111,6 @@ half4 main(float2 xy) {
 
 const effect = Skia.RuntimeEffect.Make(SKSL)!;
 
-/** Token string (rgb(28 28 30), rgb(1, 2, 3 / 0.5), #rrggbb) to 0..1 channels for the shader. */
-function rgba(c: string): number[] {
-  const s = c.trim();
-  if (s[0] === '#') {
-    const h =
-      s.length === 4
-        ? s
-            .slice(1)
-            .split('')
-            .map((x) => x + x)
-            .join('')
-        : s.slice(1, 7);
-    return [parseInt(h.slice(0, 2), 16) / 255, parseInt(h.slice(2, 4), 16) / 255, parseInt(h.slice(4, 6), 16) / 255, 1];
-  }
-  const m = s.match(/[\d.]+/g);
-  if (!m || m.length < 3) return [0.5, 0.5, 0.5, 1];
-  return [Number(m[0]) / 255, Number(m[1]) / 255, Number(m[2]) / 255, m[3] != null ? Number(m[3]) : 1];
-}
-
 export function ImageReveal({
   src,
   status,
@@ -165,10 +147,11 @@ export function ImageReveal({
   const cbs = useRef({ onRevealed, onDismissed });
   cbs.current = { onRevealed, onDismissed };
 
-  // Waiting mosaic clock, frozen on error (and under reduced motion).
+  // Waiting mosaic clock, frozen on error, under reduced motion and once the sharp image covers
+  // it: the shader then redraws only when the reveal moves.
   useFrameCallback((info) => {
     'worklet';
-    if (frozen.value || reduced) return;
+    if (frozen.value || reduced || sharp.value >= 1) return;
     time.value += (info.timeSincePreviousFrame ?? 16) / 1000;
   });
 
@@ -257,9 +240,9 @@ export function ImageReveal({
     });
   }, [phase, image, duration, reduced, t, sharp, err, frozen, dust, revealed]);
 
-  const c0 = rgba(s2);
-  const c1 = rgba(muted);
-  const cd = rgba(danger);
+  const c0 = toRGBA(s2);
+  const c1 = toRGBA(muted);
+  const cd = toRGBA(danger);
   const hasImage = image && phase !== 'pending' ? 1 : 0;
   const uniforms = useDerivedValue(() => ({
     res: [size.w || 1, size.h || 1],

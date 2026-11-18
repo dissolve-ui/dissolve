@@ -1,14 +1,10 @@
 // Web ports of the message components: ReactionPicker, VoiceNote, SignaturePad.
 // Native sources: src/dissolve/components/{ReactionPicker,VoiceNote,SignaturePad}.tsx.
 // Same geometry, timings, springs and curves; shown raw, one instance, no chat around it.
-import { CALM, value, el, clamp, rectOf, frame, play, snapshot, FONT, rr, isLight } from './kit.js';
+import { CALM, QUAD, value, el, clamp, rectOf, frame, play, snapshot, FONT, rr, isLight, PKG, DIR, prop } from './kit.js';
 
-const PKG = 'react-native-dissolve';
-const DIR = '@/components/dissolve';
-const prop = (name, type, def, desc) => ({ name, type, def, desc });
 const OUT_QUAD = (t) => 1 - (1 - t) * (1 - t);
 const LINEAR = (t) => t;
-const QUADRATIC = (t) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 
 /* ======================================================================================
    ReactionPicker (ReactionPicker.tsx)
@@ -259,7 +255,7 @@ function mountReaction(body, { sc, mode }) {
     lx = Math.max(PAD + SLOT / 2, Math.min(px, ov.pillW - PAD - SLOT / 2));
     const next = inside ? Math.max(0, Math.min(REACTIONS.length - 1, Math.floor((px - PAD) / SLOT))) : -1;
     if (next !== hot) {
-      hover.to(next >= 0 ? 1 : 0, 140, QUADRATIC);
+      hover.to(next >= 0 ? 1 : 0, 140, QUAD);
       hot = next;
     }
     renderOv();
@@ -279,7 +275,7 @@ function mountReaction(body, { sc, mode }) {
 
   function close(after) {
     ready = false;
-    hover.to(0, 160, QUADRATIC);
+    hover.to(0, 160, QUAD);
     menu.to(0, 220, CALM);
     back.to(0, 260, CALM);
     lift.to(0, 280, CALM).then((ok) => ok && finish());
@@ -306,7 +302,7 @@ function mountReaction(body, { sc, mode }) {
     node.append(disc, em);
     ov.root.append(node);
     flying = { node, disc, emoji: em, from, to, s0: 1 + MAG * w };
-    hover.to(0, 200, QUADRATIC);
+    hover.to(0, 200, QUAD);
     menu.to(0, 260, CALM, 60);
     back.to(0, 420, CALM);
     lift.to(0, 440, CALM);
@@ -683,7 +679,7 @@ function mountVoice(body, { sc }) {
       const was = playing;
       stopAt(); engaged = true;
       scrub.to(1, 180, CALM);
-      await progress.to(0.68, 520, QUADRATIC);
+      await progress.to(0.68, 520, QUAD);
       scrub.to(0, 260, CALM);
       if (was) runPlayback();
       await sc.wait(1000);
@@ -941,8 +937,6 @@ function mountSignature(body, { sc, mode }) {
    Content
    ====================================================================================== */
 
-const VOICE_GLYPH = '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1.5" y="5" width="19" height="12" rx="6"/><path d="M6 9.5v3M9 8v6M12 9.5v3M15 8.5v5" opacity=".55"/></svg>';
-
 export const ENTRIES = {
   'reaction-picker': {
     title: 'ReactionPicker',
@@ -951,7 +945,7 @@ export const ENTRIES = {
     hint: 'Long press, slide to an emoji',
     tileHint: 'Hold it',
     mount: mountReaction,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="9" width="14" height="9" rx="4.5"/><rect x="5" y="2.5" width="15" height="5" rx="2.5" opacity=".55"/><circle cx="17" cy="9.5" r="2.5"/></svg>',
+    remountOnTheme: true,
     code: `// npx ${PKG} add reaction-picker
 import { useState } from 'react';
 import { ReactionPicker } from '${DIR}/reaction-picker';
@@ -990,7 +984,7 @@ export function Message({ text }) {
     hint: 'Play, scrub, hold to unsend',
     tileHint: 'Play or hold',
     mount: mountVoice,
-    glyph: VOICE_GLYPH,
+    remountOnTheme: true,
     code: `// npx ${PKG} add voice-note
 import { VoiceNote } from '${DIR}/voice-note';
 
@@ -1026,7 +1020,7 @@ import { VoiceNote } from '${DIR}/voice-note';
     hint: 'Sign in the pad, then Clear',
     tileHint: 'Sign it',
     mount: mountSignature,
-    glyph: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13c2-6 4.5-8 5.5-6.5S6 14 7.5 14 10 9 11.5 10s0 3.5 1.5 3.5 2-2.5 3.5-2.5 1.5 2 3 1.5"/><path d="M3 17.5h16" opacity=".55"/></svg>',
+    remountOnTheme: true,
     code: `// npx ${PKG} add signature-pad
 import { useRef } from 'react';
 import { SignaturePad, type SignaturePadHandle } from '${DIR}/signature-pad';

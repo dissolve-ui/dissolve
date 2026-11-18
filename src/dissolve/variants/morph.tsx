@@ -1,22 +1,12 @@
 import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
-import {
-  AlphaType,
-  Atlas,
-  Canvas,
-  ColorType,
-  drawAsImageFromPicture,
-  rect,
-  Skia,
-  type SkImage,
-  type SkRect,
-} from '@shopify/react-native-skia';
+import { Atlas, Canvas, rect, Skia, type SkImage, type SkRect } from '@shopify/react-native-skia';
 import { makeMutable, useAnimatedReaction, useSharedValue } from 'react-native-reanimated';
+import { notifyInPlace, readScaled, ss } from '../core';
 import type { Box, CustomVariant, RendererProps } from '../types';
 
 /**
- * GROUP F. morph: the grains of view A fly over and recompose view B
- * (docs/VARIANTS.md section 9).
+ * morph: the grains of view A fly over and recompose view B (docs/VARIANTS.md section 9).
  *
  * Pairing: both snapshots are reduced to one luminance value per grain cell, sorted, and
  * matched rank by rank. N = max(nA, nB) particles, particle k takes A cell
@@ -38,37 +28,18 @@ const LIFE = 0.6;
 const S = 10;
 // 0 ax, 1 ay, 2 bx, 3 by (window centers), 4 mx, 5 my (bezier control), 6 delay, 7 life, 8 showA, 9 showB
 
-const ss = (t: number) => {
-  'worklet';
-  return t * t * (3 - 2 * t);
-};
-
 /** Luminance per grain cell (alpha weighted), via a cols x rows downscale. Null on failure. */
 function cellLuminance(image: SkImage, w: number, h: number, g: number, cols: number, rows: number) {
-  try {
-    const rec = Skia.PictureRecorder();
-    const canvas = rec.beginRecording(rect(0, 0, cols, rows));
-    const paint = Skia.Paint();
-    // Cell c spans [c * g, (c + 1) * g] in points, so the view maps to w / g by h / g pixels.
-    canvas.drawImageRect(image, rect(0, 0, image.width(), image.height()), rect(0, 0, w / g, h / g), paint);
-    const small = drawAsImageFromPicture(rec.finishRecordingAsPicture(), { width: cols, height: rows });
-    const px = small?.readPixels(0, 0, {
-      width: cols,
-      height: rows,
-      colorType: ColorType.RGBA_8888,
-      alphaType: AlphaType.Unpremul,
-    });
-    if (!px || px.length < cols * rows * 4) return null;
-    const out = new Float32Array(cols * rows);
-    const f = px instanceof Float32Array ? 1 : 1 / 255;
-    for (let i = 0; i < cols * rows; i++) {
-      const j = i * 4;
-      out[i] = (0.2126 * px[j] + 0.7152 * px[j + 1] + 0.0722 * px[j + 2]) * f * (px[j + 3] * f);
-    }
-    return out;
-  } catch {
-    return null;
+  // Cell c spans [c * g, (c + 1) * g] in points, so the view maps to w / g by h / g pixels.
+  const px = readScaled(image, cols, rows, rect(0, 0, w / g, h / g));
+  if (!px) return null;
+  const out = new Float32Array(cols * rows);
+  const f = 1 / 255;
+  for (let i = 0; i < cols * rows; i++) {
+    const j = i * 4;
+    out[i] = (0.2126 * px[j] + 0.7152 * px[j + 1] + 0.0722 * px[j + 2]) * f * (px[j + 3] * f);
   }
+  return out;
 }
 
 function sortedCells(lum: Float32Array | null, n: number) {
@@ -118,7 +89,8 @@ function MorphRenderer({ burst, progress }: RendererProps) {
     const iwB = imageB.width();
     const ihB = imageB.height();
 
-    const d: number[] = new Array(N * S).fill(0);
+    // Typed buffer: one bulk copy to the UI thread (see Particles).
+    const d = new Float64Array(N * S);
     const spritesA: SkRect[] = [];
     const spritesB: SkRect[] = [];
     let lastA = -1;
@@ -176,14 +148,14 @@ function MorphRenderer({ burst, progress }: RendererProps) {
       const j = k * S;
       let t = (p0 - d[j + 6]) / d[j + 7];
       t = t < 0 ? 0 : t > 1 ? 1 : t;
-      const u = t * t * (3 - 2 * t);
+      const u = ss(t);
       const v = 1 - u;
       const cx = v * v * d[j] + 2 * v * u * d[j + 4] + u * u * d[j + 2];
       const cy = v * v * d[j + 1] + 2 * v * u * d[j + 5] + u * u * d[j + 3];
       const s = t === 0 || t === 1 ? 1 : 1 + 0.18 * Math.sin(Math.PI * t);
       let c = (t - 0.3) / 0.4;
       c = c < 0 ? 0 : c > 1 ? 1 : c;
-      const cross = c * c * (3 - 2 * c);
+      const cross = ss(c);
       const sa = s / prA;
       const sb = s / prB;
       TA.push(Skia.RSXform(sa, 0, cx - sa * halfA, cy - sa * halfA));
@@ -202,7 +174,6 @@ function MorphRenderer({ burst, progress }: RendererProps) {
       CB: makeMutable(CB),
     };
     // The burst is immutable for the lifetime of this component.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { N, d, TA, TB, CA, CB } = m;
@@ -243,15 +214,10 @@ function MorphRenderer({ burst, progress }: RendererProps) {
         cb[k][3] = d[j + 9] * cross;
       }
       last.value = p;
-      // Same in-place notification trick as Particles.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (TA as any)._value = ta;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (TB as any)._value = tb;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (CA as any)._value = ca;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (CB as any)._value = cb;
+      notifyInPlace(TA, ta);
+      notifyInPlace(TB, tb);
+      notifyInPlace(CA, ca);
+      notifyInPlace(CB, cb);
     },
   );
 

@@ -14,10 +14,11 @@ import {
 } from '@shopify/react-native-skia';
 import { makeMutable, useAnimatedReaction, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { notifyInPlace } from '../core';
 import type { CustomVariant, RendererProps } from '../types';
 
 /**
- * GROUP E. shatter: glass shards drawn with Skia <Vertices mode="triangles">, textured
+ * shatter: glass shards drawn with Skia <Vertices mode="triangles">, textured
  * by the snapshot (docs/VARIANTS.md section 8).
  *
  * Mesh (JS, once): polar grid around the impact point (P.ox, P.oy, local), 10 to 14
@@ -423,7 +424,6 @@ function ShatterRenderer({ burst, progress, end }: RendererProps) {
       glintPaint,
     };
     // The burst is immutable for the lifetime of this component.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const flashR = useSharedValue(M.fr0);
@@ -440,13 +440,9 @@ function ShatterRenderer({ burst, progress, end }: RendererProps) {
       const C = cols.value;
       const G = glint.value;
       shardFrame(tn, count, sd, ax, ay, rx, ry, X, Y, sec, PT, C, G);
-      // Same in place notify trick as Particles.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (pts as any)._value = PT;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (cols as any)._value = C;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (glint as any)._value = G;
+      notifyInPlace(pts, PT);
+      notifyInPlace(cols, C);
+      notifyInPlace(glint, G);
       if (!rev) {
         const f = flashAt(tn, FR);
         flashR.value = f.r;

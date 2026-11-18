@@ -28,16 +28,17 @@ npm run check      # type check + tests, must pass before you open a pull reques
 | `packages/react-native-dissolve/` | The npm package: engine and hooks (`lib/`), the `init/add/list` CLI (`bin/`) and a copy of the registry |
 | `src/demos/` | One demo screen per component (`<Name>.demo.tsx`), listed in `src/demos/index.ts` |
 | `app/` | Expo Router example app: demo screens for every variant and a playground |
-| `web/` | Static docs and showcase website (no build step), with Canvas ports of the components in `web/components.js` and `web/cp/` |
+| `web/` | Static docs and showcase website (no build step), with Canvas ports of the components in `web/cp/` (`web/components.js` assembles them) |
 | `test/` | `node:test` suites: CLI, registry, theme, engine logic, package contents |
 | `mcp/` | Dependency free MCP server exposing the docs to coding agents |
-| `docs/CONTRACT.md` | Engine contract for variant authors, read it before writing a variant |
 | `docs/VARIANTS.md` | Variant math and intent |
 
 ## Adding a variant
 
-1. Read `docs/CONTRACT.md`. It explains the burst pipeline, the per grain buffer and the worklet rules
-   (a `step` starts with `'worklet';`, is pure, never allocates and never reads shared values).
+1. Read the engine types in `src/dissolve/types.ts` (`AtlasVariant`, `StepFn`, `CustomVariant`): they
+   document the burst pipeline, the per grain buffer and the worklet rules (a `step` starts with
+   `'worklet';`, is pure, never allocates and never reads shared values). Import shared helpers
+   (`ss`, `eo`, `palette`...) from `core.ts` instead of copying them.
 2. Create `src/dissolve/variants/<name>.ts` (or `.tsx` for a custom renderer) exporting an
    `AtlasVariant` or a `CustomVariant`. Keep the first frame identical to the captured view, so
    `direction: 'in'` plays it back cleanly.
@@ -65,7 +66,7 @@ app code. They are styled with NativeWind v5 classes and the `dissolve-*` theme 
    `export` lists the names the CLI prints in the import hint, comma separated.
 3. **Demo.** Add `src/demos/<Name>.demo.tsx` importing from `@registry/<name>`, and list it in
    `src/demos/index.ts`.
-4. **Web port.** Add an entry to the right `ENTRIES` map in `web/cp/*.js` (or `web/components.js`):
+4. **Web port.** Add an entry to the right `ENTRIES` map in `web/cp/*.js`, then run `npm run web:stamp`:
    title, description, a `mount` function drawing it on the page and the usage `code`.
 5. **Tests.** `npm test` checks the new file automatically: index entry and file match, declared
    exports exist, imports stay in the allowlist, tokens exist in `theme.css`, no em dash. Add a

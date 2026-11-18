@@ -6,29 +6,25 @@ import { frames } from './core';
 import { BurstHost, makeBurst } from './Host';
 import type { Burst, BurstInput, DissolveCtx } from './types';
 
-/**
- * Public entry point. Owned by the master agent: every builder export is wired below,
- * builders never edit this file. See docs/CONTRACT.md.
- */
+/** Public entry point. */
 
 // Types and engine
 export * from './types';
-export * from './presets';
 export { capture, measure, capGrain, frames, defaultHaptics, MAX_GRAINS, DEFAULT_END, ss, eo, backOut, clamp01 } from './core';
 export { useDissolveContext } from './context';
 export { Particles } from './Particles';
 export { REGISTRY, FIELDS, VARIANTS, VARIANT_INFO, VARIANT_GRAIN, getVariant } from './variants/registry';
 export { useDissolve, runDissolve } from './hooks/useDissolve';
 
-// Group B: entrances
+// Entrances
 export { useAppear, DissolveIn, type AppearOptions, type DissolveInProps } from './hooks/useAppear';
-// Group C: gestures
+// Gestures
 export { useDissolveScrub, type ScrubOptions } from './hooks/useDissolveScrub';
 export { useDissolveHold, type HoldOptions } from './hooks/useDissolveHold';
 export { useDissolvePeel, type PeelOptions } from './hooks/useDissolvePeel';
-// Group D: full screen
+// Full screen
 export { useDissolveScreen, type ScreenOptions } from './hooks/useDissolveScreen';
-// Group F: morph
+// Morph
 export { useDissolveMorph, type MorphOptions, type MorphPhase } from './hooks/useDissolveMorph';
 
 export function DissolveProvider({ children }: { children: ReactNode }) {

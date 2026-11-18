@@ -1,15 +1,13 @@
-import type { ViewRef } from '../types';
 import { useCallback, useRef, useState, type RefObject } from 'react';
-import type { View } from 'react-native';
 import { capture, defaultHaptics, frames, measure } from '../core';
 import { useDissolveContext } from '../context';
 import { getVariant } from '../variants/registry';
-import type { Box, BurstHandle, DissolveCtx, DissolveOptions, RunExtra } from '../types';
+import type { Box, BurstHandle, DissolveCtx, DissolveOptions, ResolveResult, RunExtra, ViewRef } from '../types';
 
 const isBox = (t: unknown): t is Box => !!t && typeof (t as Box).width === 'number';
 
 /**
- * Shared pipeline: capture, resolve (variant hook), add, haptics. Builder hooks reuse it.
+ * Shared pipeline: capture, resolve (variant hook), add, haptics. The effect hooks reuse it.
  * Extra burst fields (external progress, aux, data, onFinish) go in `extra`.
  * Returns null when the view could not be captured.
  */
@@ -21,39 +19,50 @@ export async function runDissolve(
 ): Promise<{ handle: BurstHandle; duration: number } | null> {
   const preset = opts.preset ?? 'dust';
   const v = getVariant(preset);
-  const shot = extra.image && extra.box ? { image: extra.image, box: extra.box } : await capture(ref);
+  const given = extra.image && extra.box ? { image: extra.image, box: extra.box } : null;
+  const shot = given ?? (await capture(ref));
   if (!shot) return null;
+  // A snapshot captured here belongs to the burst, so does anything the caller handed over.
+  const owned = given ? extra.owned : [shot.image, ...(extra.owned ?? [])];
   let duration = opts.duration ?? 1500;
   let grain = opts.grain ?? v.defaultGrain;
+  let r: ResolveResult = {};
+  let handle: BurstHandle;
+  try {
+    // Generic option resolution, before the variant hook.
+    let target: Box | undefined;
+    if (opts.to) target = isBox(opts.to) ? opts.to : ((await measure(opts.to)) ?? undefined);
 
-  // Generic option resolution, before the variant hook.
-  let target: Box | undefined;
-  if (opts.to) target = isBox(opts.to) ? opts.to : ((await measure(opts.to)) ?? undefined);
+    if (v.resolve) r = await v.resolve({ opts, box: shot.box, image: shot.image, grain, duration });
+    duration = r.duration ?? duration;
+    grain = r.grain ?? grain;
 
-  const r = v.resolve ? await v.resolve({ opts, box: shot.box, image: shot.image, grain, duration }) : {};
-  duration = r.duration ?? duration;
-  grain = r.grain ?? grain;
-
-  const handle = ctx.add({
-    variant: preset,
-    image: shot.image,
-    ...shot.box,
-    grain,
-    duration,
-    direction: opts.direction,
-    origin: opts.origin,
-    velocity: opts.velocity,
-    target,
-    field: opts.field,
-    rowBounds: opts.rows,
-    n: opts.n,
-    progress: extra.progress,
-    aux0: extra.aux0,
-    aux1: extra.aux1,
-    data: r.data ?? extra.data,
-    onFinish: extra.onFinish,
-    paramsOverride: r.params,
-  });
+    handle = ctx.add({
+      variant: preset,
+      image: shot.image,
+      ...shot.box,
+      grain,
+      duration,
+      direction: opts.direction,
+      origin: opts.origin,
+      velocity: opts.velocity,
+      target,
+      field: opts.field,
+      rowBounds: opts.rows,
+      n: opts.n,
+      progress: extra.progress,
+      aux0: extra.aux0,
+      aux1: extra.aux1,
+      data: r.data ?? extra.data,
+      onFinish: extra.onFinish,
+      owned,
+      paramsOverride: r.params,
+    });
+  } catch (e) {
+    // No burst was added: nothing else will free the snapshots it would have owned.
+    owned?.forEach((img) => img.dispose());
+    throw e;
+  }
   if (opts.haptics !== false) (r.haptics ?? (() => defaultHaptics(duration)))();
   return { handle, duration };
 }
