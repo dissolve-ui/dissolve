@@ -129,6 +129,13 @@ npx dissolve-ui add swipe-to-delete   # one or more components, for that platfor
 npx dissolve-ui list                  # everything available, and where it runs
 ```
 
+Already on shadcn? Every component is also a shadcn registry item, installed with its own CLI:
+
+```sh
+npx shadcn@latest add https://dissolve.rselmi.com/r/scratch-card.json         # React
+npx shadcn@latest add https://dissolve.rselmi.com/r/native/scratch-card.json  # React Native
+```
+
 `init` preselects the platform from your `package.json` (`--native`, `--web` or `--yes` skip the
 question). Components land in `components/dissolve/`
 (or `src/components/dissolve/` with a `src/` layout):

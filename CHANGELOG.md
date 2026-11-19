@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- shadcn registry: every component installs with the shadcn CLI, `npx shadcn@latest add https://dissolve.rselmi.com/r/<name>.json` for React and `.../r/native/<name>.json` for React Native. Shared files (engine, kit, the React hook, tw primitives, helpers) and the theme tokens are their own items, pulled in as dependencies. Built from `registry/` by `scripts/build-shadcn.mjs` into `web/r`, as part of `npm run web:stamp`. Component pages show the command under the dissolve-ui one.
+
 ### Changed
 - Web: the rain effect draws adjacent settled grains in a row together when aligned to device pixels, reducing Canvas 2D calls as the view comes together.
 

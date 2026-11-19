@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "dissolve-tw",
+  "type": "registry:lib",
+  "title": "dissolve-tw",
+  "description": "NativeWind primitives (Animated, Pressable, Text, View, cn) the dissolve components are styled with.",
+  "dependencies": [
+    "react-native-reanimated",
+    "react-native-css",
+    "tailwind-merge"
+  ],
+  "files": [
+    {
+      "path": "registry/tw.tsx",
+      "content": "/**\n * className-enabled primitives for the dissolve components (NativeWind v5 / react-native-css).\n * Installed once by `npx dissolve-ui init`, shared by every dissolve component.\n */\nimport type { ComponentProps, ComponentType } from 'react';\nimport { Platform, Pressable as RNPressable, Text as RNText, TextInput as RNTextInput, View as RNView } from 'react-native';\nimport RNAnimated from 'react-native-reanimated';\nimport { useCssElement, useNativeVariable } from 'react-native-css';\nimport { twMerge } from 'tailwind-merge';\n\nexport type ClassName = { className?: string };\n\nexport const View = (props: ComponentProps<typeof RNView> & ClassName) => useCssElement(RNView, props, { className: 'style' });\nView.displayName = 'CSS(View)';\n\nexport const Text = (props: ComponentProps<typeof RNText> & ClassName) => useCssElement(RNText, props, { className: 'style' });\nText.displayName = 'CSS(Text)';\n\nexport const Pressable = (props: ComponentProps<typeof RNPressable> & ClassName) =>\n  useCssElement(RNPressable as ComponentType<any>, props, { className: 'style' });\nPressable.displayName = 'CSS(Pressable)';\n\nexport const TextInput = (props: ComponentProps<typeof RNTextInput> & ClassName) =>\n  useCssElement(RNTextInput as ComponentType<any>, props, { className: 'style' });\nTextInput.displayName = 'CSS(TextInput)';\n\nexport const Animated = {\n  ...RNAnimated,\n  View: RNAnimated.createAnimatedComponent(View),\n  Text: RNAnimated.createAnimatedComponent(Text),\n};\n\n/**\n * Reads a theme token as a color string (light or dark, live), for places that need a value\n * instead of a class: Skia paints, Reanimated color interpolation.\n *   const ink = useToken('foreground'); // var(--dissolve-foreground)\n */\n// Typed as the native signature: TypeScript resolves react-native-css's web types otherwise.\nconst readNative = useNativeVariable as unknown as (name: string) => unknown;\n\nexport function useToken(name: string): string {\n  if (Platform.OS === 'web') {\n    return getComputedStyle(document.documentElement).getPropertyValue(`--dissolve-${name}`).trim();\n  }\n  // eslint-disable-next-line react-hooks/rules-of-hooks\n  return String(readNative(`--dissolve-${name}`));\n}\n\n/**\n * Joins class names and resolves conflicts like shadcn: the last class wins, so\n * cn('text-dissolve-foreground', 'text-red-500') gives 'text-red-500'.\n */\nexport function cn(...parts: (string | false | null | undefined)[]) {\n  return twMerge(parts.filter(Boolean).join(' '));\n}\n",
+      "type": "registry:lib",
+      "target": "components/dissolve/tw.tsx"
+    }
+  ]
+}

@@ -234,6 +234,10 @@ function webNotes(c) {
   return notes.length ? `<p class="dc-note">${notes.join(' ')}</p>` : '';
 }
 
+/** The same component through the shadcn CLI (the registry in web/r, built by scripts/build-shadcn.mjs). */
+const SHADCN = 'https://dissolve.rselmi.com/r';
+const shadcnAdd = (path) => `<p class="dc-label">Or with the shadcn CLI</p>${cmd(`npx shadcn@latest add ${SHADCN}/${path}.json`)}`;
+
 /** A numbered step of a component's Install tab. */
 const installStep = (n, title, body) => `<h2 class="section-title dc-step"><span class="dc-num">${n}</span>${title}</h2>${body}`;
 
@@ -258,7 +262,8 @@ function nativeInstall(id, c, add) {
       ${codeBlock(toast ? TOAST_LAYOUT : PROVIDER, { title: 'app/_layout.tsx' })}`)}
     ${installStep(3, `Add ${c.title}`, `
       ${add}
-      <p class="dc-text">Copies <code>${id}.tsx</code> into <code>components/dissolve</code>. The code is yours to edit. The first run also sets up NativeWind styling (<code>tw.tsx</code>, the theme tokens) and tells you if anything is missing.</p>`)}`;
+      <p class="dc-text">Copies <code>${id}.tsx</code> into <code>components/dissolve</code>. The code is yours to edit. The first run also sets up NativeWind styling (<code>tw.tsx</code>, the theme tokens) and tells you if anything is missing.</p>
+      ${shadcnAdd(`native/${id}`)}`)}`;
 }
 
 /** Install tab, React: one command, nothing to set up. */
@@ -267,7 +272,8 @@ function webInstall(id, c, add) {
     <p class="dc-lead">One command. No engine, no provider, no Tailwind: React 19 and <code>react-dom</code> are enough.</p>
     ${installStep(1, `Add ${c.title}`, `
       ${add}
-      <p class="dc-text">Copies <code>${id}.tsx</code> and its core <code>${id}.core.ts</code> into <code>components/dissolve</code> (<code>src/components/dissolve</code> in a Vite app). The code is yours to edit. Works in the Next.js App Router as is.</p>`)}
+      <p class="dc-text">Copies <code>${id}.tsx</code> and its core <code>${id}.core.ts</code> into <code>components/dissolve</code> (<code>src/components/dissolve</code> in a Vite app). The code is yours to edit. Works in the Next.js App Router as is.</p>
+      ${shadcnAdd(id)}`)}
     ${installStep(2, 'Use it', codeBlock(webCode(id), { title: 'App.tsx' }))}
     ${webNotes(c)}`;
 }

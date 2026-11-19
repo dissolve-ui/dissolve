@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "dissolve-react",
+  "type": "registry:lib",
+  "title": "dissolve-react",
+  "description": "The hook that mounts a dissolve core in React.",
+  "files": [
+    {
+      "path": "registry/web/react.ts",
+      "content": "'use client';\n/**\n * The React side of the dissolve web components, from dissolve (dissolve-ui). This file is yours.\n * Each component is a framework free core (<name>.core.ts) that owns its DOM; this hook mounts it\n * on a host element and keeps it in sync with the React props.\n */\nimport { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';\n\n/** What every core returns: the component, live. */\nexport type DissolveInstance<P> = {\n  /** Applies changed props. An undefined value puts the default back. */\n  update: (props: Partial<P>) => void;\n  /** Stops every listener, frame and timer, and removes what the core added to the host. */\n  destroy: () => void;\n};\n\nconst useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;\n\n/**\n * Creates the core on mount, passes the props on every render (props removed since the last\n * render go back to their default) and destroys it on unmount.\n * host is the ref of the element the core mounts into. instance is null until mounted: portal\n * children into its slots once it is there. current is for imperative handles.\n */\nexport function useDissolveCore<P extends object, I extends DissolveInstance<P>>(create: (el: HTMLElement, props: P) => I, props: P) {\n  const node = useRef<HTMLElement | null>(null);\n  const host = useCallback((el: HTMLElement | null) => {\n    node.current = el;\n  }, []);\n  const current = useRef<I | null>(null);\n  const last = useRef<P>(props);\n  const [instance, setInstance] = useState<I | null>(null);\n\n  useIsomorphicLayoutEffect(() => {\n    const i = create(node.current!, last.current);\n    current.current = i;\n    setInstance(i);\n    return () => {\n      i.destroy();\n      current.current = null;\n      setInstance(null);\n    };\n  }, [create]);\n\n  useIsomorphicLayoutEffect(() => {\n    const next = { ...props } as Record<string, unknown>;\n    for (const k of Object.keys(last.current)) if (!(k in next)) next[k] = undefined;\n    last.current = props;\n    current.current?.update(next as Partial<P>);\n  });\n\n  return { host, instance, current };\n}\n",
+      "type": "registry:lib",
+      "target": "components/dissolve/react.ts"
+    }
+  ]
+}

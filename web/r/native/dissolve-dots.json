@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "dissolve-dots",
+  "type": "registry:lib",
+  "title": "dissolve-dots",
+  "description": "Shared helper dots of the dissolve components.",
+  "dependencies": [
+    "@shopify/react-native-skia",
+    "react-native-reanimated"
+  ],
+  "files": [
+    {
+      "path": "registry/dots.ts",
+      "content": "/**\n * Dot drawing helpers shared by the dissolve components (dissolve-ui): theme colors as\n * channels, the round sprite of the Skia Atlas, and the in place buffer update.\n * `npx dissolve-ui add` copies it next to the components that use it.\n */\nimport { Skia } from '@shopify/react-native-skia';\nimport type { SharedValue } from 'react-native-reanimated';\n\n/** Parses a token string (rgb(28 28 30), rgb(1, 2, 3 / 0.5), #rgb, #rrggbb) into 0..1 channels, alpha last. */\nexport function toRGBA(c: string): [number, number, number, number] {\n  const s = c.trim();\n  if (s[0] === '#') {\n    const h = s.length === 4 ? s.slice(1).replace(/./g, (x) => x + x) : s.slice(1, 7);\n    return [parseInt(h.slice(0, 2), 16) / 255, parseInt(h.slice(2, 4), 16) / 255, parseInt(h.slice(4, 6), 16) / 255, 1];\n  }\n  const m = s.match(/[\\d.]+/g);\n  if (!m || m.length < 3) return [0.5, 0.5, 0.5, 1];\n  return [Number(m[0]) / 255, Number(m[1]) / 255, Number(m[2]) / 255, m[3] != null ? Number(m[3]) : 1];\n}\n\n/** Same as toRGBA, without the alpha. */\nexport function toRGB(c: string): [number, number, number] {\n  const [r, g, b] = toRGBA(c);\n  return [r, g, b];\n}\n\n/** White antialiased disc of `d` pixels on a (d + 2) square, tinted per dot by the Atlas colors (modulate). */\nexport function makeSprite(d: number) {\n  const size = d + 2;\n  const surface = Skia.Surface.MakeOffscreen(size, size) ?? Skia.Surface.Make(size, size);\n  if (!surface) return null;\n  const canvas = surface.getCanvas();\n  canvas.clear(Skia.Color('transparent'));\n  const paint = Skia.Paint();\n  paint.setAntiAlias(true);\n  paint.setColor(Skia.Color('white'));\n  canvas.drawCircle(size / 2, size / 2, d / 2, paint);\n  surface.flush();\n  const snap = surface.makeImageSnapshot();\n  return snap.makeNonTextureImage() ?? snap;\n}\n\n/**\n * Tells the canvas that a buffer it draws (Atlas transforms or colors) was changed in place.\n * Same trick as Skia's own buffer hooks: it writes Reanimated's private `_value`, kept here so\n * that private API lives in one place.\n */\nexport function notify<T>(buffer: SharedValue<T>) {\n  'worklet';\n  (buffer as unknown as { _value: T })._value = buffer.value;\n}\n",
+      "type": "registry:lib",
+      "target": "components/dissolve/dots.ts"
+    }
+  ]
+}
