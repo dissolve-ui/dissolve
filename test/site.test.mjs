@@ -3,6 +3,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { read, registryIndex, REGISTRY_DIR, ROOT, existsSync } from './helpers.mjs';
 
@@ -57,4 +58,14 @@ describe('component pages', () => {
       assert.match(read(join(ROOT, 'web', 'lib', 'available.js')), new RegExp(`['"]${name}['"]`), `${name} listed as web ready`);
     }
   });
+});
+
+test('every site module parses as an ES module (a broken one blanks the whole site)', () => {
+  const dirs = ['web', 'web/cp', 'web/lib'];
+  for (const d of dirs) {
+    for (const f of readdirSync(join(ROOT, d)).filter((x) => x.endsWith('.js'))) {
+      const r = spawnSync(process.execPath, ['--check', '--input-type=module'], { input: read(join(ROOT, d, f)), encoding: 'utf8' });
+      assert.equal(r.status, 0, `${d}/${f}: ${r.stderr}`);
+    }
+  }
 });
