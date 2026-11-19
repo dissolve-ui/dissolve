@@ -6,7 +6,7 @@ import { playgroundHTML, mountPlayground } from './playground.js';
 import { OPTIONS, PRACTICES, PEERS, INSTALL, PROVIDER, PKG } from './variants-content.js';
 import { showcaseHTML, effectsHTML, mountShowcase, mountScrub } from './showcase.js';
 import { ready } from './images.js';
-import { introductionPage, installationPage, cliPage, themingPage, agentPromptPage, agentsStripHTML } from './docs.js';
+import { introductionPage, installationPage, cliPage, themingPage, agentPromptPage, agentsStripHTML, SHADCN } from './docs.js';
 import { COMPONENTS, COMPONENT_ORDER, mountComponent, componentsSectionHTML, galleryCols, mountComponentsSection, propsTable, componentPrompt, hasWeb, platformOf, choosePlatform, usage, webCode } from './components.js';
 import { autoplay, sequence } from './autoplay.js';
 import { clearToasts } from './cp/core.js';
@@ -234,8 +234,7 @@ function webNotes(c) {
   return notes.length ? `<p class="dc-note">${notes.join(' ')}</p>` : '';
 }
 
-/** The same component through the shadcn CLI (the registry in web/r, built by scripts/build-shadcn.mjs). */
-const SHADCN = 'https://dissolve.rselmi.com/r';
+/** The same component through the shadcn CLI. */
 const shadcnAdd = (path) => `<p class="dc-label">Or with the shadcn CLI</p>${cmd(`npx shadcn@latest add ${SHADCN}/${path}.json`)}`;
 
 /** A numbered step of a component's Install tab. */
