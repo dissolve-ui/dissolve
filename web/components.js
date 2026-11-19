@@ -2,7 +2,6 @@
 // The ports live in cp/*.js, the built-in ones in cp/core.js. This module gathers them, mounts one
 // demo, and builds the gallery section and the component pages.
 import { scope, onTheme, onWidth, PKG, DIR } from './cp/kit.js';
-import { PKG } from './variants-content.js';
 import { WEB_COMPONENTS } from './lib/available.js';
 import { autoplay } from './autoplay.js';
 import { ENTRIES as CORE } from './cp/core.js';
