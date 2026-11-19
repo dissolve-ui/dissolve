@@ -1,0 +1,6 @@
+lib/
+src/
+registry/
+LICENSE
+README.md
+*.tgz

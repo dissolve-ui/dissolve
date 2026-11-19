@@ -1,5 +1,5 @@
 /**
- * LikeButton, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * LikeButton, from dissolve (dissolve-ui). This file is yours: restyle it with
  * classNames, change the timings, the sparks, anything. Colors come from the dissolve theme tokens
  * (global.css), so it follows light and dark mode out of the box. The liked heart keeps the brand
  * pink by default (the color prop).
@@ -14,7 +14,7 @@ import { StyleSheet, View as RNView } from 'react-native';
 import { Canvas, Path, Skia } from '@shopify/react-native-skia';
 import { Easing, useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming, type SharedValue } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { useDissolve } from 'react-native-dissolve';
+import { useDissolve } from 'dissolve-ui';
 import { Animated, Pressable, Text, View, cn, useToken } from './tw';
 
 const HEART = 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';

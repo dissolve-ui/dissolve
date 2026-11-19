@@ -1,5 +1,5 @@
 /**
- * CardStack, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * CardStack, from dissolve (dissolve-ui). This file is yours: restyle it with
  * classNames, change the timings, the curve, anything. The cards are yours too: renderCard draws
  * them, this file only adds the stack chrome (corner radius, clip and shadow).
  *

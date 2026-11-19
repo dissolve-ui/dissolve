@@ -1,27 +1,47 @@
-// Surfaces: CardStack, BeforeAfter (src/dissolve/components/*), ported to the web.
-// Same geometry, timings and curves as the native sources. Shown raw: one instance, no screen around it.
-import { bezier, CALM, QUAD, value, el, clamp, claimTouch, fitTile, PKG, DIR, prop } from './kit.js';
+// Surfaces: CardStack and BeforeAfter demos. Both components are the React web components' cores
+// (registry/web/*.core.ts, built into web/lib), the same code a React app installs. This file keeps
+// the demos: sizes per mode, the cards and the painting, and the autoplay, which plays with real
+// pointer events.
+import { createCardStack } from '../lib/card-stack.js';
+import { createBeforeAfter } from '../lib/before-after.js';
+import { CALM, el, fitTile, tween, AUTO, PKG, DIR, prop } from './kit.js';
 
-const MONO = "'Geist Mono', ui-monospace, monospace";
+/** Calls fn once a real pointer goes down on node, and tells whether one is down right now. */
+function userPointer(sc, node) {
+  let down = false;
+  const lift = (e) => { if (e.isTrusted) down = false; };
+  node.addEventListener('pointerdown', (e) => { if (e.isTrusted) down = true; });
+  addEventListener('pointerup', lift);
+  addEventListener('pointercancel', lift);
+  sc.onDispose(() => { removeEventListener('pointerup', lift); removeEventListener('pointercancel', lift); });
+  return () => down;
+}
 
-/** Pointer velocity from the last 80 ms of samples, px/s. */
-function velocity(samples) {
-  if (samples.length < 2) return { vx: 0, vy: 0 };
-  const a = samples[0], b = samples[samples.length - 1], dt = (b[0] - a[0]) / 1000;
-  return dt > 0 ? { vx: (b[1] - a[1]) / dt, vy: (b[2] - a[2]) / dt } : { vx: 0, vy: 0 };
+/** Where (x, y), in node layout units, is on screen, and the scale of a tile scaled down by fitTile. */
+function at(node, x, y) {
+  const r = node.getBoundingClientRect(), k = r.width / node.offsetWidth || 1;
+  return { x: r.left + x * k, y: r.top + y * k, k };
 }
-function sample(list, e) {
-  const now = performance.now();
-  list.push([now, e.clientX, e.clientY]);
-  while (list.length > 2 && now - list[0][0] > 80) list.shift();
-}
+
+/** A scripted pointer event on target at the screen point p. */
+const send = (target, type, p) => target.dispatchEvent(new PointerEvent(type, { pointerId: AUTO, isPrimary: true, bubbles: true, clientX: p.x, clientY: p.y }));
+
+/** A finger moving on target from p by (dx, dy) layout units over ms on the calm curve. Resolves with where it ends. */
+const drag = async (sc, target, p, dx, dy, ms) => {
+  let now = p;
+  await tween(sc, ms, (t) => {
+    const k = CALM(t);
+    now = { x: p.x + dx * p.k * k, y: p.y + dy * p.k * k, k: p.k };
+    send(target, 'pointermove', now);
+  });
+  return now;
+};
 
 /* ======================================================================================
-   CardStack (CardStack.tsx): Wallet style stack, tap to focus, drag down to restack.
+   CardStack: Wallet style stack, tap to focus, drag down to restack.
    ====================================================================================== */
 
-const FOCUS_MS = 560, CYCLE_MS = 420, MINI = 9, MINI_GAP = 22, MINI_TAIL = 30;
-const EXIT = bezier(0.4, 0, 1, 1);
+const FOCUS_MS = 560;
 
 const CARDS = [
   { kind: 'sunset', tag: 'DEBIT', title: 'Sunset', line: '••••  4021' },
@@ -40,288 +60,88 @@ function mountCardStack(body, { sc, mode }) {
   const tile = mode === 'tile';
   const avail = body.clientWidth - (tile ? 32 : 0);
   const W = tile ? 260 : Math.round(Math.min(340, avail || 340));
-  const peek = tile ? 44 : 60, radius = tile ? 18 : 20;
-  const H = Math.round(W / 1.586), n = CARDS.length, off = W + 24;
-  const stackH = (n - 1) * peek + H;
-  const focusH = H + MINI_GAP + Math.max(0, n - 2) * MINI + MINI_TAIL;
-  const total = Math.max(stackH, focusH);
+  const peek = tile ? 44 : 60, H = Math.round(W / 1.586), n = CARDS.length;
+  const total = Math.max((n - 1) * peek + H, H + 22 + Math.max(0, n - 2) * 9 + 30);
 
-  const frame = el('div', 'cp-cs');
-  frame.style.width = W + 'px';
-  frame.style.height = total + 'px';
-  frame.setAttribute('role', 'group');
-  frame.setAttribute('aria-label', 'Cards');
-  if (tile) frame.style.width = W + 'px';
-  body.append(tile ? fitTile(body, frame, W, total) : frame);
+  const host = el('div', 'cp-cs');
+  host.style.width = W + 'px';
+  host.setAttribute('aria-label', 'Cards');
+  body.append(tile ? fitTile(body, host, W, total) : host);
 
   let focus = null;
-  const target = (i) => {
-    if (focus === null) return { y: i * peek, scale: 1, delay: i * 18 };
-    if (i === focus) return { y: 0, scale: 1, delay: 0 };
-    const k = i < focus ? i : i - 1;
-    const m = Math.max(1, n - 2);
-    const s = 0.92 + 0.04 * (k / m);
-    return { y: H + MINI_GAP + k * MINI - (H * (1 - s)) / 2, scale: s, delay: 40 + k * 22 };
-  };
-
-  const cards = CARDS.map((c, i) => {
-    const node = el('div', 'cp-cs-card');
-    node.style.height = H + 'px';
-    node.style.borderRadius = radius + 'px';
-    node.tabIndex = 0;
-    node.setAttribute('role', 'button');
-    node.setAttribute('aria-label', `${c.title} card`);
-    const clip = el('div', 'cp-cs-clip');
-    clip.style.borderRadius = radius + 'px';
-    clip.append(cardFace(c));
-    node.append(clip);
-    frame.append(node);
-    const card = { node, i };
-    const render = () => {
-      const away = Math.min(1, Math.abs(card.tx.v) / W);
-      node.style.opacity = (card.op.v * (1 - away * 0.6)).toFixed(3);
-      node.style.transform = `translate3d(${card.tx.v.toFixed(2)}px,${card.ty.v.toFixed(2)}px,0) scale(${(card.sc.v * (1 - 0.015 * card.press.v)).toFixed(4)})`;
-    };
-    card.ty = value(sc, i * peek, render);
-    card.tx = value(sc, 0, render);
-    card.sc = value(sc, 1, render);
-    card.op = value(sc, 1, render);
-    card.press = value(sc, 0, render);
-    render();
-    return card;
+  const stack = createCardStack(host, {
+    keys: CARDS.map((c) => c.kind),
+    peek,
+    cardClassName: tile ? 'cp-cs-card cp-cs-tile' : 'cp-cs-card',
+    onFocus: (i) => { focus = i; },
   });
-
-  const sync = () => cards.forEach((c) => {
-    c.node.style.zIndex = focus === c.i ? n + 10 : c.i;
-    c.node.classList.toggle('focused', focus === c.i);
-    c.node.setAttribute('aria-pressed', String(focus === c.i));
+  const cards = CARDS.map((c) => {
+    const node = stack.slot(c.kind);
+    node.append(cardFace(c));
+    return node;
   });
+  sc.onDispose(() => stack.destroy());
+  const user = userPointer(sc, host);
 
-  const move = (c) => {
-    const t = target(c.i), o = { ms: FOCUS_MS };
-    c.ty.to(t.y, o.ms, CALM, t.delay);
-    c.sc.to(t.scale, o.ms, CALM, t.delay);
-    c.tx.to(0, o.ms, CALM);
-    return c.op.to(1, 200, QUAD);
-  };
-
-  function go(next) {
-    focus = next;
-    sync();
-    cards.forEach(move);
-    return sc.wait(FOCUS_MS + 120);
-  }
-
-  function cycle(dir) {
-    if (focus === null) return;
-    const from = focus, to = (focus + dir + n) % n;
-    focus = to;
-    sync();
-    cards.forEach((c) => {
-      const t = target(c.i);
-      if (c.i === to) {
-        // The next card slides in from the side it was swiped toward.
-        c.ty.set(t.y); c.sc.set(t.scale); c.op.set(1);
-        c.tx.set(dir * off);
-        c.tx.to(0, CYCLE_MS, CALM);
-      } else if (c.i === from) {
-        // The card that just left settles quietly into the compressed stack.
-        c.tx.set(0); c.ty.set(t.y); c.sc.set(t.scale); c.op.set(0);
-        c.op.to(1, 320, CALM, 80);
-      } else move(c);
-    });
-  }
-
-  function onTap(i) {
-    if (focus === null) go(i);
-    else if (i !== focus) go(null); // tapping the compressed stack puts everything back
-  }
-
-  cards.forEach((c) => {
-    const node = c.node;
-    let g = null;
-    // Touch: a swipe down on the focused card puts it back, any other vertical swipe scrolls the page.
-    const claimed = claimTouch(node, (dx, dy) => !!g && focus === c.i && dy > 0);
-    node.addEventListener('pointerdown', (e) => {
-      if (e.button > 0) return;
-      g = { x0: e.clientX, y0: e.clientY, t0: performance.now(), axis: 0, samples: [] };
-      sample(g.samples, e);
-      c.press.to(1, 120, QUAD);
-      try { node.setPointerCapture(e.pointerId); } catch {}
-    });
-    node.addEventListener('pointermove', (e) => {
-      if (!g) return;
-      const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
-      sample(g.samples, e);
-      if (!g.axis) {
-        if (Math.abs(dx) <= 10 && Math.abs(dy) <= 10) return;
-        if (focus !== c.i) { g.moved = true; c.press.to(0, 260, CALM); return; }
-        g.axis = n > 1 && Math.abs(dx) > Math.abs(dy) ? 1 : 2;
-        c.press.to(0, 260, CALM);
-        if (g.axis === 2 && e.pointerType === 'touch' && !claimed()) { g = null; return; }
-        node.classList.add('dragging');
-      }
-      if (g.axis === 1) { c.tx.set(dx); return; }
-      // Down follows the finger, up resists.
-      c.ty.set(dy > 0 ? dy * 0.9 : -Math.sqrt(-dy) * 3);
-      c.sc.set(1 - Math.min(1, Math.max(0, dy) / 400) * 0.05);
-    });
-    const end = (e) => {
-      if (!g) return;
-      const st = g;
-      g = null;
-      node.classList.remove('dragging');
-      c.press.to(0, 260, CALM);
-      if (e.type !== 'pointerup' && !st.axis) return;
-      const dx = e.clientX - st.x0, dy = e.clientY - st.y0;
-      const { vx, vy } = velocity(st.samples);
-      if (st.axis === 1) {
-        if (Math.abs(dx) > W * 0.28 || Math.abs(vx) > 700) {
-          const next = dx < 0 ? 1 : -1;
-          c.tx.to(-next * off, 260, EXIT).then((ok) => ok && cycle(next));
-        } else c.tx.to(0, 380, CALM);
-        return;
-      }
-      if (st.axis === 2) {
-        if (dy > 90 || vy > 800) go(null);
-        else { c.ty.to(0, 380, CALM); c.sc.to(1, 380, CALM); }
-        return;
-      }
-      if (!st.moved && performance.now() - st.t0 <= 400) onTap(c.i);
-    };
-    node.addEventListener('pointerup', end);
-    node.addEventListener('pointercancel', end);
-    node.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTap(c.i); }
-      else if (e.key === 'Escape' && focus !== null) go(null);
-      else if (focus === c.i && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-        const next = e.key === 'ArrowRight' ? 1 : -1;
-        c.tx.to(-next * off, 260, EXIT).then((ok) => ok && cycle(next));
-      }
-    });
-  });
-  sync();
+  /** A quick tap on the visible strip of card i. */
+  const tap = (i) => { const p = at(cards[i], W / 2, 20); send(cards[i], 'pointerdown', p); send(cards[i], 'pointerup', p); };
 
   return {
     async run() {
-      if (focus !== null) await go(null);
-      await go(1);
+      if (user()) return;
+      if (focus !== null) { tap(focus === 0 ? 1 : 0); await sc.wait(FOCUS_MS + 120); }
+      tap(1);
+      await sc.wait(FOCUS_MS + 120);
       await sc.wait(1100);
+      if (user() || focus !== 1) return;
       // A calm drag down on the focused card, then release: it goes back to the stack.
-      const c = cards[1];
-      c.sc.to(0.984, 420, CALM);
-      await c.ty.to(130, 420, CALM);
+      const from = at(cards[1], W / 2, H / 2);
+      send(cards[1], 'pointerdown', from);
+      const to = await drag(sc, cards[1], from, 0, 130, 420);
       await sc.wait(120);
-      await go(null);
+      send(cards[1], 'pointerup', to);
+      await sc.wait(FOCUS_MS + 120);
       await sc.wait(300);
     },
   };
 }
 
 /* ======================================================================================
-   BeforeAfter (BeforeAfter.tsx): drag the divider over two versions of one painting.
+   BeforeAfter: drag the divider over two versions of one painting.
    ====================================================================================== */
-
-const KNOB = 40;
-const ARROWS = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1C1C1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 7.5L5 12l4.5 4.5M14.5 7.5L19 12l-4.5 4.5"/></svg>';
 
 function mountBeforeAfter(body, { sc, mode, initial = 0.42 }) {
   const tile = mode === 'tile', panel = mode === 'panel';
-  const frame = el('div', 'cp-ba');
-  frame.tabIndex = 0;
-  frame.setAttribute('role', 'slider');
-  frame.setAttribute('aria-label', 'Before and Vivid comparison');
-  frame.setAttribute('aria-valuemin', '0');
-  frame.setAttribute('aria-valuemax', '100');
-  const height = tile ? 178 : panel ? 240 : 320;
-  frame.style.height = height + 'px';
+  const host = el('div', 'cp-ba');
+  body.append(host);
+  let now = initial;
+  const ba = createBeforeAfter(host, {
+    initial,
+    height: tile ? 178 : panel ? 240 : 320,
+    afterLabel: 'Vivid',
+    handleClassName: 'cp-ba-knob',
+    dividerClassName: 'cp-ba-line',
+    onChange: (v) => { now = v; },
+  });
   const src = 'assets/paintings/tuscany.jpg';
-  const after = el('div', 'cp-ba-layer', `<img src="${src}" alt="" draggable="false"><i class="cp-ba-grade"></i><i class="cp-ba-lift"></i>`);
-  const win = el('div', 'cp-ba-clip');
-  const inner = el('div', 'cp-ba-layer', `<img src="${src}" alt="" draggable="false">`);
-  win.append(inner);
-  const pillB = el('span', 'cp-ba-pill', 'Before');
-  pillB.style.left = '14px';
-  const pillA = el('span', 'cp-ba-pill', 'Vivid');
-  pillA.style.right = '14px';
-  const line = el('i', 'cp-ba-line');
-  const knob = el('span', 'cp-ba-knob', ARROWS);
-  knob.style.top = height / 2 - KNOB / 2 + 'px';
-  frame.append(after, win, pillB, pillA, line, knob);
-  body.append(frame);
-
-  const W = () => frame.clientWidth;
-  let w = W();
-  inner.style.width = w + 'px';
-  const render = () => {
-    const x = pos.v * w;
-    // Clip without relayout: the window slides right by x, its content slides back left by x.
-    win.style.transform = `translate3d(${(x - w).toFixed(2)}px,0,0)`;
-    inner.style.transform = `translate3d(${(w - x).toFixed(2)}px,0,0)`;
-    line.style.transform = `translate3d(${(x - 1).toFixed(2)}px,0,0)`;
-    knob.style.transform = `translate3d(${(x - KNOB / 2).toFixed(2)}px,0,0) scale(${(1 + grab.v * 0.08).toFixed(4)})`;
-    // Pills sit in the top corners and fade as the divider closes in on them.
-    const bw = pillB.offsetWidth || 64, aw = pillA.offsetWidth || 56;
-    pillB.style.opacity = clamp((x - (14 + bw)) / 44).toFixed(3);
-    pillA.style.opacity = (1 - clamp((x - (w - 14 - aw - 44)) / 44)).toFixed(3);
-    frame.setAttribute('aria-valuenow', String(Math.round(pos.v * 100)));
-  };
-  const pos = value(sc, clamp(initial), render);
-  const grab = value(sc, 0, render);
-  render();
-  const ro = new ResizeObserver(() => { const nw = W(); if (nw && nw !== w) { w = nw; inner.style.width = w + 'px'; render(); } });
-  ro.observe(frame);
-  sc.onDispose(() => ro.disconnect());
-
-  // Pan activates past 4 px sideways and fails past 14 px vertically; a short tap jumps there.
-  let g = null;
-  frame.addEventListener('pointerdown', (e) => {
-    if (e.button > 0) return;
-    const b = frame.getBoundingClientRect();
-    g = { x0: e.clientX, y0: e.clientY, t0: performance.now(), left: b.left, start: pos.v * w, on: false, failed: false };
-    grab.to(1, 180, CALM);
-  });
-  frame.addEventListener('pointermove', (e) => {
-    if (!g || g.failed) return;
-    const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
-    if (!g.on) {
-      if (Math.abs(dy) > 14 && Math.abs(dx) <= 4) { g.failed = true; grab.to(0, 320, CALM); return; }
-      if (Math.abs(dx) <= 4) return;
-      g.on = true;
-      g.start = pos.v * w;
-      g.base = e.clientX;
-      try { frame.setPointerCapture(e.pointerId); } catch {}
-      frame.classList.add('dragging');
-    }
-    pos.set(clamp((g.start + e.clientX - g.base) / w));
-  });
-  const end = (e) => {
-    if (!g) return;
-    const st = g;
-    g = null;
-    frame.classList.remove('dragging');
-    grab.to(0, 320, CALM);
-    if (e.type === 'pointerup' && !st.on && !st.failed && performance.now() - st.t0 <= 400) {
-      pos.to(clamp((e.clientX - st.left) / w), 560, CALM);
-    }
-  };
-  frame.addEventListener('pointerup', end);
-  frame.addEventListener('pointercancel', end);
-  frame.addEventListener('keydown', (e) => {
-    const k = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-    if (k) { e.preventDefault(); pos.to(clamp(pos.v + 0.1 * k), 360, CALM); }
-    else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); pos.to(e.key === 'Home' ? 0 : 1, 560, CALM); }
-  });
+  ba.after.innerHTML = `<img src="${src}" alt="" draggable="false"><i class="cp-ba-grade"></i><i class="cp-ba-lift"></i>`;
+  ba.before.innerHTML = `<img src="${src}" alt="" draggable="false">`;
+  sc.onDispose(() => ba.destroy());
+  const user = userPointer(sc, host);
 
   return {
     async run() {
-      grab.to(1, 180, CALM);
-      await pos.to(0.86, 900, CALM);
-      await sc.wait(250);
-      await pos.to(0.14, 1100, CALM);
-      await sc.wait(250);
-      await pos.to(clamp(initial), 800, CALM);
-      grab.to(0, 320, CALM);
+      if (user()) return;
+      // One calm drag of the divider: far right, far left, then back.
+      let p = at(host, now * host.offsetWidth, host.offsetHeight / 2);
+      send(host, 'pointerdown', p);
+      for (const [to, ms] of [[0.86, 900], [0.14, 1100], [initial, 800]]) {
+        p = await drag(sc, host, p, (to - now) * host.offsetWidth, 0, ms);
+        now = to;
+        if (to !== initial) await sc.wait(250);
+        if (!sc.alive || user()) break;
+      }
+      send(host, 'pointerup', p);
       await sc.wait(320);
     },
   };

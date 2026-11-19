@@ -10,7 +10,7 @@ const ANSI = /\x1b\[[0-9;]*m/g;
 const ALL_DEPS = {
   dependencies: Object.fromEntries(
     [
-      'react-native-dissolve',
+      'dissolve-ui',
       '@shopify/react-native-skia',
       'react-native-reanimated',
       'react-native-worklets',
@@ -55,6 +55,22 @@ function run(cwd, ...args) {
 
 /** Index entries whose source file exists (new entries may still be in progress). */
 const available = () => registryIndex().filter((c) => existsSync(join(REGISTRY_DIR, c.file)));
+
+const WEB_DIR = join(REGISTRY_DIR, 'web');
+/** Components with a React web version: registry/web/<name>.tsx. */
+const webAvailable = () => registryIndex().filter((c) => existsSync(join(WEB_DIR, `${c.name}.tsx`)));
+
+const WEB_APP = { dependencies: { react: '^19.0.0', 'react-dom': '^19.0.0', next: '*' } };
+const config = (cwd) => JSON.parse(read(join(cwd, 'dissolve.json')));
+
+/** registry/web files a web component imports as './x', recursively. */
+function webDeps(file, seen = new Set()) {
+  for (const m of read(join(WEB_DIR, file)).matchAll(/from\s+['"]\.\/([\w.-]+)['"]/g)) {
+    const dep = ['.tsx', '.ts'].map((ext) => m[1] + ext).find((f) => existsSync(join(WEB_DIR, f)));
+    if (dep && !seen.has(dep)) { seen.add(dep); webDeps(dep, seen); }
+  }
+  return seen;
+}
 
 const exportName = (item) => (item.export ?? '').split(',')[0].trim();
 const count = (text, needle) => text.split(needle).length - 1;
@@ -121,7 +137,7 @@ describe('init', () => {
     const cwd = project({ 'package.json': { dependencies: { react: '*' } }, 'global.css': '@import "tailwindcss";' });
     const { out } = run(cwd, 'init');
     assert.match(out, /Missing dependencies/);
-    assert.match(out, /npx expo install react-native-dissolve @shopify\/react-native-skia/);
+    assert.match(out, /npx expo install dissolve-ui @shopify\/react-native-skia/);
     assert.match(out, /NativeWind v5/);
     assert.match(out, /tailwind-merge/);
     assert.doesNotMatch(out, /Ready\./);
@@ -213,7 +229,7 @@ describe('add', () => {
 
   test('add without names prints usage and the list', () => {
     const { out } = run(project(), 'add');
-    assert.match(out, /Usage: npx react-native-dissolve add/);
+    assert.match(out, /Usage: npx dissolve-ui add/);
     assert.ok(out.includes(registryIndex()[0].name));
   });
 
@@ -249,5 +265,147 @@ describe('add', () => {
     const cwd = project();
     run(sandbox.dir, 'add', item.name, '--cwd', cwd);
     assert.ok(existsSync(join(cwd, 'components/dissolve', item.file)));
+  });
+});
+
+describe('platforms', () => {
+  test('a react-dom / next project is detected as web', () => {
+    const cwd = project({ 'package.json': WEB_APP });
+    const { code, out } = run(cwd, 'init');
+    assert.equal(code, 0);
+    assert.deepEqual(config(cwd), { platform: 'web', dir: 'components/dissolve' });
+    assert.match(out, /created\s+dissolve\.json \(React \(web\)/);
+    assert.ok(!existsSync(join(cwd, 'components/dissolve/tw.tsx')), 'no NativeWind primitives on the web');
+    assert.match(out, /Ready\. Add a component: npx dissolve-ui add/);
+  });
+
+  test('an expo / react-native project is detected as native', () => {
+    const cwd = project({ 'package.json': { dependencies: { expo: '*', 'react-native': '*', react: '*' } } });
+    run(cwd, 'init');
+    assert.equal(config(cwd).platform, 'native');
+    assert.ok(existsSync(join(cwd, 'components/dissolve/tw.tsx')));
+  });
+
+  test('a project with both falls back to native, --web picks the web', () => {
+    const both = { dependencies: { 'react-native': '*', 'react-dom': '*', react: '^19.0.0' } };
+    const asked = project({ 'package.json': both });
+    run(asked, 'init', '--yes');
+    assert.equal(config(asked).platform, 'native');
+
+    const cwd = project({ 'package.json': both });
+    run(cwd, 'init', '--web');
+    assert.equal(config(cwd).platform, 'web');
+    assert.ok(!existsSync(join(cwd, 'components/dissolve/tw.tsx')));
+  });
+
+  test('a second init keeps the platform of dissolve.json', () => {
+    const cwd = project({ 'package.json': WEB_APP });
+    run(cwd, 'init', '--native');
+    const { out } = run(cwd, 'init');
+    assert.equal(config(cwd).platform, 'native');
+    assert.match(out, /exists\s+dissolve\.json/);
+  });
+
+  test('web theme without Tailwind is plain CSS variables', () => {
+    const cwd = project({ 'package.json': WEB_APP, 'app/globals.css': 'body { margin: 0; }\n' });
+    const { out } = run(cwd, 'init');
+    assert.match(out, /updated\s+app\/globals\.css/);
+    const css = read(join(cwd, 'app/globals.css'));
+    assert.ok(css.includes('--dissolve-surface:'));
+    assert.ok(!css.includes('@theme'), 'the @theme block is Tailwind only');
+  });
+
+  test('web theme with Tailwind keeps the @theme mapping', () => {
+    const cwd = project({ 'package.json': WEB_APP, 'app/globals.css': '@import "tailwindcss";\n' });
+    run(cwd, 'init');
+    assert.ok(read(join(cwd, 'app/globals.css')).includes('--color-dissolve-surface'));
+  });
+
+  test('add on the web copies registry/web files and their ./ imports', () => {
+    const items = webAvailable();
+    assert.ok(items.length > 0, 'at least one component has a web version');
+    const cwd = project({ 'package.json': WEB_APP });
+    const { code, out } = run(cwd, 'add', ...items.map((i) => i.name));
+    assert.equal(code, 0);
+    assert.equal(config(cwd).platform, 'web', 'add runs init first');
+    for (const item of items) {
+      const file = `${item.name}.tsx`;
+      assert.equal(read(join(cwd, 'components/dissolve', file)), read(join(WEB_DIR, file)), `${file} copied verbatim`);
+      assert.ok(out.includes(`import { ${item.export ?? exportName(item)} } from './components/dissolve/${item.name}'`), `import printed for ${item.name}`);
+      const deps = webDeps(file);
+      assert.ok(deps.size > 0, `${file} imports its core`);
+      for (const dep of deps) assert.equal(read(join(cwd, 'components/dissolve', dep)), read(join(WEB_DIR, dep)), `${dep} (used by ${item.name}) installed`);
+    }
+    assert.ok(!existsSync(join(cwd, 'components/dissolve/tw.tsx')));
+    assert.doesNotMatch(out, /npx expo install/);
+    assert.doesNotMatch(out, /DissolveProvider/);
+  });
+
+  test('a web project with src/ and no alias installs into src/components/dissolve', () => {
+    const [item] = webAvailable();
+    const cwd = project({ 'package.json': { dependencies: { react: '^19.0.0', 'react-dom': '^19.0.0' }, devDependencies: { vite: '*' } }, 'src/main.tsx': '' });
+    const { code, out } = run(cwd, 'add', item.name);
+    assert.equal(code, 0);
+    assert.equal(config(cwd).dir, 'src/components/dissolve');
+    assert.ok(existsSync(join(cwd, 'src/components/dissolve', `${item.name}.tsx`)));
+    assert.ok(out.includes(`from './components/dissolve/${item.name}'`), 'import printed from src/');
+  });
+
+  test('add on the web skips components without a web version', (t) => {
+    const nativeOnly = available().find((c) => !existsSync(join(WEB_DIR, `${c.name}.tsx`)));
+    if (!nativeOnly) return t.skip('every component has a web version');
+    const cwd = project({ 'package.json': WEB_APP });
+    const { out } = run(cwd, 'add', nativeOnly.name);
+    assert.match(out, new RegExp(`skipped\\s+${nativeOnly.name} is React Native only`));
+    assert.ok(!existsSync(join(cwd, 'components/dissolve', nativeOnly.file)));
+  });
+
+  test('add follows the folder saved in dissolve.json', () => {
+    const [item] = webAvailable();
+    const cwd = project({ 'package.json': WEB_APP, 'dissolve.json': { platform: 'web', dir: 'ui/fx' } });
+    run(cwd, 'add', item.name);
+    assert.ok(existsSync(join(cwd, 'ui/fx', `${item.name}.tsx`)));
+    assert.ok(!existsSync(join(cwd, 'components')));
+  });
+
+  // The site shows `add <name> --native` or `add <name> --web` from its platform switch: the flag wins
+  // over the detected platform, with or without a dissolve.json.
+  test('add --web in a React Native project installs the web version', () => {
+    const [item] = webAvailable();
+    const cwd = project({ 'package.json': { dependencies: { expo: '*', 'react-native': '*' } } });
+    const { code } = run(cwd, 'add', item.name, '--web');
+    assert.equal(code, 0);
+    assert.equal(config(cwd).platform, 'web');
+    assert.equal(read(join(cwd, 'components/dissolve', `${item.name}.tsx`)), read(join(WEB_DIR, `${item.name}.tsx`)));
+    assert.ok(!existsSync(join(cwd, 'components/dissolve/tw.tsx')));
+  });
+
+  test('add --native in a web project installs the React Native version', () => {
+    const [item] = webAvailable();
+    const cwd = project({ 'package.json': WEB_APP });
+    const { code } = run(cwd, 'add', item.name, '--native');
+    assert.equal(code, 0);
+    assert.equal(config(cwd).platform, 'native');
+    assert.equal(read(join(cwd, 'components/dissolve', item.file)), read(join(REGISTRY_DIR, item.file)));
+    assert.ok(existsSync(join(cwd, 'components/dissolve/tw.tsx')));
+  });
+
+  test('a platform flag on add switches the platform saved in dissolve.json', () => {
+    const [item] = webAvailable();
+    const cwd = project({ 'package.json': WEB_APP });
+    run(cwd, 'init', '--native');
+    run(cwd, 'add', item.name, '--web');
+    assert.equal(config(cwd).platform, 'web');
+    assert.equal(read(join(cwd, 'components/dissolve', `${item.name}.tsx`)), read(join(WEB_DIR, `${item.name}.tsx`)));
+  });
+
+  test('list shows the platforms of each component', () => {
+    const { out } = run(project(), 'list');
+    for (const item of registryIndex()) {
+      const line = out.split('\n').find((l) => l.trim().startsWith(item.name + ' '));
+      assert.ok(line, `list is missing ${item.name}`);
+      const web = existsSync(join(WEB_DIR, `${item.name}.tsx`));
+      assert.equal(line.includes('native, web'), web, `${item.name}: ${line}`);
+    }
   });
 });

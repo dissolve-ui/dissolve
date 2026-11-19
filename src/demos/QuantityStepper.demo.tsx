@@ -3,7 +3,7 @@ import { StyleSheet, View as RNView, type LayoutChangeEvent } from 'react-native
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
-import { useDissolve } from 'react-native-dissolve';
+import { useDissolve } from 'dissolve-ui';
 import { NumberTicker } from '@registry/number-ticker';
 import { QuantityStepper } from '@registry/quantity-stepper';
 import { Pressable, Text, View, useToken } from '@registry/tw';

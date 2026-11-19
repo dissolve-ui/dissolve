@@ -1,11 +1,12 @@
-// Package build: runs scripts/build-package.sh in a temp copy of the repo (the real
-// packages/ folder is never touched), then checks what `npm pack` would publish.
+// dissolve-ui, the one npm package (React Native engine, CLI, registry): runs scripts/build-package.sh
+// in a temp copy of the repo (the real packages/ folder is never touched), then checks what
+// `npm pack` would publish and that the packed CLI runs under its own name.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, symlinkSync } from 'node:fs';
+import { cpSync, mkdirSync, readdirSync, symlinkSync } from 'node:fs';
 import { join } from 'node:path';
-import { PKG_DIR, read, readJSON, registryIndex, ROOT, tempDir } from './helpers.mjs';
+import { PKG_DIR, read, readJSON, registryIndex, REGISTRY_DIR, ROOT, tempDir } from './helpers.mjs';
 
 let tmp;
 let files = [];
@@ -14,7 +15,7 @@ let built;
 before(() => {
   tmp = tempDir('dissolve-pack-');
   const root = tmp.dir;
-  const pkg = join(root, 'packages', 'react-native-dissolve');
+  const pkg = join(root, 'packages', 'dissolve-ui');
   mkdirSync(pkg, { recursive: true });
   for (const p of ['scripts', 'registry', 'LICENSE', 'README.md']) cpSync(join(ROOT, p), join(root, p), { recursive: true });
   cpSync(join(ROOT, 'src', 'dissolve'), join(root, 'src', 'dissolve'), { recursive: true });
@@ -67,4 +68,35 @@ test('the package README points imports at the npm name', () => {
   assert.ok(!readme.includes("from '@/dissolve'"), 'README still imports @/dissolve');
   const relative = [...readme.matchAll(/\]\(((?!https?:|#|mailto:)[^)]+)\)/g)].map((m) => m[1]);
   assert.deepEqual(relative, [], 'relative links break on npmjs.com, make them absolute in build-package.sh');
+});
+
+test('every web component and the shared web files are in the tarball', () => {
+  const web = readdirSync(join(REGISTRY_DIR, 'web'));
+  assert.ok(web.length > 0);
+  for (const f of web) assert.ok(files.includes(`registry/web/${f}`), `registry/web/${f}`);
+});
+
+test('package.json is dissolve-ui, with a dissolve-ui bin', () => {
+  const pkg = readJSON(join(PKG_DIR, 'package.json'));
+  assert.equal(pkg.name, 'dissolve-ui');
+  assert.deepEqual(Object.keys(pkg.bin), ['dissolve-ui']);
+});
+
+test('peers are optional, so npx dissolve-ui in a web app does not pull React Native', () => {
+  const pkg = readJSON(join(PKG_DIR, 'package.json'));
+  const peers = Object.keys(pkg.peerDependencies);
+  assert.ok(peers.includes('@shopify/react-native-skia'));
+  for (const p of peers) assert.equal(pkg.peerDependenciesMeta?.[p]?.optional, true, `${p} optional`);
+});
+
+test('the packed CLI speaks as dissolve-ui', () => {
+  const r = spawnSync(process.execPath, [join(built.pkg, 'bin', 'dissolve.mjs'), 'help'], { encoding: 'utf8' });
+  assert.equal(r.status, 0);
+  assert.match(r.stdout, /npx dissolve-ui add/);
+});
+
+test('nothing in the repo still points at the old package name', () => {
+  const old = 'react-native' + '-dissolve';
+  const hits = spawnSync('git', ['grep', '--untracked', '-l', old, '--', '.', ':!CHANGELOG.md', ':!web/lib'], { cwd: ROOT, encoding: 'utf8' }).stdout.trim();
+  assert.equal(hits, '', `still mentions ${old}: ${hits}`);
 });

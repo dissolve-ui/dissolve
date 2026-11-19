@@ -1,5 +1,5 @@
 /**
- * GlossyButton, from dissolve (react-native-dissolve). This file is yours: change the recipe, the
+ * GlossyButton, from dissolve (dissolve-ui). This file is yours: change the recipe, the
  * spring, the sizes, anything. The fill is an explicit brand color (the color prop), not a theme
  * token, so the button looks the same in light and dark mode, like a printed key.
  *

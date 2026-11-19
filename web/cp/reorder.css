@@ -1,27 +1,18 @@
-/* ReorderList (cp/reorder.js) */
-.cp-ro { position: relative; --ro-lift: var(--raised); --ro-shade: 0, 0, 0; --ro-shade-a: 0.42; }
-[data-theme='light'] .cp-ro { --ro-lift: #FFFFFF; --ro-shade-a: 0.16; }
-.cp-ro-view { position: relative; }
-.cp-ro-scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
-.cp-ro-scroll::-webkit-scrollbar { display: none; }
-@media (pointer: coarse) { .cp-ro-scroll { overscroll-behavior: auto; } }
-.cp-ro-list { position: relative; }
-.cp-ro-scroll:not(.cp-ro-scrolls) { overflow: visible; }
-.cp-ro-row {
-  position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: center; gap: 12px; min-height: 56px; box-sizing: border-box;
-  border-radius: 12px; cursor: grab; touch-action: pan-y;
-  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; will-change: transform; outline: none;
-}
+/* ReorderList (cp/reorder.js). The list itself styles its rows (web/lib/reorder-list.js). */
+.cp-ro { --ro-lift: var(--raised); --dissolve-reorder-shadow: 0.42; --dissolve-reorder-ring: var(--line); }
+[data-theme='light'] .cp-ro { --ro-lift: #FFFFFF; --dissolve-reorder-shadow: 0.16; }
+@media (pointer: coarse) { .cp-ro .dissolve-reorder-scroll { overscroll-behavior: auto; } }
+.cp-ro-static .dissolve-reorder-scroll { overflow: visible; }
+.cp-ro-row { display: flex; align-items: center; gap: 12px; min-height: 56px; border-radius: 12px; background: none; }
 .cp-ro-row::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 0.5px; background: var(--line); }
 .cp-ro-row:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
-.cp-ro-row.lifted { cursor: grabbing; z-index: 10; background: var(--ro-lift); padding: 0 16px; margin: 0 -16px; }
-.cp-ro-row.lifted::after { display: none; }
+.cp-ro-row[data-lifted] { background: var(--ro-lift); padding: 0 16px; margin: 0 -16px; }
+.cp-ro-row[data-lifted]::after { display: none; }
 .cp-ro-icon, .cp-ro-meta { display: none; }
 .cp-ro-rank { flex: none; width: 20px; font-size: 17px; line-height: 22px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .cp-ro-grip { flex: none; display: flex; flex-direction: column; gap: 3px; padding: 12px 0 12px 8px; cursor: grab; }
 .cp-ro-grip i { display: block; width: 18px; height: 2px; border-radius: 2px; background: var(--muted); }
 .cp-ro-text { flex: 1; min-width: 0; }
 .cp-ro-title { font-size: 17px; line-height: 22px; letter-spacing: -0.025em; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cp-ro-canvas { position: absolute; pointer-events: none; }
 .cp-mode-tile .cp-ro-row { min-height: 44px; }
 .cp-mode-tile .cp-ro-title { font-size: 15px; }

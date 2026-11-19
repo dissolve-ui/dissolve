@@ -26,14 +26,15 @@
   "scripts": {
     "start": "expo start",
     "ios": "expo run:ios",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.web.json --noEmit",
     "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test test/*.test.mjs",
     "test:cli": "node --test test/cli.test.mjs",
     "test:registry": "node --test test/registry.test.mjs test/theme.test.mjs",
     "test:package": "node --test test/package.test.mjs",
     "build:package": "sh scripts/build-package.sh",
     "check": "npm run typecheck && npm test",
-    "web:stamp": "node scripts/stamp-web.mjs"
+    "web:stamp": "node scripts/build-web.mjs && node scripts/stamp-web.mjs",
+    "web:build": "node scripts/build-web.mjs"
   },
   "dependencies": {
     "@shopify/react-native-skia": "2.6.2",
@@ -66,6 +67,9 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "@types/react-dom": "~19.2.2",
+    "esbuild": "^0.25.12",
+    "react-dom": "19.2.3",
     "typescript": "~6.0.3"
   },
   "overrides": {

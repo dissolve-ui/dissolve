@@ -25,10 +25,11 @@ npm run check      # type check + tests, must pass before you open a pull reques
 | `src/dissolve/variants/` | One file per variant, wired in `registry.ts` |
 | `src/dissolve/hooks/` | `useDissolve`, `useAppear`, `useDissolveScrub`, `useDissolveHold`, `useDissolvePeel`, `useDissolveScreen`, `useDissolveMorph` |
 | `registry/` | Copy paste components installed by the CLI: one file each, `index.json`, `tw.tsx` primitives, `theme.css` tokens |
-| `packages/react-native-dissolve/` | The npm package: engine and hooks (`lib/`), the `init/add/list` CLI (`bin/`) and a copy of the registry |
+| `registry/web/` | The React web versions: a framework free core and a React wrapper per component, plus the shared engine, kit and hook (see [docs/WEB.md](docs/WEB.md)) |
+| `packages/dissolve-ui/` | The npm package: the React Native engine and hooks (`lib/`), the `init/add/list` CLI (`bin/`) and a copy of the registry, native and web |
 | `src/demos/` | One demo screen per component (`<Name>.demo.tsx`), listed in `src/demos/index.ts` |
 | `app/` | Expo Router example app: demo screens for every variant and a playground |
-| `web/` | Static docs and showcase website (no build step), with Canvas ports of the components in `web/cp/` (`web/components.js` assembles them) |
+| `web/` | Static docs and showcase website (no build step on the server), with the component demos in `web/cp/` (`web/components.js` assembles them) running the web cores built into `web/lib/` |
 | `test/` | `node:test` suites: CLI, registry, theme, engine logic, package contents |
 | `mcp/` | Dependency free MCP server exposing the docs to coding agents |
 | `docs/VARIANTS.md` | Variant math and intent |
@@ -56,7 +57,7 @@ app code. They are styled with NativeWind v5 classes and the `dissolve-*` theme 
 
 1. **Registry file.** Create `registry/<name>.tsx` (kebab case). Import primitives from `./tw`
    (`View`, `Text`, `Pressable`, `Animated`, `cn`, `useToken`), never from your app. Allowed
-   packages: `react`, `react-native`, `react-native-dissolve`, `@shopify/react-native-skia`,
+   packages: `react`, `react-native`, `dissolve-ui`, `@shopify/react-native-skia`,
    `react-native-reanimated`, `react-native-worklets`, `react-native-gesture-handler`,
    `expo-haptics`, `expo-symbols`, `expo-image`, `expo-glass-effect`, `expo-blur`, plus other registry files as `./<file>` (the CLI
    copies those along). Colors come from tokens: `bg-dissolve-surface`, `text-dissolve-muted`, or
@@ -67,12 +68,14 @@ app code. They are styled with NativeWind v5 classes and the `dissolve-*` theme 
 3. **Demo.** Add `src/demos/<Name>.demo.tsx` importing from `@registry/<name>`, and list it in
    `src/demos/index.ts`.
 4. **Web port.** Add an entry to the right `ENTRIES` map in `web/cp/*.js`, then run `npm run web:stamp`:
-   title, description, a `mount` function drawing it on the page and the usage `code`.
+   title, description, a `mount` function drawing it on the page and the usage `code`. To ship it
+   as a React web component too, follow [docs/WEB.md](docs/WEB.md): its page then shows a React
+   Native / React switch on its own.
 5. **Tests.** `npm test` checks the new file automatically: index entry and file match, declared
    exports exist, imports stay in the allowlist, tokens exist in `theme.css`, no em dash. Add a
    test in `test/` if the component brings new logic that can run in Node.
 6. Try it end to end in a fresh Expo app:
-   `node packages/react-native-dissolve/bin/dissolve.mjs add <name> --cwd ../my-app` after
+   `node packages/dissolve-ui/bin/dissolve.mjs add <name> --cwd ../my-app` after
    `npm run build:package` (the CLI reads the registry copy inside the package).
 
 New theme tokens go in `registry/theme.css` with a light value, a dark value and a
@@ -86,7 +89,7 @@ npm test              # every suite in test/ (node:test, no extra dependency)
 npm run test:cli      # CLI only: init, add, list against temp projects
 npm run test:registry # registry and theme consistency
 npm run test:package  # builds the package in a temp copy and checks npm pack contents
-npm run build:package # builds packages/react-native-dissolve for real
+npm run build:package # builds packages/dissolve-ui for real
 ```
 
 CI runs the type check, the tests and the package build on every push and pull request.
@@ -132,7 +135,7 @@ and do not open a public issue.
 
 ## Releases
 
-Maintainers bump `packages/react-native-dissolve/package.json`, move the `[Unreleased]` notes in
+Maintainers bump `packages/dissolve-ui/package.json`, move the `[Unreleased]` notes in
 `CHANGELOG.md` under the new version, then push a `v<version>` tag. The Release workflow runs the
 checks, builds the package and publishes it to npm with provenance. It needs an `NPM_TOKEN`
 repository secret (an npm automation token), added once in the repository settings.

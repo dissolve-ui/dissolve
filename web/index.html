@@ -4,27 +4,27 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>dissolve · turn any React Native view into dust</title>
-    <meta name="description" content="react-native-dissolve snapshots any view and turns it into dust. Sixteen variants, Skia Atlas, UI thread." />
+    <meta name="description" content="dissolve-ui snapshots any view and turns it into dust. Sixteen variants, Skia Atlas, UI thread. Components for React Native and React on the web." />
     <meta name="theme-color" content="#121212" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="preload" href="fonts/allo/AlloVariable.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=b37267ce2d" />
-    <link rel="stylesheet" href="docs.css?v=3a47f02075" />
+    <link rel="stylesheet" href="styles.css?v=acaa93d6f2" />
+    <link rel="stylesheet" href="docs.css?v=741d78c34c" />
     <link rel="stylesheet" href="playground.css?v=af552c378b" />
-    <link rel="stylesheet" href="components.css?v=c7268e7ea0" />
-    <link rel="stylesheet" href="cp/inputs.css?v=24421a0b38" />
-    <link rel="stylesheet" href="cp/messages.css?v=ef64f4bd96" />
-    <link rel="stylesheet" href="cp/surfaces.css?v=6c92c924ed" />
-    <link rel="stylesheet" href="cp/ai.css?v=0033652c59" />
-    <link rel="stylesheet" href="cp/controls.css?v=caa890058a" />
-    <link rel="stylesheet" href="cp/pull.css?v=6868024fed" />
-    <link rel="stylesheet" href="cp/reorder.css?v=8b6b73b39f" />
-    <link rel="stylesheet" href="cp/button.css?v=0157e0e16c" />
-    <link rel="stylesheet" href="cp/scratch.css?v=d77f465b63" />
-    <link rel="stylesheet" href="cp/skeleton.css?v=fe2dc2c24e" />
-    <link rel="stylesheet" href="cp/segmented.css?v=459cc4446d" />
+    <link rel="stylesheet" href="components.css?v=dad90181f1" />
+    <link rel="stylesheet" href="cp/inputs.css?v=2488679e54" />
+    <link rel="stylesheet" href="cp/messages.css?v=2b60e10506" />
+    <link rel="stylesheet" href="cp/surfaces.css?v=ea43522768" />
+    <link rel="stylesheet" href="cp/ai.css?v=b941a3757f" />
+    <link rel="stylesheet" href="cp/controls.css?v=2ed761991c" />
+    <link rel="stylesheet" href="cp/pull.css?v=787202502a" />
+    <link rel="stylesheet" href="cp/reorder.css?v=8bc90adb8b" />
+    <link rel="stylesheet" href="cp/button.css?v=90d46f684c" />
+    <link rel="stylesheet" href="cp/scratch.css?v=6c8033eb37" />
+    <link rel="stylesheet" href="cp/skeleton.css?v=25cf9deed0" />
+    <link rel="stylesheet" href="cp/segmented.css?v=5d4246d48f" />
     <script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
   </head>
   <body>
@@ -40,34 +40,69 @@
 
     <script type="importmap" data-stamp>{
   "imports": {
-    "/app.js": "/app.js?v=e9f3e531b0",
+    "/app.js": "/app.js?v=d4bc495f69",
     "/autoplay.js": "/autoplay.js?v=7fe52696f0",
-    "/components.js": "/components.js?v=2ea3c3a58e",
-    "/cp/ai.js": "/cp/ai.js?v=875c01b160",
-    "/cp/button.js": "/cp/button.js?v=dbed604085",
-    "/cp/controls.js": "/cp/controls.js?v=5a63eabbae",
-    "/cp/core.js": "/cp/core.js?v=996bf58f84",
-    "/cp/inputs.js": "/cp/inputs.js?v=255562ac67",
-    "/cp/kit.js": "/cp/kit.js?v=359d48c9d5",
-    "/cp/messages.js": "/cp/messages.js?v=ea8a9669da",
-    "/cp/pull.js": "/cp/pull.js?v=45e45d40c2",
-    "/cp/reorder.js": "/cp/reorder.js?v=b60be72623",
-    "/cp/scratch.js": "/cp/scratch.js?v=d5feca8e79",
-    "/cp/segmented.js": "/cp/segmented.js?v=e2c6b0f62f",
-    "/cp/skeleton.js": "/cp/skeleton.js?v=327494b301",
-    "/cp/surfaces.js": "/cp/surfaces.js?v=23405485df",
+    "/components.js": "/components.js?v=b1395ce05b",
+    "/cp/ai.js": "/cp/ai.js?v=e0ead96208",
+    "/cp/button.js": "/cp/button.js?v=3853907472",
+    "/cp/controls.js": "/cp/controls.js?v=01431659a3",
+    "/cp/core.js": "/cp/core.js?v=cee004c038",
+    "/cp/inputs.js": "/cp/inputs.js?v=df7042e2c2",
+    "/cp/kit.js": "/cp/kit.js?v=cc54566c1d",
+    "/cp/messages.js": "/cp/messages.js?v=4d7fc15b28",
+    "/cp/pull.js": "/cp/pull.js?v=94d2a23f5d",
+    "/cp/reorder.js": "/cp/reorder.js?v=0cdc768d2d",
+    "/cp/scratch.js": "/cp/scratch.js?v=36cfaf610c",
+    "/cp/segmented.js": "/cp/segmented.js?v=e92fd01bcf",
+    "/cp/skeleton.js": "/cp/skeleton.js?v=3a4c11bd55",
+    "/cp/surfaces.js": "/cp/surfaces.js?v=959ef296f4",
     "/data.js": "/data.js?v=4d0c7dcdaa",
-    "/demo.js": "/demo.js?v=c3c028e3e7",
-    "/docs.js": "/docs.js?v=cb77db4928",
-    "/engine/atlas.js": "/engine/atlas.js?v=a7aaf8a341",
+    "/demo.js": "/demo.js?v=58c91af6f4",
+    "/docs.js": "/docs.js?v=993f00eb8f",
     "/icons.js": "/icons.js?v=f80b8839ec",
     "/images.js": "/images.js?v=5dc636774e",
-    "/playground.js": "/playground.js?v=5447d16fd0",
-    "/showcase.js": "/showcase.js?v=8a9e89b0c4",
-    "/variants-content.js": "/variants-content.js?v=7cf7c2baa6"
+    "/lib/available.js": "/lib/available.js?v=0992cfc54e",
+    "/lib/bar-chart.js": "/lib/bar-chart.js?v=fbbbe628f2",
+    "/lib/before-after.js": "/lib/before-after.js?v=2b8f2edc64",
+    "/lib/card-stack.js": "/lib/card-stack.js?v=0a0368affd",
+    "/lib/chunks/chunk-5BYG7LQO.js": "/lib/chunks/chunk-5BYG7LQO.js?v=ff06077a6b",
+    "/lib/chunks/chunk-6TDGCXIW.js": "/lib/chunks/chunk-6TDGCXIW.js?v=5ee79614c5",
+    "/lib/chunks/chunk-BCIF2ROM.js": "/lib/chunks/chunk-BCIF2ROM.js?v=d72c02e665",
+    "/lib/chunks/chunk-OQW5JTMC.js": "/lib/chunks/chunk-OQW5JTMC.js?v=9925729270",
+    "/lib/engine.js": "/lib/engine.js?v=3e35c75c1b",
+    "/lib/glossy-button.js": "/lib/glossy-button.js?v=2b68d8f624",
+    "/lib/gooey-menu.js": "/lib/gooey-menu.js?v=d4315105f0",
+    "/lib/image-reveal.js": "/lib/image-reveal.js?v=9d3263f665",
+    "/lib/kit.js": "/lib/kit.js?v=99620eaeb0",
+    "/lib/like-button.js": "/lib/like-button.js?v=1ba3d2a49c",
+    "/lib/mini-player.js": "/lib/mini-player.js?v=abfd80795a",
+    "/lib/morph-button.js": "/lib/morph-button.js?v=bbeb9490d3",
+    "/lib/number-ticker.js": "/lib/number-ticker.js?v=bf687bb8d9",
+    "/lib/otp-input.js": "/lib/otp-input.js?v=1b142d93f8",
+    "/lib/pull-to-refresh.js": "/lib/pull-to-refresh.js?v=1720d80dc1",
+    "/lib/quantity-stepper.js": "/lib/quantity-stepper.js?v=a1ab5a8759",
+    "/lib/reaction-picker.js": "/lib/reaction-picker.js?v=32aeaf2ff1",
+    "/lib/reorder-list.js": "/lib/reorder-list.js?v=d504e0694f",
+    "/lib/ruler-picker.js": "/lib/ruler-picker.js?v=fad9334a17",
+    "/lib/scratch-card.js": "/lib/scratch-card.js?v=799782fa3f",
+    "/lib/segmented-control.js": "/lib/segmented-control.js?v=f93e3e0162",
+    "/lib/signature-pad.js": "/lib/signature-pad.js?v=bb66fcc4b3",
+    "/lib/skeleton.js": "/lib/skeleton.js?v=228c52d481",
+    "/lib/slide-to-confirm.js": "/lib/slide-to-confirm.js?v=b1bfe2c0c9",
+    "/lib/split-button.js": "/lib/split-button.js?v=ecea91211e",
+    "/lib/sweep-transition.js": "/lib/sweep-transition.js?v=965ddac185",
+    "/lib/swipe-to-delete.js": "/lib/swipe-to-delete.js?v=8600338181",
+    "/lib/task-check.js": "/lib/task-check.js?v=147667a9e0",
+    "/lib/thinking-orb.js": "/lib/thinking-orb.js?v=e319cd9b5c",
+    "/lib/toast.js": "/lib/toast.js?v=0bc8161f05",
+    "/lib/upload-tile.js": "/lib/upload-tile.js?v=a891ed70f1",
+    "/lib/voice-note.js": "/lib/voice-note.js?v=16c90695c7",
+    "/playground.js": "/playground.js?v=58e0f28c5a",
+    "/showcase.js": "/showcase.js?v=e4db94689d",
+    "/variants-content.js": "/variants-content.js?v=7e5bad6150"
   }
 }</script>
 
-    <script type="module" src="/app.js?v=e9f3e531b0"></script>
+    <script type="module" src="/app.js?v=d4bc495f69"></script>
   </body>
 </html>

@@ -160,12 +160,12 @@ export function Row({
   );
 }
 
-/** `npx react-native-dissolve add <slug>` in a small mono row, tap to copy. */
+/** `npx dissolve-ui add <slug>` in a small mono row, tap to copy. */
 export function InstallCommand({ slug }: { slug: string }) {
   const [copied, setCopied] = useState(false);
   const muted = useToken('muted');
   const success = useToken('success');
-  const cmd = `npx react-native-dissolve add ${slug}`;
+  const cmd = `npx dissolve-ui add ${slug}`;
   return (
     <Pressable
       onPress={async () => {

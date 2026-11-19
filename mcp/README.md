@@ -23,13 +23,13 @@ Node 18 or later. Clone the repo and use the absolute path to `mcp/server.mjs` b
 ### Claude Code
 
 ```sh
-claude mcp add dissolve -- npx -y react-native-dissolve-mcp
+claude mcp add dissolve -- npx -y dissolve-ui-mcp
 ```
 
 ### Codex
 
 ```sh
-codex mcp add dissolve -- npx -y react-native-dissolve-mcp
+codex mcp add dissolve -- npx -y dissolve-ui-mcp
 ```
 
 Or in `~/.codex/config.toml`:

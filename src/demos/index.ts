@@ -32,7 +32,7 @@ import SkeletonDemo from './Skeleton.demo';
 
 /**
  * One demo per registry component, in registry/index.json order. The slug is the registry
- * name, so the screen lives at /demo/<slug> and installs with `npx react-native-dissolve add <slug>`.
+ * name, so the screen lives at /demo/<slug> and installs with `npx dissolve-ui add <slug>`.
  * Gesture heavy, full height demos (scroll: false) render outside a ScrollView.
  */
 export type DemoEntry = { slug: string; title: string; note: string; icon: SFSymbol; Component: ComponentType; scroll: boolean };

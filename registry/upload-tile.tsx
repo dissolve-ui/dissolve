@@ -1,5 +1,5 @@
 /**
- * UploadTile, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * UploadTile, from dissolve (dissolve-ui). This file is yours: restyle it with
  * classNames, change the timings, the icons, anything. Colors come from the dissolve theme tokens
  * (global.css), so it follows light and dark mode out of the box.
  *
@@ -35,7 +35,7 @@ import {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { capture, frames, measure, runDissolve, useDissolve, useDissolveContext, type Origin, type VariantName } from 'react-native-dissolve';
+import { capture, frames, measure, runDissolve, useDissolve, useDissolveContext, type Origin, type VariantName } from 'dissolve-ui';
 import { Animated, Pressable, Text, View, cn, useToken } from './tw';
 import { notify } from './dots';
 import { CALM, hash, wait } from './motion';

@@ -1,5 +1,5 @@
 /**
- * NumberTicker, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * NumberTicker, from dissolve (dissolve-ui). This file is yours: restyle it with
  * classNames, change the timings, anything. Colors come from the dissolve theme tokens
  * (global.css), so it follows light and dark mode out of the box.
  *

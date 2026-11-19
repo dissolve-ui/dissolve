@@ -177,3 +177,13 @@
 .sc-hero2 h1.hx-title { position: relative; line-height: 1.02; margin: 0; }
 .hx-title-cv { display: block; touch-action: pan-y; cursor: crosshair; }
 .hx-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Folded detail on the Install tab (peer versions). */
+.dc-more { margin: 10px 0 0; }
+.dc-more > summary { cursor: pointer; width: max-content; font-size: 13px; color: var(--muted); list-style: none; }
+.dc-more > summary::-webkit-details-marker { display: none; }
+.dc-more > summary::before { content: '+'; display: inline-block; width: 14px; font-family: var(--mono); }
+.dc-more[open] > summary::before { content: '\2212'; }
+.dc-more > summary:hover { color: var(--text-2); }
+.dc-more .dc-table-wrap { margin-top: 10px; }
+[data-panel="install"] .dc-lead { margin-bottom: 4px; }

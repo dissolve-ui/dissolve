@@ -1,64 +1,35 @@
-/* Inputs: SlideToConfirm, OTPInput, NumberTicker (cp/inputs.js). */
+/* Inputs demos (cp/inputs.js). The components bring their own base styles; the site sets its palette
+   through the --dissolve-* tokens, per theme, and a few looks that differ from the token defaults. */
 
 /* ---------- SlideToConfirm ---------- */
 
 .cp-slide {
-  position: relative; width: 100%; max-width: 340px; overflow: hidden; isolation: isolate;
-  cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+  width: 100%; max-width: 340px;
+  --dissolve-surface: #26282C; --dissolve-primary: #F2F4F7; --dissolve-primary-foreground: #12151A;
+  --dissolve-muted: #8E8E93; --dissolve-success: #34C759;
 }
-.cp-slide.dragging { cursor: grabbing; }
-.cp-slide:focus-visible { border-radius: 30px; }
-.cp-slide-fill { position: absolute; left: 0; top: 0; bottom: 0; }
-.cp-slide-label {
-  position: absolute; inset: 0; margin: auto; width: fit-content; height: fit-content;
-  font-size: 16px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; pointer-events: none;
-}
-.cp-slide-label:not(.cp-slide-done) {
-  background-repeat: no-repeat; background-size: 80px 100%;
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-.cp-slide-done { color: #fff; opacity: 0; }
-.cp-slide-knob {
-  position: absolute; display: grid; place-items: center; border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18); will-change: transform;
-}
-.cp-slide-ic { grid-area: 1 / 1; display: grid; place-items: center; }
-.cp-slide-ic svg { display: block; }
-.cp-slide-spinner { display: block; width: 20px; height: 20px; border-radius: 50%; border: 2.2px solid; }
+[data-theme='light'] .cp-slide { --dissolve-surface: #F2F2F7; --dissolve-primary: #1C1C1E; --dissolve-primary-foreground: #FFFFFF; }
+/* The dark knob reads its icons in dark ink, but the shimmer, the done label and the done knob stay white. */
+.cp-slide .dissolve-slide-shimmer { background-image: linear-gradient(90deg, #8E8E93, #FFFFFF, #8E8E93); }
+.cp-slide .dissolve-slide-done { color: #FFFFFF; }
+.cp-slide .dissolve-slide-knob-done { background: #FFFFFF; }
 
 /* ---------- OTPInput ---------- */
 
-.cp-otp { width: 100%; max-width: 340px; }
-.cp-otp-shake { position: relative; will-change: transform; }
-.cp-otp-row { display: flex; }
-.cp-otp-box { flex: 1; min-width: 0; display: grid; place-items: center; }
-.cp-otp-digits { position: absolute; inset: 0; pointer-events: none; }
-.cp-otp-cell { flex: 1; min-width: 0; display: grid; place-items: center; }
-.cp-otp-glyph { font-weight: 600; line-height: 1; opacity: 0; }
-.cp-otp-caret { display: block; width: 2px; border-radius: 1px; animation: cp-caret 1.12s infinite; }
-@keyframes cp-caret {
-  0%, 42.8% { opacity: 1; animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1); }
-  57.1%, 85.7% { opacity: 0; animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1); }
-  100% { opacity: 1; }
+.cp-otp {
+  width: 100%; max-width: 340px;
+  --dissolve-foreground: #F2F4F7; --dissolve-surface: #1E2024; --dissolve-surface-2: #2C2F35; --dissolve-border: #33363C;
+  --dissolve-success: #34C759; --dissolve-danger: #FF453A; --otp-success-fill: #15301D; --otp-danger-fill: #3A1C1B;
 }
-/* Covers the row: a tap focuses it, paste and SMS autofill work. Nearly invisible, not 0. */
-.cp-otp-input {
-  position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0;
-  opacity: 0.011; color: transparent; caret-color: transparent; background: transparent;
-  font-size: 16px; cursor: text; outline: none;
+[data-theme='light'] .cp-otp {
+  --dissolve-foreground: #1C1C1E; --dissolve-surface: #F5F5F5; --dissolve-surface-2: #E6E6EA; --dissolve-border: #E5E5EA;
+  --dissolve-danger: #FF3B30; --otp-success-fill: #EAF9EE; --otp-danger-fill: #FFEFEE;
 }
+.cp-otp-digit { font-variant-numeric: normal; }
 .cp-otp-reset { margin-top: 14px; }
 
 /* ---------- NumberTicker ---------- */
 
-.cp-ticker {
-  display: flex; align-items: center; color: var(--text); font-weight: 700;
-  white-space: nowrap;
-}
-.cp-ticker-col { display: block; overflow: hidden; flex: none; }
-.cp-ticker-roll { display: block; will-change: transform; }
-.cp-ticker-cell { display: block; text-align: center; }
-.cp-ticker-probe { position: absolute; visibility: hidden; }
-.cp-ticker-affix { flex: none; }
+.cp-ticker-text { color: var(--text); font-weight: 700; letter-spacing: -0.027em; }
 .cp-ticker-btn { margin-top: 18px; }
 .cp-mode-tile .cp-ticker { margin-top: 0; }

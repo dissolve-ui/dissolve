@@ -1,5 +1,5 @@
 /**
- * VoiceNote, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * VoiceNote, from dissolve (dissolve-ui). This file is yours: restyle it with
  * classNames, change the timings, the waveform, anything. Colors come from the dissolve theme
  * tokens (global.css), so it follows light and dark mode out of the box.
  *
@@ -12,7 +12,7 @@ import { Canvas, Group, Path, Skia, rect } from '@shopify/react-native-skia';
 import { cancelAnimation, Easing, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { useDissolve, type VariantName } from 'react-native-dissolve';
+import { useDissolve, type VariantName } from 'dissolve-ui';
 import { Animated, Pressable, Text, View, cn, useToken } from './tw';
 import { CALM } from './motion';
 

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-11-19
+
+### Changed
+- **The package is now `dissolve-ui`.** One package for everything: the React Native engine (`import { DissolveProvider } from 'dissolve-ui'`) and the CLI (`npx dissolve-ui add <name>`). `react-native-dissolve` is deprecated: replace it with `dissolve-ui` in package.json and in your imports. The MCP server is now `dissolve-ui-mcp`.
+
+### Added
+- React on the web: all 29 components now have a React web version in `registry/web`, with the same prop names as on React Native. Each one is a small `'use client'` wrapper (`<name>.tsx`) over a framework free core (`<name>.core.ts`) that owns the DOM, canvas, pointer handling, theme tokens and reduced motion. They need only `react` and `react-dom` 19, with no runtime dependency, and they work with the Next App Router and Vite. Native only props such as `haptics` are accepted, and map to `navigator.vibrate` where the browser has it.
+- Shared web files, copied with the components that import them: `engine.ts` (the grain engine), `kit.ts` (easing, scope, DOM and canvas helpers, `capture()` of any DOM subtree), `react.ts` (the wrapper hook) and `gl.ts` (WebGL2 helper).
+- `add <names> --native` or `--web` picks the platform for that run (the site shows the command for the platform you picked), and saves it in `dissolve.json`.
+- `init` asks for the platform once, React Native or React web, with the detected answer preselected (`react-native` or `expo` means native; `react-dom`, `next` or `vite` without React Native means web). `--native`, `--web` and `--yes` skip the question. The choice is saved in `dissolve.json` (`{ "platform", "dir" }`), and `add` reads it, running `init` first if the file is missing. Web projects with a `src/` folder install into `src/components/dissolve`.
+- `list` shows the platforms each component supports. Web availability comes from the files in `registry/web`.
+- Site: every component page has a React Native / React switch (remembered across pages). It changes the usage snippet, the install notes and the copied prompt. Props stay documented once, and native only props are tagged in React mode.
+
+### Changed (site and tooling)
+- The site runs the same code as the React web components: `scripts/build-web.mjs` bundles `registry/web/*.core.ts` into `web/lib`, and the demo ports in `web/cp` keep only demo content and autoplay, which drives the components through their public API and real pointer events. The old Canvas 2D ports and `web/engine` are gone.
+- Docs, README, the agent prompt, the skill and the MCP server use `npx dissolve-ui` and cover both platforms.
+
 ## [0.0.5] - 2026-11-19
 
 ### Added
@@ -98,6 +115,7 @@ First public release.
 - Claude skill (`web/skills/dissolve/SKILL.md`) and an agent prompt page.
 - Dependency free MCP server (`mcp/server.mjs`) exposing the docs as tools.
 
-[Unreleased]: https://github.com/rs-4/dissolve/compare/v0.0.5...HEAD
+[Unreleased]: https://github.com/rs-4/dissolve/compare/v0.0.6...HEAD
+[0.0.6]: https://github.com/rs-4/dissolve/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/rs-4/dissolve/compare/v0.0.4...v0.0.5
 [0.0.1]: https://github.com/rs-4/dissolve/releases/tag/v0.0.1

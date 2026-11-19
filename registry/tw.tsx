@@ -1,6 +1,6 @@
 /**
  * className-enabled primitives for the dissolve components (NativeWind v5 / react-native-css).
- * Installed once by `npx react-native-dissolve init`, shared by every dissolve component.
+ * Installed once by `npx dissolve-ui init`, shared by every dissolve component.
  */
 import type { ComponentProps, ComponentType } from 'react';
 import { Platform, Pressable as RNPressable, Text as RNText, TextInput as RNTextInput, View as RNView } from 'react-native';

@@ -1,5 +1,5 @@
 /**
- * SweepTransition, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * SweepTransition, from dissolve (dissolve-ui). This file is yours: restyle it with
  * classNames, change the timings, the band, anything. The rim color comes from the dissolve theme
  * tokens (global.css), so it follows light and dark mode out of the box.
  *
@@ -19,7 +19,7 @@ import { Canvas, Fill, Group, ImageShader, Shader, Skia, type SkImage } from '@s
 import { useAnimatedReaction, useDerivedValue, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { capture, frames, type ViewRef } from 'react-native-dissolve';
+import { capture, frames, type ViewRef } from 'dissolve-ui';
 import { View, cn, useToken } from './tw';
 import { toRGB } from './dots';
 import { CALM, wait } from './motion';

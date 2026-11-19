@@ -1,7 +1,7 @@
 /**
- * Dot drawing helpers shared by the dissolve components (react-native-dissolve): theme colors as
+ * Dot drawing helpers shared by the dissolve components (dissolve-ui): theme colors as
  * channels, the round sprite of the Skia Atlas, and the in place buffer update.
- * `npx react-native-dissolve add` copies it next to the components that use it.
+ * `npx dissolve-ui add` copies it next to the components that use it.
  */
 import { Skia } from '@shopify/react-native-skia';
 import type { SharedValue } from 'react-native-reanimated';

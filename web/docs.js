@@ -14,7 +14,7 @@ const skillURL = () => new URL(SKILL_PATH, location.href).href;
 
 const PROVIDER = `import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { DissolveProvider } from 'react-native-dissolve';
+import { DissolveProvider } from 'dissolve-ui';
 
 export default function Layout() {
   return (
@@ -27,7 +27,7 @@ export default function Layout() {
 }`;
 
 const QUICK = `import { Pressable, View } from 'react-native';
-import { useDissolve } from 'react-native-dissolve';
+import { useDissolve } from 'dissolve-ui';
 
 export function Row({ item, onRemove }) {
   const { ref, dissolving, dissolve } = useDissolve();
@@ -44,7 +44,7 @@ export function Row({ item, onRemove }) {
   );
 }`;
 
-const PROMPT = `Add react-native-dissolve to this React Native / Expo app. It snapshots any view with Skia and turns it into grains animated on the UI thread (Reanimated 4).
+const PROMPT = `Add dissolve-ui to this React Native / Expo app. It snapshots any view with Skia and turns it into grains animated on the UI thread (Reanimated 4).
 
 1. Install the package and its peers:
    ${INSTALL}
@@ -70,8 +70,8 @@ const PROMPT = `Add react-native-dissolve to this React Native / Expo app. It sn
       postcss.config.mjs: export default { plugins: { '@tailwindcss/postcss': {} } };
       nativewind-env.d.ts: /// <reference types="react-native-css/types" />
       global.css starts with: @import "tailwindcss/theme.css" layer(theme); @import "tailwindcss/preflight.css" layer(base); @import "tailwindcss/utilities.css"; and is imported once at the top of the root layout.
-   b) npx react-native-dissolve init        (once: tw.tsx primitives + --dissolve-* theme tokens in global.css, then it checks the setup and prints what is missing: fix everything it reports)
-   c) npx react-native-dissolve add <name>  (npx react-native-dissolve list shows the names; dependencies between components are copied too)
+   b) npx dissolve-ui init --native   (once: dissolve.json, tw.tsx primitives + --dissolve-* theme tokens in global.css, then it checks the setup and prints what is missing: fix everything it reports)
+   c) npx dissolve-ui add <name>      (npx dissolve-ui list shows the names; dependencies between components are copied too)
       import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
    Restyle with className and the part classNames (textClassName, boxClassName...), or change the --dissolve-* tokens in global.css. Light and dark follow the system.
    Finish by running npx tsc --noEmit and starting the app.
@@ -87,7 +87,9 @@ Rules:
 - One effect per user action, on user intent only, 0.9 s to 1.8 s.
 - Reduced motion is handled by the provider (the effect is skipped), do not add a custom fallback.
 - Keep grain counts reasonable: default grain on cards, a larger grain on big views, useDissolveScreen for full screens, one cascade burst instead of one burst per row.
-- Import the engine and hooks from react-native-dissolve. Import components from their copied file, never from the package.`;
+- Import the engine and hooks from dissolve-ui. Import components from their copied file, never from the package.
+
+For a React web app (Next.js, Vite) there is no engine to install: run npx dissolve-ui init --web, then npx dissolve-ui add <name> (npx dissolve-ui list shows which components run on the web). The components need React 19 and react-dom only, and take the same props as on native.`;
 
 /** The copyable setup prompt, shared by the Installation and Agent prompt pages. */
 function promptBlock(copyIcon, label = 'Tell your coding agent') {
@@ -141,7 +143,7 @@ const GLOBAL_CSS = `@import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css";
 
-/* npx react-native-dissolve init appends the dissolve tokens below */`;
+/* npx dissolve-ui init appends the dissolve tokens below */`;
 
 const OVERRIDES = `{
   "overrides": {
@@ -157,6 +159,16 @@ const ADD_EXAMPLE = `import { SlideToConfirm } from '@/components/dissolve/slide
   onConfirm={pay}
   className="mx-4"
 />`;
+
+const WEB_EXAMPLE = `import { ScratchCard } from '@/components/dissolve/scratch-card';
+
+export default function Page() {
+  return (
+    <ScratchCard onReveal={claim}>
+      <span className="text-4xl font-bold">$25</span>
+    </ScratchCard>
+  );
+}`;
 
 const OVERRIDE_EXAMPLE = `// Defaults: track bg-dissolve-surface, number text-dissolve-foreground
 <SlideToConfirm
@@ -229,7 +241,7 @@ function tokenTable() {
 
 export function introductionPage({ pageHead, icon }) {
   return `
-    ${pageHead('introduction', 'dissolve', 'An animation library for React Native. Wrap any view and it dissolves, melts, peels or rebuilds itself. Sixteen variants, all on the UI thread.', `<span class="glyph-lg">${icon('dust', 26)}</span>`)}
+    ${pageHead('introduction', 'dissolve', 'An animation library for React Native, with its components for React on the web too. Wrap any view and it dissolves, melts, peels or rebuilds itself. Sixteen variants, all on the UI thread.', `<span class="glyph-lg">${icon('dust', 26)}</span>`)}
     <p class="dc-lead"><code>${PKG}</code> gives deletes, archives, arrivals and gestures a physical ending. Wrap your app once, put a ref on a view, call <code>dissolve()</code>.</p>
     <h2 class="section-title">How it works</h2>
     <ol class="dc-how">
@@ -240,7 +252,8 @@ export function introductionPage({ pageHead, icon }) {
     <h2 class="section-title">Two parts</h2>
     <ol class="dc-how">
       <li><span class="dc-num">1</span><div><strong>The engine, from npm.</strong> <code>npm install ${PKG}</code> gives you the provider and the hooks: <code>useDissolve</code>, <code>DissolveIn</code>, <code>useAppear</code>, the gesture and transition hooks. Every variant in the sidebar runs on it.</div></li>
-      <li><span class="dc-num">2</span><div><strong>Components, copied into your app.</strong> Swipe to delete, toasts, slide to confirm and the rest are not in the package. The CLI copies their source into <code>components/dissolve</code>, the shadcn way: the code is yours, styled with NativeWind classNames and the <code>--dissolve-*</code> theme tokens.</div></li>
+      <li><span class="dc-num">2</span><div><strong>Components, copied into your app.</strong> Swipe to delete, toasts, slide to confirm and the rest are not in the package. <code>npx ${PKG} add</code> copies their source into <code>components/dissolve</code>, the shadcn way: the code is yours, styled with classNames and the <code>--dissolve-*</code> theme tokens.</div></li>
+      <li><span class="dc-num">3</span><div><strong>React Native or React.</strong> <code>npx ${PKG} init</code> asks which one and saves it in <code>dissolve.json</code>. On the web, components take the same props, need only React 19 and <code>react-dom</code>, and draw on a canvas: no engine to install. Each component page has a switch for its React Native and React snippets.</div></li>
     </ol>
     <div class="dc-actions">
       <a class="btn btn-accent" href="#/gallery">See the Gallery ${ICONS.arrow}</a>
@@ -275,7 +288,14 @@ export function installationPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) 
     <p class="dc-text">Works with Claude Code, Codex, Cursor or any chat. It installs the engine, wraps the root layout, sets up NativeWind v5, runs <code>init</code> and adds the components you ask for. More options, like the skill and the MCP server, are on the <a class="dc-link" href="#/agent-prompt">Agent prompt</a> page.</p>
     ${promptBlock(copyIcon)}
 
-    <h2 class="section-title" id="dc-manual">By hand</h2>
+    <h2 class="section-title" id="dc-web">React on the web</h2>
+    <p class="dc-text">Building a Next.js or Vite app? Skip the engine and NativeWind: web components need React 19 and <code>react-dom</code>, nothing else. <code>init</code> asks the platform (React is preselected in a web project), saves it in <code>dissolve.json</code> and writes the theme tokens, as plain CSS when the project has no Tailwind.</p>
+    ${cmd(`${CLI} init --web`)}
+    ${cmd(`${CLI} add scratch-card`)}
+    ${codeBlock(WEB_EXAMPLE, { title: 'app/page.tsx' })}
+    <p class="dc-note">Same props as on React Native. <code>${CLI} list</code> shows which components run on the web, and every component page has a React Native / React switch.</p>
+
+    <h2 class="section-title" id="dc-manual">React Native, by hand</h2>
     ${step(1, 'Install the engine', 'dc-install')}
     <p class="dc-text">The package holds the engine and the hooks. It is all you need for the variants.</p>
     ${cmd(INSTALL)}
@@ -316,7 +336,7 @@ export function installationPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) 
     <p class="dc-note">Import <code>global.css</code> once at the top of <code>app/_layout.tsx</code>. The full guide is on <a class="dc-link" href="https://www.nativewind.dev/v5" target="_blank" rel="noopener">nativewind.dev</a>.</p>
 
     ${step(5, 'Init', 'dc-init')}
-    <p class="dc-text">Once per project. It writes <code>tw.tsx</code>, the className primitives every component shares, and appends the theme tokens to your <code>global.css</code>. It also tells you which dependency is missing.</p>
+    <p class="dc-text">Once per project. It asks the platform (React Native is preselected in an Expo or React Native project) and saves it in <code>dissolve.json</code>, writes <code>tw.tsx</code>, the className primitives every component shares, and appends the theme tokens to your <code>global.css</code>. It also tells you which dependency is missing.</p>
     ${cmd(`${CLI} init`)}
 
     ${step(6, 'Add components', 'dc-add')}
@@ -340,19 +360,26 @@ export function installationPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) 
 /* ---------- CLI ---------- */
 
 const COMMANDS = [
-  ['init', 'Writes <code>tw.tsx</code> (className primitives, <code>cn</code>, <code>useToken</code>) and appends the theme tokens to your <code>global.css</code>. Then lists missing dependencies.'],
-  ['add &lt;name...&gt;', 'Copies one or more components. Runs <code>init</code> first if <code>tw.tsx</code> is missing, and prints the import line of each file.'],
-  ['list', 'Every component with a one line description. Alias: <code>ls</code>.'],
+  ['init', 'Asks the platform, React Native or React, with the one your <code>package.json</code> points to preselected, and saves it in <code>dissolve.json</code>. Appends the theme tokens to your <code>global.css</code>, and on native writes <code>tw.tsx</code> (className primitives, <code>cn</code>, <code>useToken</code>). Then lists missing dependencies.'],
+  ['add &lt;name...&gt;', 'Copies one or more components for the platform in <code>dissolve.json</code>, running <code>init</code> first if it is missing, and prints the import line of each file.'],
+  ['list', 'Every component, the platforms it runs on and a one line description. Alias: <code>ls</code>.'],
   ['help', 'Usage. Also <code>--help</code> or <code>-h</code>.'],
 ];
 
 const OPTIONS = [
+  ['--native, --web', 'asked', 'Pick the platform without the question. Saved in <code>dissolve.json</code>.'],
+  ['--yes, -y', 'off', 'Take the detected platform. Also what happens without a terminal, in CI or scripts.'],
   ['--path, -p &lt;dir&gt;', '<code>components/dissolve</code>', 'Target folder, relative to the project.'],
   ['--overwrite, -o', 'off', 'Replace files that exist. Without it, existing files are skipped so your edits are safe. With <code>init</code>, appends the tokens again.'],
   ['--cwd &lt;dir&gt;', 'current folder', 'Project root, for monorepos and scripts.'],
 ];
 
-const ADD_OUTPUT = `$ npx react-native-dissolve add toast like-button
+const CONFIG = `{
+  "platform": "web",
+  "dir": "components/dissolve"
+}`;
+
+const ADD_OUTPUT = `$ npx dissolve-ui add toast like-button
 added   components/dissolve/toast.tsx
         import { ToastProvider, useToast } from '@/components/dissolve/toast';
 added   components/dissolve/like-button.tsx
@@ -361,7 +388,7 @@ added   components/dissolve/like-button.tsx
 export function cliPage({ pageHead, codeBlock, cmd, GLYPH }) {
   return `
     ${pageHead('cli', 'CLI', 'Copy components into your project, the shadcn way. The source is yours to read, edit and restyle.', `<span class="glyph-lg">${GLYPH.cli}</span>`)}
-    <p class="dc-lead">The CLI ships with the package, run it with <code>npx</code>. It needs NativeWind v5 in the project, see <a class="dc-link" href="#/installation">Installation</a>.</p>
+    <p class="dc-lead">One CLI for React Native and React on the web, run it with <code>npx</code>. Native components need NativeWind v5 in the project, web components only React 19, see <a class="dc-link" href="#/installation">Installation</a>. <code>npx ${PKG}</code> runs the same CLI.</p>
     ${cmd(`${CLI} init`)}
     ${cmd(`${CLI} add swipe-to-delete toast`)}
     ${cmd(`${CLI} list`)}
@@ -383,12 +410,17 @@ export function cliPage({ pageHead, codeBlock, cmd, GLYPH }) {
     </div>
     ${cmd(`${CLI} add otp-input --path app/ui/dissolve --overwrite`)}
 
+    <h2 class="section-title">Platform</h2>
+    <p class="dc-text"><code>init</code> preselects React Native when <code>package.json</code> has <code>react-native</code> or <code>expo</code>, React when it has <code>react-dom</code>, <code>next</code> or <code>vite</code> without them. The answer goes in <code>dissolve.json</code> at the project root, and every <code>add</code> reads it. Run <code>init --web</code> or <code>init --native</code> to switch.</p>
+    ${codeBlock(CONFIG, { title: 'dissolve.json', lang: 'json' })}
+
     <h2 class="section-title">Where files go</h2>
     <p class="dc-text">By default <code>components/dissolve</code>. When <code>tsconfig.json</code> maps <code>@/*</code> to <code>./src/*</code> and a <code>src</code> folder exists, <code>src/components/dissolve</code>. Import lines use your <code>@/</code> alias when there is one, a relative path otherwise.</p>
     ${codeBlock(ADD_OUTPUT, { title: 'Terminal', lang: 'sh' })}
 
     <h2 class="section-title">What init writes</h2>
-    <p class="dc-text"><code>tw.tsx</code> holds <code>View</code>, <code>Text</code>, <code>Pressable</code>, <code>TextInput</code> and <code>Animated</code> with className support, <code>cn()</code> to merge classes and <code>useToken()</code> to read a token as a color. The tokens go at the end of the first <code>global.css</code> found (root, <code>src/</code>, <code>app/</code>, <code>styles/</code>, or any CSS file importing Tailwind). With none, it writes <code>dissolve.css</code> next to the components: import it from your Tailwind entry.</p>
+    <p class="dc-text">On the web, <code>dissolve.json</code> and the theme tokens, as plain CSS variables when the project has no Tailwind. Each component comes with its framework free core (<code>&lt;name&gt;.core.ts</code>) and the shared files it imports, nothing to install.</p>
+    <p class="dc-text">On React Native, <code>tw.tsx</code> holds <code>View</code>, <code>Text</code>, <code>Pressable</code>, <code>TextInput</code> and <code>Animated</code> with className support, <code>cn()</code> to merge classes and <code>useToken()</code> to read a token as a color. The tokens go at the end of the first <code>global.css</code> found (root, <code>src/</code>, <code>app/</code>, <code>styles/</code>, or any CSS file importing Tailwind). With none, it writes <code>dissolve.css</code> next to the components: import it from your Tailwind entry.</p>
     <p class="dc-note">Running it twice is safe: files and tokens that exist are left alone.</p>
     <div class="dc-actions">
       <a class="btn btn-accent" href="#/theming">Theming ${ICONS.arrow}</a>
@@ -401,7 +433,7 @@ export function cliPage({ pageHead, codeBlock, cmd, GLYPH }) {
 export function themingPage({ pageHead, codeBlock, GLYPH }) {
   return `
     ${pageHead('theming', 'Theming', 'Twelve tokens, light and dark. Change them once and every component follows, or override one instance with a className.', `<span class="glyph-lg">${GLYPH.theming}</span>`)}
-    <p class="dc-lead"><code>init</code> adds the tokens to your <code>global.css</code>. Components take their colors from classes like <code>bg-dissolve-surface</code> or <code>text-dissolve-foreground</code>, so they follow your palette.</p>
+    <p class="dc-lead"><code>init</code> adds the tokens to your <code>global.css</code>. Components take their colors from classes like <code>bg-dissolve-surface</code> or <code>text-dissolve-foreground</code>, so they follow your palette. On the web, components read the same <code>--dissolve-*</code> variables directly, with or without Tailwind.</p>
 
     <h2 class="section-title">Tokens</h2>
     ${tokenTable()}
@@ -437,19 +469,19 @@ const MCP_TOOLS = [
   ['get_setup', 'Install command, provider snippet, first effect, the component CLI and picking rules.'],
 ];
 
-// Published as its own dependency free npm package, react-native-dissolve-mcp.
-const SERVER_CMD = 'npx -y react-native-dissolve-mcp';
+// Published as its own dependency free npm package, dissolve-ui-mcp.
+const SERVER_CMD = 'npx -y dissolve-ui-mcp';
 const DESKTOP = `{
   "mcpServers": {
     "dissolve": {
       "command": "npx",
-      "args": ["-y", "react-native-dissolve-mcp"]
+      "args": ["-y", "dissolve-ui-mcp"]
     }
   }
 }`;
 const CODEX = `[mcp_servers.dissolve]
 command = "npx"
-args = ["-y", "react-native-dissolve-mcp"]`;
+args = ["-y", "dissolve-ui-mcp"]`;
 
 export function agentPromptPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) {
   const url = skillURL();
@@ -463,7 +495,7 @@ export function agentPromptPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) {
       <section class="dc-quick-card">
         <header>${mark(CLAUDE_PATH, 'Claude').replace('class="dc-mark"', 'class="dc-mark dc-claude"')}<strong>Claude Code</strong></header>
         <p class="dc-label">Install the skill</p>
-        ${cmd(`mkdir -p ~/.claude/skills/react-native-dissolve && curl -fsSL ${url} -o ~/.claude/skills/react-native-dissolve/SKILL.md`)}
+        ${cmd(`mkdir -p ~/.claude/skills/dissolve-ui && curl -fsSL ${url} -o ~/.claude/skills/dissolve-ui/SKILL.md`)}
         <p class="dc-label">Add the MCP server</p>
         ${cmd(`claude mcp add dissolve -- ${SERVER_CMD}`)}
       </section>
@@ -486,18 +518,18 @@ export function agentPromptPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) {
     <p class="dc-text">An Agent Skill is a <code>SKILL.md</code> file Claude loads on its own whenever you ask for a dissolve effect. It holds the setup, the API of every hook, a variant picking table and the best practices.</p>
     <div class="dc-file">
       <span class="dc-file-icon">${ICONS.skill}</span>
-      <div class="dc-file-meta"><span class="dc-file-name">SKILL.md</span><span class="dc-file-path">react-native-dissolve</span></div>
+      <div class="dc-file-meta"><span class="dc-file-name">SKILL.md</span><span class="dc-file-path">dissolve-ui</span></div>
       <a class="btn btn-sm" href="${SKILL_PATH}" target="_blank" rel="noopener">${ICONS.open}View</a>
       <a class="btn btn-sm btn-accent" href="${SKILL_PATH}" download="SKILL.md">${ICONS.download}Download</a>
     </div>
     <p class="dc-label">For all your projects</p>
-    ${cmd(`mkdir -p ~/.claude/skills/react-native-dissolve && curl -fsSL ${url} -o ~/.claude/skills/react-native-dissolve/SKILL.md`)}
+    ${cmd(`mkdir -p ~/.claude/skills/dissolve-ui && curl -fsSL ${url} -o ~/.claude/skills/dissolve-ui/SKILL.md`)}
     <p class="dc-label">For this project only, shared with your team</p>
-    ${cmd(`mkdir -p .claude/skills/react-native-dissolve && curl -fsSL ${url} -o .claude/skills/react-native-dissolve/SKILL.md`)}
+    ${cmd(`mkdir -p .claude/skills/dissolve-ui && curl -fsSL ${url} -o .claude/skills/dissolve-ui/SKILL.md`)}
     <p class="dc-note">Restart Claude Code, then ask for an effect, for example "dissolve the row when I delete a task". With other agents, paste the file into <code>AGENTS.md</code> or a Cursor rule.</p>
 
     ${step(2, 'MCP server', 'dc-mcp')}
-    <p class="dc-text">A tiny MCP server with no dependencies, published on npm as <code>react-native-dissolve-mcp</code>. Your agent runs it with <code>npx</code> over stdio, so it stays up to date, and it answers with the same data as the docs. The source is in <code>mcp/server.mjs</code> on <a class="dc-link" href="${GITHUB}" target="_blank" rel="noopener">GitHub</a>.</p>
+    <p class="dc-text">A tiny MCP server with no dependencies, published on npm as <code>dissolve-ui-mcp</code>. Your agent runs it with <code>npx</code> over stdio, so it stays up to date, and it answers with the same data as the docs. The source is in <code>mcp/server.mjs</code> on <a class="dc-link" href="${GITHUB}" target="_blank" rel="noopener">GitHub</a>.</p>
     <div class="dc-table-wrap">
       <table class="dc-table">
         <thead><tr><th>Tool</th><th>Returns</th></tr></thead>

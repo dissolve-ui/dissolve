@@ -1,5 +1,5 @@
 /**
- * SignaturePad, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * SignaturePad, from dissolve (dissolve-ui). This file is yours: restyle it with
  * classNames, change the nib, the copy, anything. Colors come from the dissolve theme tokens
  * (global.css), so it follows light and dark mode out of the box.
  *
@@ -14,7 +14,7 @@ import { Canvas, Path, Skia, type SkImage, type SkPath } from '@shopify/react-na
 import { useAnimatedStyle, useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { frames, measure, runDissolve, useDissolveContext, type ViewRef } from 'react-native-dissolve';
+import { frames, measure, runDissolve, useDissolveContext, type ViewRef } from 'dissolve-ui';
 import { Animated, Pressable, Text, View, cn, useToken } from './tw';
 import { CALM } from './motion';
 

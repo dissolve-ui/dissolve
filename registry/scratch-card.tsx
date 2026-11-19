@@ -1,5 +1,5 @@
 /**
- * ScratchCard, from dissolve (react-native-dissolve). This file is yours: change the foil, the
+ * ScratchCard, from dissolve (dissolve-ui). This file is yours: change the foil, the
  * brush, the tilt, the copy, anything. The foil is an explicit color (the color prop), not a theme
  * token, so it looks the same in light and dark mode, like a printed ticket. The card under it
  * follows the dissolve theme tokens (global.css).
@@ -55,7 +55,7 @@ import {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { frames, measure, runDissolve, useDissolveContext, type ViewRef } from 'react-native-dissolve';
+import { frames, measure, runDissolve, useDissolveContext, type ViewRef } from 'dissolve-ui';
 import { Animated, View, cn } from './tw';
 import { makeSprite, notify, toRGB } from './dots';
 import { CALM, hash, wait } from './motion';

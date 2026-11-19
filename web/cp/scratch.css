@@ -1,26 +1,11 @@
-/* ScratchCard (cp/scratch.js) */
+/* ScratchCard demo (cp/scratch.js). The card brings its own base styles; the site tints it per theme. */
 .sc { --sc-card: var(--raised); display: flex; flex-direction: column; align-items: center; gap: 28px; padding: 12px 0 4px; user-select: none; -webkit-user-select: none; }
 [data-theme='light'] .sc { --sc-card: #F2F3F5; }
-.sc-wrap { position: relative; flex: none; }
-.sc-card {
-  --sc-sx: 0px; --sc-sy: 0px;
-  position: absolute; inset: 0; overflow: hidden; background: var(--sc-card);
-  box-shadow: 0 18px 34px -14px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.12);
-  touch-action: none; cursor: grab; will-change: transform; -webkit-tap-highlight-color: transparent;
-}
+.sc-card { background: var(--sc-card); box-shadow: 0 18px 34px -14px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.12); }
 [data-theme='light'] .sc-card { box-shadow: 0 18px 34px -14px rgba(20, 24, 32, 0.32), 0 2px 6px rgba(20, 24, 32, 0.08); }
-.sc-card.on { cursor: grabbing; }
-.sc-content { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text); }
+.sc-content { color: var(--text); }
 .sc-kicker, .sc-code { font: 500 11px var(--mono); letter-spacing: 0.11em; color: var(--muted); }
 .sc-amount { font: 700 56px/1 var(--sans); letter-spacing: -0.035em; margin: 8px 0 8px; font-variant-numeric: tabular-nums; }
-.sc-foil { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.sc-sheen {
-  position: absolute; top: -25%; bottom: -25%; left: -50%; right: -50%; pointer-events: none;
-  background: linear-gradient(115deg, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0.16) 50%, rgba(255, 255, 255, 0) 62%);
-  transform: translate(var(--sc-sx), var(--sc-sy));
-}
-.sc-rim { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 0 0 0.5px rgba(0, 0, 0, 0.08); }
-.sc-dust { position: absolute; pointer-events: none; }
 .sc-again { border: 0; padding: 6px 12px; background: none; color: var(--muted); font: 500 15px var(--sans); cursor: pointer; border-radius: 9px; transition: color .2s, background .2s; }
 .sc-again:hover { color: var(--text); background: var(--wash); }
 .sc-again:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

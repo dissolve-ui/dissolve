@@ -1,5 +1,5 @@
 /**
- * Skeleton, from dissolve (react-native-dissolve). This file is yours: restyle the blocks with
+ * Skeleton, from dissolve (dissolve-ui). This file is yours: restyle the blocks with
  * classNames, change the wave, the timings, anything. Colors come from the dissolve theme tokens
  * (global.css), so it follows light and dark mode out of the box.
  *
@@ -63,7 +63,7 @@ import {
   type SharedValue,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { capGrain, capture, frames, measure, runDissolve, useDissolveContext } from 'react-native-dissolve';
+import { capGrain, capture, frames, measure, runDissolve, useDissolveContext } from 'dissolve-ui';
 import { Animated, View, cn } from './tw';
 import { CALM, wait } from './motion';
 

@@ -1,5 +1,5 @@
 // Interactive demo card for one variant, used by the variant stage and the gallery tiles.
-import { morph, VARIANTS as ENGINE } from './engine/atlas.js';
+import { morph, VARIANTS as ENGINE } from './lib/engine.js';
 import { play, snapshot, IMG, FONT, cover, pal, rr, text, isLight, boxOf, hide, show, OUT_CUBIC, onTheme, redraw, scope } from './cp/kit.js';
 import { item } from './showcase.js';
 
