@@ -1,35 +1,9 @@
-/* GlossyButton (cp/button.js): the button, then its playground on the component page. */
-.gb {
-  --gb-fill: #296FF0; --gb-label: #FFFFFF; --gb-r: 999px;
-  --gb-stroke: .4; --gb-in-o: .24; --gb-in-b: 6px; --gb-in-s: 2px;
-  --gb-sh-o: .2; --gb-sh-y: 3px; --gb-sh-b: 6px; --gb-ring: 1px;
-  --gb-light: 1; --gb-scale: 1;
-  position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none;
-  height: 44px; padding: 0 18px; gap: 7px; border: 0; margin: 0;
-  border-radius: var(--gb-r); background: var(--gb-fill); color: var(--gb-label);
-  font: 600 15px/1 var(--sans); letter-spacing: -0.013em; white-space: nowrap; cursor: pointer;
-  box-shadow: 0 var(--gb-sh-y) var(--gb-sh-b) rgba(0, 0, 0, var(--gb-sh-o)), 0 0 0 var(--gb-ring) var(--gb-fill);
-  transform: scale(var(--gb-scale)); will-change: transform;
-  user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-}
-.gb::before, .gb::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
-.gb::before {
-  padding: 1px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, var(--gb-stroke)), rgba(255, 255, 255, 0));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
-}
-.gb::after { box-shadow: inset 0 0 var(--gb-in-b) var(--gb-in-s) rgba(255, 255, 255, var(--gb-in-o)); opacity: var(--gb-light); }
-.gb > * { position: relative; }
-.gb svg { flex: none; }
-.gb:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
-.gb.gb-full { display: flex; width: 100%; }
-
-/* Playground: one panel, hairline sections, flat inputs, monochrome sliders. */
+/* GlossyButton playground (cp/button.js): one panel, hairline sections, flat inputs, monochrome sliders.
+   The button itself brings its own styles. */
 .cp-is-glossy-button.cp-mode-stage { max-width: 860px; }
 .gbp { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 12px; width: 100%; align-items: stretch; text-align: left; }
 .gbp-view { position: relative; display: grid; place-items: center; min-height: 340px; border-radius: var(--r-lg); background: var(--wash); }
-.gbp-view:has(.gb-full) { padding: 0 32px; place-items: center stretch; }
+.gbp-view:has([data-full]) { padding: 0 32px; place-items: center stretch; }
 .gbp-view.gbp-paper { background: #FFFFFF; }
 .gbp-view.gbp-night { background: #0E0E10; }
 .gbp-bg { position: absolute; right: 12px; bottom: 12px; display: flex; gap: 6px; }

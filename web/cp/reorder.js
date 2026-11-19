@@ -1,23 +1,12 @@
-// ReorderList (registry/reorder-list.tsx), ported raw. Same timings and curves as the native source:
-// long press (250 ms) or the handle lifts a row, the others slide on the calm curve, the row follows
-// 1:1 and leans with sideways speed, the list scrolls near its edges, the drop settles critically
-// damped. Grains: a faint trail at the slot it left, a puff at the edges of the one it lands in.
-import { CALM, IN_OUT_CUBIC, value, el, clamp, play, rr, isLight, onTheme, availW, snapNode, prop, add } from './kit.js';
-const RM = matchMedia('(prefers-reduced-motion: reduce)');
-const MONO = "'Geist Mono', ui-monospace, monospace";
+// ReorderList demo. The drag, the slides and the grains are the React web component's core
+// (registry/web/reorder-list.core.ts, built into web/lib), the same code a React app installs.
+// This file keeps the demo: the tasks and their rows, the delete and its reset, and the autoplay,
+// which holds and drags a row with real pointer events.
+import { createReorderList } from '../lib/reorder-list.js';
+import { IN_OUT_CUBIC, el, isLight, onTheme, availW, tween, AUTO, prop, add } from './kit.js';
 
+/** As the core: the hold before a row lifts. */
 const HOLD = 250;
-const SLIDE = 300;
-const SETTLE = { stiffness: 420, damping: 41, mass: 1, eps: 0.05 };
-const LIFT_SCALE = 0.03;
-const MAX_TILT = 3;
-const EDGE = 56;
-const MAX_SPEED = 900;
-const DELETE_AT = 0.42;
-const GAP = 0;
-const GRAINS = 72;
-
-const IDLE = 0, DRAG = 1, DROP = 2, DELETE = 3;
 
 const stroke = (d) => `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
 const ICON = {
@@ -39,74 +28,27 @@ const TASKS = [
   { id: 'g', title: 'Read two chapters', meta: 'Anytime · Me', icon: 'book', tone: ['#8E8E93', '#98989D'] },
 ];
 
-/** Damped spring toward `to` as a promise, on a kit value (critically damped by default). */
-const settle = (v, to) => v.spring(to, SETTLE);
-
 function mountReorder(body, { sc, mode }) {
   const tile = mode === 'tile';
   const stage = mode === 'stage';
   const W = Math.round(Math.min(tile ? 300 : 400, availW(body) || 340));
-  const data = TASKS.slice(0, tile ? 4 : stage ? 7 : 5);
-  const viewH = stage ? 372 : 0; // the stage scrolls, so the edges auto scroll
+  const all = TASKS.slice(0, tile ? 4 : stage ? 7 : 5);
+  let data = all.slice();
 
-  const root = el('div', 'cp-ro');
-  root.style.width = W + 'px';
-  const view = el('div', 'cp-ro-view');
-  const scroller = el('div', 'cp-ro-scroll');
-  // The stage scrolls: room around the rows for the lift and its shadow, edges fading out.
-  if (viewH) scroller.classList.add('cp-ro-scrolls'), (scroller.style.maxHeight = viewH + 'px');
-  const list = el('div', 'cp-ro-list');
-  list.setAttribute('role', 'list');
-  list.setAttribute('aria-label', 'Priorities. Press and hold a row, then drag it. Alt and the arrow keys move the focused row.');
-  scroller.append(list);
-  const cv = el('canvas', 'cp-ro-canvas');
-  const PAD = 18;
-  view.append(scroller, cv);
-  root.append(view);
-  body.append(root);
+  const host = el('div', 'cp-ro');
+  host.style.width = W + 'px';
+  // The stage scrolls, so the edges auto scroll.
+  if (stage) host.style.maxHeight = '372px';
+  else host.classList.add('cp-ro-static');
+  host.setAttribute('aria-label', 'Priorities. Press and hold a row, then drag it. Alt and the arrow keys move the focused row.');
+  body.append(host);
 
-  // Grain canvas: the viewport plus a margin, so a puff at the first or last edge is not cut.
-  const dpr = Math.min(2, devicePixelRatio || 1);
-  const ctx = cv.getContext('2d');
-  const sizeCanvas = () => {
-    const w = W + PAD * 2, h = (scroller.clientHeight || 0) + PAD * 2;
-    cv.width = Math.round(w * dpr);
-    cv.height = Math.round(h * dpr);
-    cv.style.cssText = `left:${-PAD}px;top:${-PAD}px;width:${w}px;height:${h}px`;
-  };
-
-  /* ---------- Rows ---------- */
-
-  const rows = new Map();
-  let order = data.map((t) => t.id);
-  let heights = {};
-  let phase = IDLE, active = null, from = 0, target = 0, armed = 0;
-  let total = 0;
-  let busy = false;
-  const fx = { x: 0, y: 0, x0: 0, y0: 0, top0: 0, s0: 0, lastX: 0, vx: 0 };
-  let tilt = 0;
-  const reduce = () => RM.matches;
-
-  const paintActive = () => {
-    const r = active && rows.get(active);
-    if (!r) return;
-    const l = lift.v;
-    const fade = Math.min(1, Math.abs(dx.v) / (W * DELETE_AT));
-    const a = getComputedStyle(root).getPropertyValue('--ro-shade-a').trim() || 0.3;
-    r.el.style.transform = `translate3d(${dx.v.toFixed(2)}px,${top.v.toFixed(2)}px,0) scale(${(1 + LIFT_SCALE * l).toFixed(4)}) rotate(${tilt.toFixed(3)}deg)`;
-    r.el.style.boxShadow = `inset 0 0 0 1px var(--line), 0 ${(2 + 8 * l).toFixed(1)}px ${(4 + 26 * l).toFixed(1)}px rgba(0,0,0,${(a * l).toFixed(3)})`;
-    r.el.style.opacity = (1 - 0.4 * fade).toFixed(3);
-  };
-  const top = value(sc, 0, paintActive);
-  const dx = value(sc, 0, paintActive);
-  const lift = value(sc, 0, paintActive);
-
-  function makeRow(t) {
-    const row = el('div', 'cp-ro-row');
-    row.setAttribute('role', 'listitem');
-    row.tabIndex = 0;
-    const rank = el('span', 'cp-ro-rank');
+  const tone = (t) => t.tone[isLight() ? 0 : 1];
+  const fill = (t) => {
+    const row = list.row(t.id);
+    if (row.firstChild) return row;
     const icon = el('span', 'cp-ro-icon', stroke(ICON[t.icon]));
+    icon.style.background = tone(t);
     const text = el('span', 'cp-ro-text');
     const title = el('span', 'cp-ro-title');
     title.textContent = t.title;
@@ -114,396 +56,76 @@ function mountReorder(body, { sc, mode }) {
     meta.textContent = t.meta;
     text.append(title, meta);
     const grip = el('span', 'cp-ro-grip', '<i></i><i></i><i></i>');
+    grip.dataset.reorderHandle = '';
     grip.setAttribute('aria-hidden', 'true');
-    row.append(rank, icon, text, grip);
-    const r = { t, el: row, rank, icon, y: null, at: -1 };
-    r.y = value(sc, 0, () => { if (active !== t.id || phase === IDLE) row.style.transform = `translate3d(0,${r.y.v.toFixed(2)}px,0)`; });
-    row.addEventListener('pointerdown', (e) => onDown(r, e));
-    row.addEventListener('contextmenu', (e) => e.preventDefault());
-    row.addEventListener('keydown', (e) => {
-      if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
-      e.preventDefault();
-      nudge(t.id, e.key === 'ArrowUp' ? -1 : 1);
-    });
-    return r;
-  }
-
-  const tone = (r) => r.t.tone[isLight() ? 0 : 1];
-  const paintTones = () => rows.forEach((r) => { r.icon.style.background = tone(r); });
-
-  /** Tops in the committed order, and in the virtual one (the lifted row at its target). */
-  function computeLayout() {
-    const base = {};
-    let y = 0;
-    for (const id of order) { base[id] = y; y += (heights[id] ?? 0) + GAP; }
-    total = order.length ? y - GAP : 0;
-    if (!active || phase === IDLE || base[active] === undefined) return { base, tops: base };
-    const rest = order.filter((k) => k !== active);
-    rest.splice(clamp(target, 0, rest.length), 0, active);
-    const tops = {};
-    y = 0;
-    for (const id of rest) { tops[id] = y; y += (heights[id] ?? 0) + GAP; }
-    return { base, tops };
-  }
-  let L = { base: {}, tops: {} };
-
-  /** Slides every resting row to its slot on the calm curve (or jumps there the first time). */
-  function apply(animate = true) {
-    L = computeLayout();
-    list.style.height = total + 'px';
-    for (const [id, r] of rows) {
-      if (id === active && phase !== IDLE) continue;
-      const t = L.tops[id];
-      if (t === undefined || t === r.at) continue;
-      if (r.at < 0 || !animate) r.y.set(t);
-      else r.y.to(t, reduce() ? 0 : SLIDE, CALM);
-      r.at = t;
-    }
-    order.forEach((id, i) => { const r = rows.get(id); if (r) r.rank.textContent = String(i + 1); });
-  }
-
-  function measure() {
-    let changed = false;
-    for (const [id, r] of rows) {
-      const h = r.el.offsetHeight;
-      if (h && heights[id] !== h) { heights[id] = h; changed = true; }
-    }
-    if (changed) { apply(phase === IDLE); sizeCanvas(); }
-  }
-  const ro = new ResizeObserver(() => measure());
-  sc.onDispose(() => ro.disconnect());
-
-  function addRow(t) {
-    const r = makeRow(t);
-    rows.set(t.id, r);
-    list.append(r.el);
-    r.icon.style.background = tone(r);
-    ro.observe(r.el);
-    return r;
-  }
-  data.forEach(addRow);
-  measure();
-  apply(false);
-  sizeCanvas();
-  paintTones();
-  onTheme(sc, () => { paintTones(); readInk(); });
-
-  /* ---------- Grains ---------- */
-
-  const G = new Float32Array(GRAINS * 9); // x, y, vx, vy, born, life, size, alpha, delay
-  let cursor = 0, alive = false, ink = [242, 244, 247];
-  function readInk() {
-    const c = getComputedStyle(root).getPropertyValue('--text').trim();
-    const m = c.match(/^#([0-9a-f]{6})$/i);
-    ink = m ? [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16)) : isLight() ? [18, 21, 26] : [242, 244, 247];
-  }
-  readInk();
-
-  function emit(kind, y0, h) {
-    if (reduce()) return;
-    const n = kind === 0 ? 26 : 22, r = Math.random;
-    for (let j = 0; j < n; j++) {
-      const o = cursor * 9;
-      cursor = (cursor + 1) % GRAINS;
-      if (kind === 0) {
-        const e = r();
-        G[o] = r() * W;
-        G[o + 1] = y0 + (r() < 0.5 ? e * e * h * 0.45 : h - e * e * h * 0.45);
-        G[o + 2] = (r() - 0.5) * 14;
-        G[o + 3] = (r() - 0.5) * 8 - 3;
-        G[o + 5] = 650 + r() * 450;
-        G[o + 6] = 1.3 + r() * 1.1;
-        G[o + 7] = 0.22 + r() * 0.22;
-        G[o + 8] = r() * 200;
-      } else {
-        const up = j % 2 === 0;
-        G[o] = r() * W;
-        G[o + 1] = up ? y0 : y0 + h;
-        G[o + 2] = (r() - 0.5) * 36;
-        G[o + 3] = (up ? -1 : 1) * (22 + r() * 48);
-        G[o + 5] = 420 + r() * 280;
-        G[o + 6] = 1.3 + r() * 1.3;
-        G[o + 7] = 0.32 + r() * 0.25;
-        G[o + 8] = 90 + r() * 60;
-      }
-      G[o + 4] = -1;
-    }
-    alive = true;
-    wake();
-  }
-
-  function drawGrains(now, dt) {
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, cv.width, cv.height);
-    if (!alive) return;
-    const oy = PAD - scroller.scrollTop, damp = Math.exp(-dt * 3.2);
-    let any = false;
-    for (let i = 0; i < GRAINS; i++) {
-      const o = i * 9, life = G[o + 5];
-      if (life <= 0) continue;
-      any = true;
-      if (G[o + 4] < 0) G[o + 4] = now + G[o + 8];
-      const age = now - G[o + 4];
-      if (age >= life) { G[o + 5] = 0; continue; }
-      if (age < 0) continue;
-      G[o] += G[o + 2] * dt;
-      G[o + 1] += G[o + 3] * dt;
-      G[o + 2] *= damp;
-      G[o + 3] *= damp;
-      const k = age / life;
-      const a = G[o + 7] * (1 - k) * (1 - k) * Math.min(1, age / 60);
-      ctx.fillStyle = `rgba(${ink[0]},${ink[1]},${ink[2]},${a.toFixed(3)})`;
-      ctx.beginPath();
-      ctx.arc(PAD + G[o], oy + G[o + 1], G[o + 6] / 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    alive = any;
-  }
-
-  /* ---------- Frame loop: auto scroll, lean, grains ---------- */
-
-  let raf = 0, last = 0;
-  function wake() { if (!raf && sc.alive) { last = performance.now(); raf = requestAnimationFrame(frame); } }
-  sc.onDispose(() => cancelAnimationFrame(raf));
-  function frame(now) {
-    raf = 0;
-    if (!sc.alive) return;
-    const dt = Math.min(1 / 30, (now - last) / 1000) || 1 / 60;
-    last = now;
-    if (phase === DRAG) {
-      const vr = scroller.getBoundingClientRect();
-      const fy = fx.y - vr.top, band = Math.min(EDGE, vr.height / 4);
-      const maxS = scroller.scrollHeight - scroller.clientHeight;
-      let speed = 0;
-      if (maxS > 0 && fy < band) speed = -MAX_SPEED * Math.min(1, (band - fy) / band) ** 2;
-      else if (maxS > 0 && fy > vr.height - band) speed = MAX_SPEED * Math.min(1, (fy - (vr.height - band)) / band) ** 2;
-      if (speed) scroller.scrollTop = clamp(scroller.scrollTop + speed * dt, 0, maxS);
-      const inst = (fx.x - fx.lastX) / dt;
-      fx.vx += (inst - fx.vx) * (1 - Math.exp(-dt * 14));
-      fx.lastX = fx.x;
-      follow();
-      const want = reduce() ? 0 : clamp(fx.vx / 700, -1, 1) * MAX_TILT;
-      tilt += (want - tilt) * (1 - Math.exp(-dt * 12));
-      paintActive();
-    } else if (tilt !== 0) {
-      tilt *= Math.exp(-dt * 14);
-      if (Math.abs(tilt) < 0.01) tilt = 0;
-      paintActive();
-    }
-    drawGrains(now, dt);
-    if (phase === DRAG || alive || tilt !== 0) raf = requestAnimationFrame(frame);
-  }
-
-  /* ---------- Drag ---------- */
-
-  function follow() {
-    const h = heights[active] ?? 0;
-    let t0 = fx.top0 + (fx.y - fx.y0) + (scroller.scrollTop - fx.s0);
-    t0 = clamp(t0, -h / 2, total - h / 2);
-    top.set(t0);
-    const sx = fx.x - fx.x0;
-    dx.set(sx);
-    const center = t0 + h / 2;
-    let t = from;
-    for (let i = from + 1; i < order.length; i++) {
-      if (center > L.base[order[i]] + (heights[order[i]] ?? 0) / 2) t = i; else break;
-    }
-    if (t === from) {
-      for (let i = from - 1; i >= 0; i--) {
-        if (center < L.base[order[i]] + (heights[order[i]] ?? 0) / 2) t = i; else break;
-      }
-    }
-    if (t !== target) { target = t; apply(); }
-    armed = Math.abs(sx) > W * DELETE_AT ? 1 : 0;
-  }
-
-  function begin(r, x, y) {
-    if (phase !== IDLE || !sc.alive) return false;
-    const id = r.t.id;
-    const idx = order.indexOf(id);
-    if (idx < 0) return false;
-    active = id;
-    from = target = idx;
-    armed = 0;
-    Object.assign(fx, { x, y, x0: x, y0: y, top0: L.base[id], s0: scroller.scrollTop, lastX: x, vx: 0 });
-    tilt = 0;
-    top.set(L.base[id]);
-    dx.set(0);
-    phase = DRAG;
-    r.el.classList.add('lifted');
-    lift.spring(1, SETTLE);
-    emit(0, L.base[id], heights[id] ?? 0);
-    wake();
-    return true;
-  }
-
-  function moveTo(x, y) {
-    if (phase !== DRAG) return;
-    fx.x = x;
-    fx.y = y;
-    follow();
-  }
-
-  /** Releases the lifted row. Resolves once it has settled (or turned to dust). */
-  async function end() {
-    if (phase !== DRAG) return;
-    follow();
-    const id = active, r = rows.get(id);
-    if (armed) return remove(r);
-    phase = DROP;
-    apply();
-    const final = L.tops[id];
-    lift.to(0, 260, CALM);
-    settle(dx, 0);
-    emit(1, final, heights[id] ?? 0);
-    await settle(top, final);
-    if (!sc.alive || active !== id) return;
-    if (target !== from) { order.splice(from, 1); order.splice(target, 0, id); }
-    r.at = final;
-    r.y.set(final);
-    phase = IDLE;
-    active = null;
-    r.el.classList.remove('lifted');
-    r.el.style.boxShadow = '';
-    r.el.style.opacity = '';
-    r.el.style.transform = `translate3d(0,${final.toFixed(2)}px,0)`;
-    apply();
-  }
-
-  /** Dragged far to the side: the row turns to dust, the list closes up behind it. */
-  async function remove(r) {
-    phase = DELETE;
-    lift.to(0, 140, CALM);
-    await sc.wait(150);
-    if (!sc.alive) return;
-    const lr = list.getBoundingClientRect();
-    const h = heights[r.t.id], x = dx.v, y = top.v;
-    const src = snapRow(r, W, h);
-    r.el.style.visibility = 'hidden';
-    const dust = sc.track(play({ source: src, x: lr.left + x, y: lr.top + y, w: W, h, preset: 'dust', duration: 1300 }));
-    await sc.wait(420);
-    if (!sc.alive) return;
-    order = order.filter((k) => k !== r.t.id);
-    phase = IDLE;
-    active = null;
-    tilt = 0;
-    r.el.remove();
-    rows.delete(r.t.id);
-    delete heights[r.t.id];
-    apply();
-    await dust.done;
-  }
-
-  /** Canvas replica of a row, for the dust: rank, title and the three bars of the grip. */
-  const snapRow = (r, w, h) => snapNode(r.el, [
-    { node: r.rank },
-    { node: r.el.querySelector('.cp-ro-title') },
-    { node: r.el.querySelector('.cp-ro-grip i'), draw: (c, g, n) => {
-      c.fillStyle = getComputedStyle(n).backgroundColor;
-      for (let k = -1; k <= 1; k++) { rr(c, g.x, h / 2 + k * 5 - 1, g.w, 2, 1); c.fill(); }
-    } },
-  ], { size: { w, h }, scale: 1 });
-
-  /** Keyboard: Alt + arrows move the focused row one slot. */
-  function nudge(id, by) {
-    if (phase !== IDLE) return;
-    const i = order.indexOf(id), t = i + by;
-    if (i < 0 || t < 0 || t >= order.length) return;
-    order.splice(i, 1);
-    order.splice(t, 0, id);
-    apply();
-  }
-
-  /* ---------- Pointer: press and hold, or the handle at once ---------- */
-
-  let press = null;
-  function onDown(r, e) {
-    if (e.button > 0 || phase !== IDLE || busy) return;
-    const onGrip = !!e.target.closest('.cp-ro-grip');
-    press = { r, id: e.pointerId, x: e.clientX, y: e.clientY, timer: 0, on: false };
-    const p = press;
-    try { r.el.setPointerCapture(p.id); } catch {}
-    const go = () => {
-      if (press !== p || !begin(r, p.x, p.y)) return;
-      p.on = true;
-      try { r.el.setPointerCapture(p.id); } catch {}
-    };
-    if (onGrip) { e.preventDefault(); go(); }
-    else p.timer = setTimeout(go, HOLD);
-  }
-  const onMove = (e) => {
-    if (!press || e.pointerId !== press.id) return;
-    if (!press.on) {
-      // Moved before the hold completed: it is a scroll or a click, not a drag.
-      if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > 8) { clearTimeout(press.timer); press = null; }
-      else { press.x = e.clientX; press.y = e.clientY; }
-      return;
-    }
-    moveTo(e.clientX, e.clientY);
+    row.append(el('span', 'cp-ro-rank'), icon, text, grip);
+    return row;
   };
-  const onUp = (e) => {
-    if (!press || e.pointerId !== press.id) return;
-    const p = press;
-    press = null;
-    clearTimeout(p.timer);
-    if (p.on) end();
-  };
-  list.addEventListener('pointermove', onMove);
-  list.addEventListener('pointerup', onUp);
-  list.addEventListener('pointercancel', onUp);
-  list.addEventListener('lostpointercapture', onUp);
-  // Touch: once lifted, the finger drags the row instead of scrolling the page.
-  const noScroll = (e) => { if (phase === DRAG) e.preventDefault(); };
-  list.addEventListener('touchmove', noScroll, { passive: false });
-  sc.onDispose(() => { if (press) clearTimeout(press.timer); });
+  const ranks = () => data.forEach((t, i) => { list.row(t.id).querySelector('.cp-ro-rank').textContent = String(i + 1); });
+  const set = (next) => { data = next; list.update({ data }); ranks(); };
+
+  const list = createReorderList(host, {
+    data,
+    keyExtractor: (t) => t.id,
+    itemClassName: 'cp-ro-row',
+    onReorder: set,
+    onDelete: (t) => set(data.filter((d) => d !== t)),
+  });
+  data.forEach(fill);
+  list.update({ data: data.slice() });
+  ranks();
+  sc.onDispose(() => list.destroy());
+  onTheme(sc, () => all.forEach((t) => { list.row(t.id).querySelector('.cp-ro-icon').style.background = tone(t); }));
 
   /** Brings back every deleted row, in the starting order. */
   function reset() {
-    if (phase !== IDLE) return;
-    for (const t of data) if (!rows.has(t.id)) {
-      const r = addRow(t);
-      r.el.style.opacity = '0';
-      r.el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, delay: 120, easing: 'linear', fill: 'forwards' }).finished.then(() => { r.el.style.opacity = ''; }).catch(() => {});
-    }
-    order = data.map((t) => t.id);
-    measure();
-    apply();
+    const gone = all.filter((t) => !data.includes(t));
+    gone.forEach((t) => {
+      const row = fill(t);
+      row.style.opacity = '0';
+      row.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, delay: 120, easing: 'linear', fill: 'forwards' }).finished.then(() => { row.style.opacity = ''; }).catch(() => {});
+    });
+    set(all.slice());
   }
+
+  // A real pointer on the list stops the script.
+  let user = false, busy = false;
+  const lift = (e) => { if (e.isTrusted) user = false; };
+  host.addEventListener('pointerdown', (e) => { if (e.isTrusted) user = true; });
+  addEventListener('pointerup', lift);
+  addEventListener('pointercancel', lift);
+  sc.onDispose(() => { removeEventListener('pointerup', lift); removeEventListener('pointercancel', lift); });
+  const send = (row, type, x, y) => row.dispatchEvent(new PointerEvent(type, { pointerId: AUTO, isPrimary: true, bubbles: true, clientX: x, clientY: y }));
 
   /* ---------- Autoplay: hold a row, carry it two slots, drop it; the next run brings it back ---------- */
 
   let down = true;
   return {
     async run() {
-      if (busy || phase !== IDLE || press) return;
-      if (order.length < 3) { reset(); await sc.wait(900); return; }
+      if (busy || user) return;
+      if (data.length < 3) { reset(); await sc.wait(900); return; }
       busy = true;
       const fi = down ? 0 : 2, ti = down ? 2 : 0;
       down = !down;
-      const id = order[fi], r = rows.get(id);
-      const br = r.el.getBoundingClientRect();
+      const t = data[fi], row = list.row(t.id), to = list.row(data[ti].id);
+      const br = row.getBoundingClientRect(), tr = to.getBoundingClientRect();
       const x0 = br.left + br.width * 0.62, y0 = br.top + br.height / 2;
+      // Where the row lands: its edge on the far edge of the target slot.
+      const dy = ti > fi ? tr.bottom - br.bottom : tr.top - br.top;
       // The hold.
-      await sc.wait(HOLD);
-      if (!sc.alive || !begin(r, x0, y0)) { busy = false; return; }
-      await sc.wait(260);
-      // Where the row lands, from the committed tops.
-      const toId = order[ti];
-      const dy = ti > fi ? L.base[toId] + heights[toId] - heights[id] - L.base[id] : L.base[toId] - L.base[id];
+      send(row, 'pointerdown', x0, y0);
+      await sc.wait(HOLD + 260);
+      if (!sc.alive || user) { busy = false; return; }
       const dur = 1050;
-      await new Promise((res) => {
-        const t0 = performance.now();
-        const step = (now) => {
-          if (!sc.alive) return res();
-          const k = clamp((now - t0) / dur);
-          const e = IN_OUT_CUBIC(k);
-          moveTo(x0 + Math.sin(k * Math.PI) * 26 * (ti > fi ? 1 : -1), y0 + dy * e);
-          if (k < 1) requestAnimationFrame(step); else res();
-        };
-        requestAnimationFrame(step);
-      });
+      let x = x0, y = y0;
+      await tween(sc, dur, (k) => {
+        x = x0 + Math.sin(k * Math.PI) * 26 * (ti > fi ? 1 : -1);
+        y = y0 + dy * IN_OUT_CUBIC(k);
+        send(row, 'pointermove', x, y);
+      }, () => user);
       await sc.wait(220);
-      await end();
+      send(row, 'pointerup', x, y);
+      await sc.wait(800);
       busy = false;
       await sc.wait(500);
     },

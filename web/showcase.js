@@ -1,6 +1,6 @@
 // Web version of the mobile Gallery screen (app/gallery.tsx): every effect on real content.
 // Each dissolvable item is drawn into a canvas, so the snapshot handed to the engine is exact.
-import { morph } from './engine/atlas.js';
+import { morph } from './lib/engine.js';
 import { ready } from './images.js';
 import { play, snapshot, IMG, FONT, cover, pal, rr, wrap, text, isLight, boxOf, hide, show, onTheme, redraw, scope } from './cp/kit.js';
 import { CLAUDE_PATH, OPENAI_PATH } from './docs.js';
@@ -532,8 +532,8 @@ const head = (i, title, note, right = '') => `
 /** Hero install sources: Claude Code, Codex, npm. */
 const HX = [
   { label: 'Claude Code', cmd: 'curl -fsSL dissolve.rselmi.com/mcp.sh | sh', icon: `<svg width="15" height="15" viewBox="0 0 24 24" fill="#D97757" aria-hidden="true"><path d="${CLAUDE_PATH}"/></svg>` },
-  { label: 'Codex', cmd: 'codex mcp add dissolve -- npx -y react-native-dissolve-mcp', icon: `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${OPENAI_PATH}"/></svg>` },
-  { label: 'npm', cmd: 'npx expo install react-native-dissolve', icon: '<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#CB3837"/><path d="M5 7h14v10h-7v-8.2h-2.6V17H5z" fill="#fff"/></svg>' },
+  { label: 'Codex', cmd: 'codex mcp add dissolve -- npx -y dissolve-ui-mcp', icon: `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${OPENAI_PATH}"/></svg>` },
+  { label: 'npm', cmd: 'npx expo install dissolve-ui', icon: '<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#CB3837"/><path d="M5 7h14v10h-7v-8.2h-2.6V17H5z" fill="#fff"/></svg>' },
 ];
 
 /** Gallery: the hero, then only the components. */
@@ -546,7 +546,7 @@ function heroHTML() {
   return `
   <header class="sc-hero2">
     <h1 class="hx-title"><canvas class="hx-title-cv" aria-hidden="true"></canvas><span class="hx-sr">dissolve</span></h1>
-    <p>Animation library built for <strong>React Native</strong></p>
+    <p>Animation library built for <strong>React Native</strong> and <strong>React</strong></p>
   </header>
   <div class="hx" data-hx>
     <div class="hx-src" role="tablist" aria-label="Install with">

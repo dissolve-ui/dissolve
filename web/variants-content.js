@@ -1,7 +1,8 @@
 // Reference content of the variant pages: options tables, best practices, install data.
 // Source of truth: src/dissolve/types.ts (DissolveOptions), src/dissolve/variants/*, src/dissolve/hooks/*.
 
-export const PKG = 'react-native-dissolve';
+/** The npm package: the React Native engine and the component CLI (React Native and React). */
+export const PKG = 'dissolve-ui';
 
 /** Peers from package.json (tested versions). */
 export const PEERS = [

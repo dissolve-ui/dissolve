@@ -7,13 +7,13 @@
  * Tools: list_variants, get_variant, get_setup.
  *
  * Register it in Claude Code:
- *   claude mcp add dissolve -- npx -y react-native-dissolve-mcp
+ *   claude mcp add dissolve -- npx -y dissolve-ui-mcp
  *
  * The data below is derived from README.md and src/dissolve (types.ts, hooks/, variants/).
  */
 import { createInterface } from 'node:readline';
 
-const PKG = 'react-native-dissolve';
+const PKG = 'dissolve-ui';
 const VERSION = '0.0.1';
 const PROTOCOL = '2025-06-18';
 
@@ -27,7 +27,7 @@ const PEERS = [
   'expo-haptics',
 ];
 
-const SETUP = `# react-native-dissolve setup
+const SETUP = `# dissolve-ui setup
 
 Snapshots any view with Skia (makeImageFromView), cuts it into grains drawn with one <Atlas>,
 and animates every grain on the UI thread (Reanimated 4, react-native-worklets).
@@ -91,15 +91,17 @@ Reduced motion is handled by the provider: the effect is skipped and the view is
 
 Components (swipe-to-delete, toast, like-button, morph-button, split-button, slide-to-confirm,
 gooey-menu, otp-input, number-ticker, reaction-picker, voice-note, card-stack, signature-pad,
-before-after, more with \`list\`) are NOT exported by the package. The CLI copies their source into
-the project, where the user owns it:
+before-after, more with \`list\`) are NOT exported by the package. The CLI, dissolve-ui, copies their
+source into the project, where the user owns it, for React Native or React on the web:
 
 \`\`\`sh
-npx ${PKG} init                 # once: components/dissolve/tw.tsx + --dissolve-* tokens in global.css
-npx ${PKG} add slide-to-confirm # one or more names
-npx ${PKG} list                 # every component
+npx dissolve-ui init --native        # once: dissolve.json, components/dissolve/tw.tsx + --dissolve-* tokens in global.css
+npx dissolve-ui add slide-to-confirm # one or more names, for the platform in dissolve.json
+npx dissolve-ui list                 # every component and the platforms it runs on
 \`\`\`
 
+init asks the platform (preselected from package.json) and saves it in dissolve.json; --native, --web
+or --yes skip the question.
 Options: --path <dir> (default components/dissolve, or src/components/dissolve with a src/ layout
 mapped to @/*), --overwrite (replace existing files), --cwd <dir> (project root).
 
@@ -119,6 +121,11 @@ primary-foreground, success, danger, danger-foreground, accent, border) live in 
 light on :root and dark in @media (prefers-color-scheme: dark). Change them there to retheme every
 component. They are mapped with @theme inline so each class resolves the token of the current color scheme.
 Toasts (and swipe-to-delete with Undo) need <ToastProvider> from '@/components/dissolve/toast' inside <DissolveProvider>.
+
+React on the web (Next.js, Vite, React 19): npx dissolve-ui init --web, then npx dissolve-ui add <name>
+for the components list marks web. Same props as native, only react and react-dom needed (no engine,
+Tailwind optional): a 'use client' wrapper around a framework free canvas core. The hooks and
+variants above are React Native only.
 
 ## Common options (every atlas preset)
 
@@ -304,7 +311,7 @@ const RULES = `Picking a variant:
 - Destructive confirm (delete account, wipe): useDissolveHold, the charge variant.
 - New message or card: DissolveIn preset="gather". List entrance: rain with delay={i * 40}. Generated text: print.
 - Clear all: field: 'cascade' on the list container. Toggle state: useDissolveMorph. Leave a screen: useDissolveScreen.
-- A ready-made UI fits (swipe to delete, toast, slide to confirm, OTP...): npx react-native-dissolve add <name>, import it from its copied file, never from the package.
+- A ready-made UI fits (swipe to delete, toast, slide to confirm, OTP...): npx dissolve-ui add <name>, import it from its copied file, never from the package.
 Best practices:
 - One effect per user action, 0.9 s to 1.8 s. Exits on user intent only, never on scroll.
 - Reduced motion is handled by the provider, do not add a custom fallback.
@@ -316,7 +323,7 @@ Best practices:
 const TOOLS = [
   {
     name: 'list_variants',
-    description: 'List every react-native-dissolve variant with its kind (exit, entrance, gesture, transition), the hook to use, and a one line use case. Call this first to pick an effect.',
+    description: 'List every dissolve-ui variant with its kind (exit, entrance, gesture, transition), the hook to use, and a one line use case. Call this first to pick an effect.',
     inputSchema: {
       type: 'object',
       properties: { kind: { type: 'string', enum: ['exit', 'entrance', 'gesture', 'transition'], description: 'Optional filter.' } },
@@ -324,7 +331,7 @@ const TOOLS = [
   },
   {
     name: 'get_variant',
-    description: 'Get the usage snippet, options and best practices for one react-native-dissolve variant (e.g. dust, stream, gather, charge, peel, melt, morph, cascade, screen).',
+    description: 'Get the usage snippet, options and best practices for one dissolve-ui variant (e.g. dust, stream, gather, charge, peel, melt, morph, cascade, screen).',
     inputSchema: {
       type: 'object',
       properties: { name: { type: 'string', enum: VARIANTS.map((v) => v.name), description: 'Variant name.' } },
@@ -333,7 +340,7 @@ const TOOLS = [
   },
   {
     name: 'get_setup',
-    description: 'Get the install command (package and peer dependencies), the DissolveProvider root layout snippet, a minimal useDissolve example, the component CLI (init, add, list, NativeWind v5 and theme tokens) and the variant picking rules.',
+    description: 'Get the install command (package and peer dependencies), the DissolveProvider root layout snippet, a minimal useDissolve example, the component CLI (npx dissolve-ui init, add, list for React Native or React on the web, NativeWind v5 and theme tokens) and the variant picking rules.',
     inputSchema: { type: 'object', properties: {} },
   },
 ];
@@ -397,7 +404,7 @@ function handle(req) {
         protocolVersion: typeof params.protocolVersion === 'string' ? params.protocolVersion : PROTOCOL,
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: 'dissolve', version: VERSION },
-        instructions: 'Docs for react-native-dissolve (turn any React Native view into dust). Call get_setup to install it and add components, list_variants to pick an effect, get_variant for the code.',
+        instructions: 'Docs for dissolve-ui (turn any React Native view into dust). Call get_setup to install it and add components, list_variants to pick an effect, get_variant for the code.',
       };
     case 'ping':
       return {};

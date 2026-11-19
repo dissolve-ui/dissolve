@@ -2,116 +2,28 @@
 // SplitButton, GooeyMenu, ported to the web on the same engine. Each port follows its native source:
 // same timings, curves, thresholds and geometry. Anything that turns into grains is drawn on a canvas,
 // so the snapshot handed to the engine is exact.
-import { play, snapshot, FONT, pal, rr, isLight, CALM, SPLIT, QUAD, IN_OUT_CUBIC, OUT_CUBIC, value, el, clamp, mix, rectOf, frame, fit, label, PKG, DIR, prop } from './kit.js';
+import { createToast } from '../lib/toast.js';
+import { createSwipeToDelete } from '../lib/swipe-to-delete.js';
+import { createLikeButton } from '../lib/like-button.js';
+import { createMorphButton } from '../lib/morph-button.js';
+import { createSplitButton } from '../lib/split-button.js';
+import { createGooeyMenu } from '../lib/gooey-menu.js';
+import { play, snapshot, FONT, pal, IN_OUT_CUBIC, el, rectOf, fit, label, tween, PKG, DIR, prop } from './kit.js';
 
 /* ======================================================================================
-   Toast (Toast.tsx): arrives with gather, leaves as dust, max 3, optional action.
+   Toast (Toast.tsx): the React web component's core (registry/web/toast.core.ts, built into
+   web/lib), the same code a React app installs. This file keeps the demo: the hosts and the triggers.
    ====================================================================================== */
 
-const DOT = { default: '#8E8E93', success: '#34C759', error: '#FF3B30' };
-const TOAST_BG = '#1C1C1E';
-
-function toastLayout(w, o) {
-  const m = document.createElement('canvas').getContext('2d');
-  const h = o.message ? 62 : 46;
-  let action = null;
-  if (o.action) {
-    m.font = `600 14px ${FONT}`;
-    const aw = Math.ceil(m.measureText(o.action.label).width) + 24, ah = 32;
-    action = { x: w - 14 - aw, y: (h - ah) / 2, w: aw, h: ah };
-  }
-  return { w, h, action };
-}
-
-function drawToast(ctx, L, o) {
-  const { w, h, action } = L;
-  ctx.fillStyle = TOAST_BG;
-  rr(ctx, 0, 0, w, h, 18); ctx.fill();
-  if (!isLight()) { ctx.strokeStyle = 'rgba(255,255,255,0.09)'; ctx.lineWidth = 1; rr(ctx, 0.5, 0.5, w - 1, h - 1, 17.5); ctx.stroke(); }
-  ctx.fillStyle = DOT[o.tone ?? 'default'];
-  ctx.beginPath(); ctx.arc(18, h / 2, 4, 0, Math.PI * 2); ctx.fill();
-  const tx = 34, right = (action ? action.x - 12 : w - 14) - tx;
-  ctx.font = `600 15px ${FONT}`;
-  label(ctx, fit(ctx, o.title, right), tx, o.message ? h / 2 - 3 : h / 2 + 5.5, 15, 600, '#fff');
-  if (o.message) {
-    ctx.font = `400 13px ${FONT}`;
-    label(ctx, fit(ctx, o.message, right), tx, h / 2 + 15, 13, 400, 'rgba(255,255,255,0.7)');
-  }
-  if (action) {
-    ctx.fillStyle = 'rgba(255,255,255,0.14)';
-    rr(ctx, action.x, action.y, action.w, action.h, action.h / 2); ctx.fill();
-    label(ctx, o.action.label, action.x + action.w / 2, action.y + 21, 14, 600, '#fff', 'center');
-  }
-}
-
 /**
- * A toast stack. fixed: true pins it to the top of the viewport (the page wide host);
+ * A toast stack on the core. fixed: true pins it to the top of the viewport (the page wide host);
  * otherwise it fills `container` (a positioned element) from the top, used by the gallery tile.
  */
 function toastHost(container, { fixed = false, max = 3 } = {}) {
   const host = el('div', 'cp-toasts' + (fixed ? ' cp-toasts-fixed' : ''));
-  host.setAttribute('aria-live', 'polite');
   container.append(host);
-  const items = [];
-  let alive = true;
-
-  function show(o) {
-    if (!alive) return null;
-    const w = Math.round(host.clientWidth);
-    const L = toastLayout(w, o);
-    const card = snapshot(w, L.h, (ctx) => drawToast(ctx, L, o));
-    card.className = 'cp-toast';
-    card.style.width = w + 'px';
-    card.style.height = L.h + 'px';
-    card.style.opacity = '0';
-    card.setAttribute('role', 'status');
-    card.setAttribute('aria-label', [o.title, o.message, o.action ? `${o.action.label} available` : ''].filter(Boolean).join('. '));
-    const slot = el('div', 'cp-toast-slot');
-    slot.append(card);
-    host.append(slot);
-    const it = { o, slot, card, gone: false, timer: 0 };
-    items.push(it);
-
-    const leave = async () => {
-      if (it.gone) return;
-      it.gone = true;
-      clearTimeout(it.timer);
-      const r = rectOf(card);
-      card.style.opacity = '0';
-      await play({ source: card, ...r, preset: o.exit ?? 'dust', duration: 1100, fixed }).done;
-      // The stack closes up (LinearTransition 320 ms on the native side).
-      slot.style.height = slot.offsetHeight + 'px';
-      void slot.offsetHeight;
-      slot.classList.add('gone');
-      setTimeout(() => { slot.remove(); items.splice(items.indexOf(it), 1); }, 330);
-    };
-    it.leave = leave;
-    card.addEventListener('click', (e) => {
-      const b = card.getBoundingClientRect();
-      const x = e.clientX - b.left, y = e.clientY - b.top, a = L.action;
-      if (a && x >= a.x - 8 && x <= a.x + a.w + 8 && y >= a.y - 8 && y <= a.y + a.h + 8) o.action.onPress();
-      leave();
-    });
-
-    // Over the limit, the oldest leaves as dust instead of vanishing.
-    const live = items.filter((x) => !x.gone);
-    live.slice(0, Math.max(0, live.length - max)).forEach((x) => x.leave());
-
-    (async () => {
-      await frame();
-      const r = rectOf(card);
-      await play({ source: card, ...r, preset: o.enter ?? 'gather', direction: 'in', duration: 900, fixed }).done;
-      if (!it.gone) card.style.opacity = '1';
-      const ms = o.duration ?? 3200;
-      if (ms && !it.gone) it.timer = setTimeout(leave, ms);
-    })();
-    return it;
-  }
-
-  return {
-    show,
-    clear() { alive = false; items.forEach((x) => clearTimeout(x.timer)); host.remove(); },
-  };
+  const t = createToast(host, { max, cardClassName: 'cp-toast' });
+  return { show: t.show, clear() { t.destroy(); host.remove(); } };
 }
 
 let pageToasts = null;
@@ -151,7 +63,9 @@ function mountToastDemo(body, { sc, mode }) {
 }
 
 /* ======================================================================================
-   SwipeToDelete (SwipeToDelete.tsx)
+   SwipeToDelete (SwipeToDelete.tsx): the React web component's core
+   (registry/web/swipe-to-delete.core.ts). This file keeps the demo: the inbox, Reset, the
+   rows coming back, and the autoplay, which swipes with real pointer events.
    ====================================================================================== */
 
 const MAILS = [
@@ -160,30 +74,9 @@ const MAILS = [
   { id: 'c', title: 'Or flick me away' },
 ];
 
-const ROW_H = 56, RADIUS = 18, THRESHOLD = 0.4, ACTION = '#FF3B30';
-
-// The native icon is built from Views: handle, lid, a can open at the top, two lines.
-const TRASH = {
-  handle: 'M7.5 0h5a1 1 0 0 1 1 1v1.5h-7V1a1 1 0 0 1 1-1z',
-  lid: 'M1.25 3.5h17.5a1.25 1.25 0 0 1 0 2.5H1.25a1.25 1.25 0 0 1 0-2.5z',
-  can: 'M3.5 8v11a3 3 0 0 0 3 3h7a3 3 0 0 0 3-3V8',
-  lines: 'M7.9 11v8M12.1 11v8',
-};
-const TRASH_SVG = `<svg width="20" height="24" viewBox="0 0 20 24" fill="none" aria-hidden="true"><path d="${TRASH.handle}" fill="#fff"/><path d="${TRASH.lid}" fill="#fff"/><path d="${TRASH.can}" stroke="#fff" stroke-width="2"/><path d="${TRASH.lines}" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>`;
-
-function drawTrash(ctx, cx, cy, s, a) {
-  ctx.save();
-  ctx.globalAlpha = a;
-  ctx.translate(cx, cy);
-  ctx.scale(s, s);
-  ctx.translate(-10, -12);
-  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#fff';
-  ctx.fill(new Path2D(TRASH.handle));
-  ctx.fill(new Path2D(TRASH.lid));
-  ctx.lineWidth = 2; ctx.stroke(new Path2D(TRASH.can));
-  ctx.lineWidth = 1.6; ctx.lineCap = 'round'; ctx.stroke(new Path2D(TRASH.lines));
-  ctx.restore();
-}
+const ROW_H = 56;
+/** Pointer id of the scripted swipe, so a real pointer can take over at any time. */
+const AUTO = 1e6 + 1;
 
 // A plain row: one line of text on the card color, nothing around it.
 function drawMailRow(ctx, w, h, m) {
@@ -203,147 +96,69 @@ function mountSwipe(body, { sc, mode }) {
   body.append(list);
   if (!tile) body.append(reset);
   const rows = new Map();
-  const W = () => Math.round(list.clientWidth);
+  sc.onDispose(() => rows.forEach((r) => r.row.destroy()));
 
   const syncReset = () => { reset.hidden = rows.size >= data.length; };
 
-  function makeRow(m) {
-    const w = W();
-    const outer = el('div', 'cp-swipe');
-    const clip = el('div', 'cp-swipe-clip');
-    const action = el('div', 'cp-swipe-action');
-    const icon = el('span', 'cp-trash', TRASH_SVG);
-    action.append(icon);
-    const row = snapshot(w, ROW_H, (ctx) => drawMailRow(ctx, w, ROW_H, m));
-    row.className = 'cp-swipe-row';
-    row.style.width = w + 'px';
-    row.style.height = ROW_H + 'px';
-    clip.append(action, row);
-    clip.setAttribute('aria-label', `${m.title}. Swipe left to delete.`);
-    outer.append(clip);
-
-    let busy = false;
-    const iconState = (tx) => {
-      const p = clamp(-tx / (w * THRESHOLD), 0, 1);
-      const op = p < 0.4 ? (p / 0.4) * 0.6 : 0.6 + ((p - 0.4) / 0.6) * 0.4;
-      return { op, s: 0.6 + p * 0.48 };
-    };
-    const tx = value(sc, 0, () => {
-      const x = tx.v;
-      row.style.transform = `translate3d(${x.toFixed(2)}px,0,0)`;
-      const st = iconState(x);
-      icon.style.opacity = st.op.toFixed(3);
-      icon.style.transform = `scale(${st.s.toFixed(3)})`;
-      action.style.visibility = x < -0.5 ? 'visible' : 'hidden';
-    });
-    tx.set(0);
-
-    async function commit() {
-      busy = true;
-      await tx.to(-w * 0.45, 160, CALM);
-      // The native ref wraps the action and the row: the snapshot is what you see right now.
-      const x = tx.v, st = iconState(x);
-      const src = snapshot(w, ROW_H, (ctx) => {
-        rr(ctx, 0, 0, w, ROW_H, RADIUS); ctx.clip();
-        ctx.fillStyle = ACTION; ctx.fillRect(0, 0, w, ROW_H);
-        drawTrash(ctx, w - 26 - 10, ROW_H / 2, st.s, st.op);
-        ctx.drawImage(row, x, 0, w, ROW_H);
-      });
-      const r = rectOf(clip);
-      clip.style.opacity = '0';
-      await sc.track(play({ source: src, ...r, preset: 'dust' })).done;
-      if (!sc.alive) return;
-      // Then the list closes up: height to 0 in 280 ms, calm curve, no bounce.
-      outer.style.height = outer.offsetHeight + 'px';
-      void outer.offsetHeight;
-      outer.classList.add('gone');
-      await sc.wait(290);
-      outer.remove();
-      rows.delete(m.id);
-      syncReset();
-      onDelete(m);
-    }
-
-    // Pan: activates past 12 px sideways, fails past 10 px vertically (activeOffsetX / failOffsetY).
-    let g = null;
-    clip.addEventListener('pointerdown', (e) => {
-      if (busy || e.button > 0) return;
-      g = { x0: e.clientX, y0: e.clientY, on: false, base: 0, start: tx.v, samples: [] };
-    });
-    clip.addEventListener('pointermove', (e) => {
-      if (!g) return;
-      const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
-      if (!g.on) {
-        if (Math.abs(dy) > 10 && Math.abs(dx) <= 12) { g = null; return; }
-        if (Math.abs(dx) <= 12) return;
-        g.on = true;
-        g.base = e.clientX;
-        g.start = tx.v;
-        try { clip.setPointerCapture(e.pointerId); } catch {}
-        clip.classList.add('dragging');
-      }
-      const next = g.start + (e.clientX - g.base);
-      // Free to the left, a little rubber band to the right.
-      tx.set(next > 0 ? next * 0.25 : next);
-      const now = performance.now();
-      g.samples.push([now, e.clientX]);
-      while (g.samples.length > 2 && now - g.samples[0][0] > 80) g.samples.shift();
-    });
-    const end = () => {
-      if (!g) return;
-      const on = g.on, s = g.samples;
-      g = null;
-      clip.classList.remove('dragging');
-      if (!on) return;
-      let vx = 0;
-      if (s.length > 1) { const [t0, x0] = s[0], [t1, x1] = s[s.length - 1]; vx = t1 > t0 ? ((x1 - x0) / (t1 - t0)) * 1000 : 0; }
-      if (-tx.v > w * THRESHOLD || vx < -900) commit();
-      else tx.to(0, 300, CALM);
-    };
-    clip.addEventListener('pointerup', end);
-    clip.addEventListener('pointercancel', end);
-    clip.addEventListener('lostpointercapture', end);
-
-    return {
-      m, outer, clip, row,
-      busy: () => busy,
-      // Scripted swipe for the autoplay: a calm drag past the line, then release.
-      async demo() {
-        busy = true;
-        await tx.to(-w * 0.52, 560, IN_OUT_CUBIC);
-        await sc.wait(140);
-        await commit();
+  // In its place in the list, sorted by id like the native demo.
+  function addRow(m) {
+    const host = el('div', 'cp-swipe');
+    host.dataset.id = m.id;
+    host.setAttribute('aria-label', `${m.title}. Swipe left to delete.`);
+    list.insertBefore(host, [...list.children].find((x) => x.dataset.id > m.id) ?? null);
+    const w = Math.round(list.clientWidth);
+    let gone;
+    const r = { host, auto: false, gone: new Promise((res) => (gone = res)) };
+    r.row = createSwipeToDelete(host, {
+      rowClassName: 'cp-swipe-clip',
+      onDelete: () => {
+        r.row.destroy();
+        host.remove();
+        rows.delete(m.id);
+        syncReset();
+        gone();
+        if (tile && rows.size === 0) sc.wait(700).then(() => data.forEach((x, i) => sc.wait(i * 120).then(() => restore(x))));
       },
-    };
-  }
-
-  // Back in its place in the list, sorted by id like the native demo.
-  function insert(r) {
-    r.outer.dataset.id = r.m.id;
-    const next = [...list.children].find((x) => x.dataset.id > r.m.id);
-    list.insertBefore(r.outer, next ?? null);
-    rows.set(r.m.id, r);
+    });
+    r.canvas = snapshot(w, ROW_H, (ctx) => drawMailRow(ctx, w, ROW_H, m));
+    r.canvas.className = 'cp-swipe-row';
+    r.canvas.style.width = w + 'px';
+    r.canvas.style.height = ROW_H + 'px';
+    r.row.slot.append(r.canvas);
+    rows.set(m.id, r);
+    syncReset();
+    return r;
   }
 
   async function restore(m, { animate = true } = {}) {
     if (rows.has(m.id) || !sc.alive) return;
-    const r = makeRow(m);
-    if (!animate) { insert(r); syncReset(); return; }
-    r.outer.classList.add('gone');
-    r.clip.style.opacity = '0';
-    insert(r);
-    syncReset();
-    void r.outer.offsetHeight;
-    r.outer.style.height = ROW_H + 'px';
-    r.outer.classList.remove('gone');
+    const { host, canvas } = addRow(m);
+    if (!animate) return;
+    host.style.opacity = '0';
+    host.classList.add('gone');
+    void host.offsetHeight;
+    host.classList.add('grow');
+    host.style.height = ROW_H + 'px';
+    host.classList.remove('gone');
     await sc.wait(330);
-    r.outer.style.height = '';
-    await sc.track(play({ source: r.row, ...rectOf(r.row), preset: 'gather', direction: 'in', duration: 800 })).done;
-    if (sc.alive) r.clip.style.opacity = '1';
+    host.classList.remove('grow');
+    host.style.height = '';
+    await sc.track(play({ source: canvas, ...rectOf(canvas), preset: 'gather', direction: 'in', duration: 800 })).done;
+    if (sc.alive) host.style.opacity = '';
   }
 
-  function onDelete(m) {
-    if (tile && rows.size === 0) sc.wait(700).then(() => data.forEach((x, i) => sc.wait(i * 120).then(() => restore(x))));
+  /** A calm drag past the line on the row's clip, then release. */
+  async function swipe(r) {
+    r.auto = true;
+    const clip = r.host.querySelector('.cp-swipe-clip');
+    const b = clip.getBoundingClientRect();
+    const x0 = b.left + b.width * 0.7, y = b.top + b.height / 2, dist = b.width * 0.52 + 13;
+    const send = (type, x) => clip.dispatchEvent(new PointerEvent(type, { pointerId: AUTO, isPrimary: true, bubbles: true, clientX: x, clientY: y }));
+    send('pointerdown', x0);
+    await tween(sc, 560, (k) => send('pointermove', x0 - dist * IN_OUT_CUBIC(k)));
+    await sc.wait(140);
+    send('pointerup', x0 - dist);
+    await Promise.race([r.gone, sc.wait(4000)]);
   }
 
   data.forEach((m) => restore(m, { animate: false }));
@@ -351,403 +166,127 @@ function mountSwipe(body, { sc, mode }) {
 
   return {
     async run() {
-      const r = [...rows.values()].find((x) => !x.busy());
+      const r = [...rows.values()].find((x) => !x.auto);
       if (!r) { data.forEach((m) => restore(m)); return sc.wait(1200); }
-      await r.demo();
+      await swipe(r);
       if (!tile && rows.size <= 1) data.forEach((m, i) => sc.wait(600 + i * 90).then(() => restore(m)));
     },
   };
 }
 
 /* ======================================================================================
-   LikeButton (LikeButton.tsx)
+   LikeButton (LikeButton.tsx): the React web component's core (registry/web/like-button.core.ts).
+   This file keeps the demo: the size per mode, the counter, the autoplay.
    ====================================================================================== */
 
-const HEART = 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
-const SPARKS = 10;
-const PALETTE = ['#FF2D55', '#FF9F0A', '#5E5CE6', '#34C759', '#64D2FF'];
-const LIKE = '#FF2D55', IDLE = '#8E8E93';
-
-function likeButton(sc, { size = 26, count = 128 } = {}) {
-  const btn = el('button', 'cp-like');
-  btn.type = 'button';
-  const box = el('span', 'cp-heart');
-  box.style.width = box.style.height = size + 'px';
-  const d = Math.max(4, size * 0.16);
-  const sparks = Array.from({ length: SPARKS }, (_, i) => {
-    const s = el('span', 'cp-spark');
-    s.style.cssText = `width:${d}px;height:${d}px;margin:${-d / 2}px 0 0 ${-d / 2}px;background:${PALETTE[i % PALETTE.length]};opacity:0`;
-    box.append(s);
-    return s;
-  });
-  const pop = el('span', 'cp-heart-pop');
-  const outline = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART}" fill="none" stroke="${IDLE}" stroke-width="${(1.8 * 24) / size}"/></svg>`;
-  const idle = el('span', 'cp-heart-idle', outline);
-  const filled = snapshot(size, size, (ctx) => { ctx.scale(size / 24, size / 24); ctx.fillStyle = LIKE; ctx.fill(new Path2D(HEART)); });
-  filled.className = 'cp-heart-fill';
-  filled.style.width = filled.style.height = size + 'px';
-  pop.append(idle, filled);
-  // While the filled heart turns to grains, the outline is already back underneath.
-  const under = el('span', 'cp-heart-under', outline);
-  box.append(pop, under);
-  const num = el('span', 'cp-count');
-  btn.append(box, num);
-
-  let liked = false, busy = false, n = count;
-  const render = () => {
-    idle.hidden = liked;
-    filled.hidden = !liked;
-    num.textContent = n;
-    num.style.color = liked ? LIKE : IDLE;
-    btn.setAttribute('aria-pressed', String(liked));
-    btn.setAttribute('aria-label', liked ? 'Unlike' : 'Like');
-  };
-  render();
-
-  const scale = value(sc, 1, () => { pop.style.transform = `scale(${scale.v.toFixed(4)})`; });
-  const burst = value(sc, 0, () => {
-    const p = burst.v;
-    sparks.forEach((s, i) => {
-      const a = (i / SPARKS) * Math.PI * 2 - Math.PI / 2, r = size * 0.35 + p * size * 0.75;
-      s.style.opacity = p === 0 ? '0' : (1 - p).toFixed(3);
-      s.style.transform = `translate(${(Math.cos(a) * r).toFixed(2)}px,${(Math.sin(a) * r).toFixed(2)}px) scale(${(1 - p * 0.6).toFixed(3)})`;
-    });
-  });
-
-  async function press() {
-    if (busy) return;
-    if (!liked) {
-      liked = true; n += 1; render();
-      // A small, calm pop: 0.86 in 70 ms, back to 1 on a near critical spring (about 2 % overshoot).
-      scale.to(0.86, 70, QUAD).then((ok) => ok && scale.spring(1, { stiffness: 550, damping: 35, eps: 0.001 }));
-      burst.set(0);
-      burst.to(1, 560, OUT_CUBIC).then((ok) => ok && burst.set(0));
-      return;
-    }
-    busy = true;
-    under.style.opacity = '1';
-    const r = rectOf(filled);
-    filled.style.opacity = '0';
-    await sc.track(play({ source: filled, ...r, preset: 'snap', origin: { x: size / 2, y: size / 2 }, duration: 800, grain: Math.max(1.5, size / 14) })).done;
-    if (!sc.alive) return;
-    liked = false; n -= 1;
-    filled.style.opacity = '';
-    under.style.opacity = '0';
-    render();
-    busy = false;
-  }
-  btn.addEventListener('click', press);
-  return {
-    btn,
-    async run() {
-      if (busy) return;
-      if (liked) { await press(); await sc.wait(500); }
-      await press();
-      await sc.wait(1300);
-      await press();
-    },
-  };
-}
+/** The site keeps the native gray outline in both themes. */
+const IDLE = '#8E8E93';
 
 function mountLike(body, { sc, mode }) {
   // Raw: the heart and its count, a little larger than the 26 pt default so it reads on a stage.
-  const like = likeButton(sc, { size: mode === 'tile' ? 36 : 40 });
-  like.btn.classList.add('cp-like-lg');
-  body.append(like.btn);
-  return like;
+  const btn = el('button', 'cp-like cp-like-lg');
+  body.append(btn);
+  let liked = false, count = 128;
+  const like = createLikeButton(btn, {
+    size: mode === 'tile' ? 36 : 40,
+    liked,
+    count,
+    idleColor: IDLE,
+    countClassName: 'cp-count',
+    onChange: (v) => {
+      liked = v;
+      count += v ? 1 : -1;
+      like.update({ liked, count });
+    },
+  });
+  sc.onDispose(() => like.destroy());
+  return {
+    async run() {
+      // The unlike snap takes 800 ms.
+      if (liked) { btn.click(); await sc.wait(1300); }
+      btn.click();
+      await sc.wait(1300);
+      btn.click();
+      await sc.wait(800);
+    },
+  };
 }
 
 /* ======================================================================================
-   MorphButton (MorphButton.tsx): Dynamic Island style, crisp pill, critically damped width.
+   MorphButton (MorphButton.tsx): the React web component's core (registry/web/morph-button.core.ts).
+   This file keeps the demo: a 1.4 s payment and the autoplay.
    ====================================================================================== */
 
-const MORPH_SPRING = { stiffness: 260, damping: 31, mass: 1, eps: 0.05 };
-const CHECK = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
-
 function mountMorph(body, { sc, label = 'Pay 42 €', doneLabel = 'Paid' }) {
-  const H = 52;
-  // Native default is a #1C1C1E pill; on the dark site it is inverted so it still reads.
-  const color = isLight() ? '#1C1C1E' : '#F2F4F7';
-  const ink = isLight() ? '#FFFFFF' : '#12151A';
-  const doneColor = '#34C759';
-  const wrap = el('div', 'cp-morph');
-  wrap.setAttribute('role', 'button');
-  wrap.tabIndex = 0;
-  wrap.style.height = H + 'px';
-  const pill = el('div', 'cp-morph-pill');
-  pill.style.height = H + 'px';
-  pill.style.borderRadius = H / 2 + 'px';
-  const lab = el('span', 'cp-morph-layer cp-morph-label');
-  lab.textContent = label;
-  lab.style.color = ink;
-  const spin = el('span', 'cp-morph-layer');
-  const ring = el('i', 'cp-spinner');
-  ring.style.borderColor = ink;
-  ring.style.borderTopColor = 'transparent';
-  spin.append(ring);
-  const done = el('span', 'cp-morph-layer cp-morph-done', `${CHECK}<span>${doneLabel}</span>`);
-  done.style.color = '#fff';
-  pill.append(lab, spin, done);
-  wrap.append(pill);
-  body.append(wrap);
-
-  const W = Math.round(wrap.clientWidth);
-  let phase = 'idle', angle = 0, spinning = false, fromDone = false;
-  const render = () => {
-    const w = width.v;
-    pill.style.width = w.toFixed(2) + 'px';
-    pill.style.left = ((W - w) / 2).toFixed(2) + 'px';
-    pill.style.background = mix(color, doneColor, tone.v);
-    const layer = (node, at, k = 0.18, rot = '') => {
-      const d = Math.min(1, Math.abs(show.v - at));
-      node.style.opacity = (1 - d).toFixed(3);
-      node.style.transform = `scale(${(1 - k * d).toFixed(3)})${rot}`;
-    };
-    layer(lab, 0);
-    layer(spin, 1, 0.3, ` rotate(${angle.toFixed(1)}deg)`);
-    // Done back to idle crosses the spinner slot: keep it out of that cross-fade.
-    if (phase === 'idle' && fromDone) spin.style.opacity = '0';
-    layer(done, 2);
+  const host = el('div', 'cp-morph');
+  body.append(host);
+  const morph = createMorphButton(host, { label, doneLabel, onPress: () => sc.wait(1400) });
+  sc.onDispose(() => morph.destroy());
+  return {
+    async run() {
+      // Loading 1.4 s, done for resetAfter (1.8 s), then back to idle.
+      host.click();
+      await sc.wait(1400 + 1800 + 500);
+    },
   };
-  const width = value(sc, W, render);
-  const tone = value(sc, 0, render);
-  const show = value(sc, 0, render);
-  render();
-
-  const spinLoop = () => {
-    let last = performance.now();
-    const f = (now) => {
-      if (!spinning || !sc.alive) return;
-      angle = (angle + ((now - last) / 900) * 360) % 360;
-      last = now;
-      render();
-      requestAnimationFrame(f);
-    };
-    requestAnimationFrame(f);
-  };
-
-  const go = (next) => {
-    fromDone = phase === 'done' && next === 'idle';
-    phase = next;
-    wrap.setAttribute('aria-busy', String(next === 'loading'));
-    width.spring(next === 'loading' ? H : W, MORPH_SPRING);
-    tone.to(next === 'done' ? 1 : 0, 380, CALM);
-    show.to(next === 'idle' ? 0 : next === 'loading' ? 1 : 2, 300, CALM);
-    if (next === 'loading' && !spinning) { spinning = true; spinLoop(); }
-    if (next !== 'loading') spinning = false;
-  };
-
-  async function press() {
-    if (phase !== 'idle') return;
-    go('loading');
-    await sc.wait(1400); // onPress: a 1.4 s payment
-    go('done');
-    await sc.wait(1800); // resetAfter
-    go('idle');
-    await sc.wait(500);
-  }
-  wrap.addEventListener('click', press);
-  wrap.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); press(); } });
-  return { run: press };
 }
 
 /* ======================================================================================
-   SplitButton (SplitButton.tsx): two half pills pulled apart, a vector neck that pinches and snaps.
+   SplitButton (SplitButton.tsx): the React web component's core (registry/web/split-button.core.ts).
+   This file keeps the demo: the labels and the autoplay.
    ====================================================================================== */
 
 function mountSplit(body, { sc, label = 'Delete project', cancelLabel = 'Cancel', confirmLabel = 'Delete' }) {
-  const H = 52, R = H / 2, cy = R, GAP = 28, DURATION = 620;
-  const color = '#FF3B30', confirmColor = '#FF3B30';
-  const cancelColor = isLight() ? '#E9E9EB' : '#2C2C2E';
-  const cancelText = isLight() ? '#1C1C1E' : '#F2F4F7';
-  const snapAt = GAP * 0.8;
-
-  const wrap = el('div', 'cp-split');
-  wrap.style.height = H + 'px';
-  body.append(wrap);
-  const W = Math.round(wrap.clientWidth);
-  const NS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(NS, 'svg');
-  svg.setAttribute('width', W); svg.setAttribute('height', H); svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  svg.setAttribute('aria-hidden', 'true');
-  svg.classList.add('cp-split-svg');
-  const left = document.createElementNS(NS, 'rect');
-  const right = document.createElementNS(NS, 'rect');
-  const bridge = document.createElementNS(NS, 'path');
-  [left, right].forEach((r) => { r.setAttribute('y', 0); r.setAttribute('height', H); r.setAttribute('rx', R); r.setAttribute('ry', R); });
-  bridge.setAttribute('fill', color);
-  svg.append(left, right, bridge);
-
-  const closed = el('button', 'cp-split-closed');
-  closed.type = 'button';
-  closed.innerHTML = `<span>${label}</span>`;
-  const cancel = el('button', 'cp-split-half');
-  cancel.type = 'button';
-  cancel.innerHTML = `<span style="color:${cancelText}">${cancelLabel}</span>`;
-  const confirm = el('button', 'cp-split-half cp-split-right');
-  confirm.type = 'button';
-  confirm.innerHTML = `<span>${confirmLabel}</span>`;
-  wrap.append(svg, closed, cancel, confirm);
-  const closedLabel = closed.firstChild, openLabels = [cancel.firstChild, confirm.firstChild];
-
-  let open = false;
-  const render = () => {
-    const g = GAP * p.v;
-    const width = (W - g) / 2, rightX = W - width;
-    left.setAttribute('x', 0); left.setAttribute('width', width.toFixed(3));
-    right.setAttribute('x', rightX.toFixed(3)); right.setAttribute('width', width.toFixed(3));
-    // Both halves stay one liquid color while joined; the left one turns into Cancel after.
-    left.setAttribute('fill', mix(color, cancelColor, tone.v));
-    right.setAttribute('fill', mix(color, confirmColor, tone.v));
-    if (g >= snapAt) bridge.setAttribute('d', '');
-    else {
-      const t = g / snapAt; // 0 touching, 1 about to snap
-      // Waist half height: full while fused, thins fast near the snap, like surface tension.
-      const n = R * (1 - 0.86 * Math.pow(t, 0.8));
-      const c1 = width - R, c2 = rightX + R;
-      // The neck leaves each cap from its very top while fused (no seam), lower as it stretches.
-      const phi = ((90 - 35 * t) * Math.PI) / 180;
-      const ax = c1 + R * Math.cos(phi), bx = c2 - R * Math.cos(phi), ay = R * Math.sin(phi);
-      const k = Math.max(4, (bx - ax) * 0.42);
-      const f = (v) => v.toFixed(3);
-      bridge.setAttribute('d', `M${f(ax)} ${f(cy - ay)}C${f(ax + k)} ${f(cy - n)} ${f(bx - k)} ${f(cy - n)} ${f(bx)} ${f(cy - ay)}L${f(bx)} ${f(cy + ay)}C${f(bx - k)} ${f(cy + n)} ${f(ax + k)} ${f(cy + n)} ${f(ax)} ${f(cy + ay)}Z`);
-    }
-    const ct = Math.min(1, p.v * 3);
-    closedLabel.style.opacity = (1 - ct).toFixed(3);
-    closedLabel.style.transform = `scale(${(1 - 0.12 * ct).toFixed(3)})`;
-    openLabels.forEach((s) => { s.style.opacity = tone.v.toFixed(3); s.style.transform = `scale(${(0.88 + 0.12 * tone.v).toFixed(3)})`; });
-    cancel.style.width = confirm.style.width = width.toFixed(2) + 'px';
-  };
-  const p = value(sc, 0, render);
-  const tone = value(sc, 0, render);
-  render();
-
-  const setOpen = (next) => {
-    open = next;
-    wrap.classList.toggle('open', open);
-    closed.tabIndex = open ? -1 : 0;
-    cancel.tabIndex = confirm.tabIndex = open ? 0 : -1;
-    const run = p.to(open ? 1 : 0, DURATION, SPLIT);
-    // Colors and labels only change once the drop has actually split.
-    if (open) tone.to(1, 220, QUAD, DURATION * 0.78); else tone.to(0, 180, QUAD);
-    return run;
-  };
-  setOpen(false);
-  closed.addEventListener('click', () => setOpen(true));
-  cancel.addEventListener('click', () => setOpen(false));
-  confirm.addEventListener('click', () => setOpen(false));
-
+  const DURATION = 620;
+  const host = el('div', 'cp-split');
+  body.append(host);
+  const split = createSplitButton(host, { label, cancelLabel, confirmLabel, duration: DURATION });
+  sc.onDispose(() => split.destroy());
+  const tap = (sel) => host.querySelector(sel)?.click();
   return {
     async run() {
-      if (open) return;
-      await setOpen(true);
-      await sc.wait(1300);
-      await setOpen(false);
-      await sc.wait(200);
+      if (host.hasAttribute('data-open')) return;
+      tap('.dissolve-split-closed');
+      await sc.wait(DURATION + 1300);
+      tap('.dissolve-split-cancel');
+      await sc.wait(DURATION + 200);
     },
-    // Exposed for checks: the bridge path and the halves at a given progress.
-    _set(v) { p.set(v); tone.set(v >= 0.999 ? 1 : 0); },
   };
 }
 
 /* ======================================================================================
-   GooeyMenu (GooeyMenu.tsx): drops pour out along an arc, through an SVG goo filter.
+   GooeyMenu (GooeyMenu.tsx): the React web component's core (registry/web/gooey-menu.core.ts).
+   This file keeps the demo: the three actions, their icons and the autoplay.
    ====================================================================================== */
 
+// Drawn in currentColor (the primary foreground), cut outs in the primary color.
+const CUT = 'style="fill: var(--dissolve-primary)"';
 const GOO_ICONS = {
-  Camera: '<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M9.2 4h5.6l1.6 2.2H19a2.5 2.5 0 0 1 2.5 2.5v8.8A2.5 2.5 0 0 1 19 20H5a2.5 2.5 0 0 1-2.5-2.5V8.7A2.5 2.5 0 0 1 5 6.2h2.6z"/><circle cx="12" cy="12.9" r="3.6" fill="#1C1C1E"/></svg>',
-  Photo: '<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="4" width="19" height="16" rx="3" fill="#fff"/><path d="M4.5 18l5-5.5 3.5 3.5 2.5-2.5 4 4.5z" fill="#1C1C1E"/><circle cx="16" cy="8.8" r="1.8" fill="#1C1C1E"/></svg>',
-  Voice: '<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="12.5" rx="3.5" fill="#fff"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/></svg>',
+  Camera: `<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.2 4h5.6l1.6 2.2H19a2.5 2.5 0 0 1 2.5 2.5v8.8A2.5 2.5 0 0 1 19 20H5a2.5 2.5 0 0 1-2.5-2.5V8.7A2.5 2.5 0 0 1 5 6.2h2.6z"/><circle cx="12" cy="12.9" r="3.6" ${CUT}/></svg>`,
+  Photo: `<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="4" width="19" height="16" rx="3" fill="currentColor"/><path d="M4.5 18l5-5.5 3.5 3.5 2.5-2.5 4 4.5z" ${CUT}/><circle cx="16" cy="8.8" r="1.8" ${CUT}/></svg>`,
+  Voice: '<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="12.5" rx="3.5" fill="currentColor"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>',
 };
 const GOO_ITEMS = [['Camera', 'Camera'], ['Photo', 'Photo library'], ['Voice', 'Voice memo']];
-let gooId = 0;
 
 function mountGooey(body, { sc, size = 56, distance = 92, startAngle = -90, endAngle = -180 }) {
-  // Native default is #1C1C1E with white icons; on the dark site it is inverted so it still reads.
-  const PAD = 16, light = isLight(), color = light ? '#1C1C1E' : '#F2F4F7', ink = light ? '#FFFFFF' : '#12151A';
   const stage = el('div', 'cp-goo-stage');
-  stage.style.setProperty('--goo-ink', ink);
+  const host = el('div', 'cp-goo');
+  stage.append(host);
   body.append(stage);
-  const box = distance + size + PAD * 2;
-  const c = { x: box - PAD - size / 2, y: box - PAD - size / 2 };
-  const R = size / 2, itemSize = size * 0.82, r = itemSize / 2, n = GOO_ITEMS.length;
-  const menu = el('div', 'cp-goo');
-  menu.style.width = menu.style.height = box + 'px';
-  const id = `cp-goo-${++gooId}`;
-  // Same recipe as the Skia goo layer: blur 9, then alpha * 20 - 9.
-  menu.innerHTML = `<svg class="cp-goo-svg" width="${box}" height="${box}" aria-hidden="true">
-    <defs><filter id="${id}" filterUnits="userSpaceOnUse" x="0" y="0" width="${box}" height="${box}" color-interpolation-filters="sRGB">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="9"/>
-      <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9"/>
-    </filter></defs>
-    <g filter="url(#${id})" fill="${color}"><circle cx="${c.x}" cy="${c.y}" r="${R}"/></g>
-  </svg>`;
-  const g = menu.querySelector('g');
-  const NS = 'http://www.w3.org/2000/svg';
-  const dirs = GOO_ITEMS.map((_, i) => {
-    const a = ((startAngle + ((endAngle - startAngle) * i) / Math.max(1, n - 1)) * Math.PI) / 180;
-    return { x: Math.cos(a), y: Math.sin(a) };
+  const menu = createGooeyMenu(host, {
+    size, distance, startAngle, endAngle,
+    items: GOO_ITEMS.map(([, name]) => ({ label: name, onPress: () => {} })),
   });
-  const blobs = dirs.map(() => {
-    const strand = document.createElementNS(NS, 'circle'), drop = document.createElementNS(NS, 'circle');
-    g.append(strand, drop);
-    return { strand, drop };
-  });
-  const actions = GOO_ITEMS.map(([key, name]) => {
-    const b = el('button', 'cp-goo-action', GOO_ICONS[key].replaceAll('#fff', ink).replaceAll('#1C1C1E', color));
-    b.type = 'button';
-    b.setAttribute('aria-label', name);
-    b.style.width = b.style.height = itemSize + 'px';
-    b.addEventListener('click', () => toggle(false));
-    menu.append(b);
-    return b;
-  });
-  const main = el('button', 'cp-goo-main', '<span></span><span></span>');
-  main.type = 'button';
-  main.setAttribute('aria-label', 'Actions');
-  main.style.cssText = `left:${c.x - R}px;top:${c.y - R}px;width:${size}px;height:${size}px`;
-  menu.append(main);
-  stage.append(menu);
-
-  const local = (v, i) => {
-    const step = 0.14, t = (v - i * step) / Math.max(0.0001, 1 - step * (n - 1));
-    return clamp(t);
-  };
-  let open = false;
-  const render = () => {
-    dirs.forEach((d, i) => {
-      const t = local(p.v, i), b = blobs[i];
-      b.drop.setAttribute('cx', (c.x + d.x * distance * t).toFixed(2));
-      b.drop.setAttribute('cy', (c.y + d.y * distance * t).toFixed(2));
-      b.drop.setAttribute('r', (r * (0.5 + 0.5 * Math.min(1, t * 1.6))).toFixed(2));
-      // A strand from the button to the drop that thins out and breaks around two thirds.
-      b.strand.setAttribute('cx', (c.x + d.x * distance * t * 0.5).toFixed(2));
-      b.strand.setAttribute('cy', (c.y + d.y * distance * t * 0.5).toFixed(2));
-      b.strand.setAttribute('r', (t > 0.7 ? 0 : r * 0.55 * (1 - t / 0.7)).toFixed(2));
-      const a = actions[i];
-      a.style.opacity = (t < 0.55 ? 0 : (t - 0.55) / 0.45).toFixed(3);
-      a.style.transform = `translate(${(c.x + d.x * distance * t - itemSize / 2).toFixed(2)}px,${(c.y + d.y * distance * t - itemSize / 2).toFixed(2)}px)`;
-    });
-    main.style.transform = `rotate(${(p.v * 45).toFixed(2)}deg)`;
-  };
-  const p = value(sc, 0, render);
-  render();
-
-  function toggle(next = !open) {
-    open = next;
-    menu.classList.toggle('open', open);
-    main.setAttribute('aria-expanded', String(open));
-    actions.forEach((a) => (a.tabIndex = open ? 0 : -1));
-    return p.to(open ? 1 : 0, open ? 1000 : 820, IN_OUT_CUBIC);
-  }
-  toggle(false);
-  main.addEventListener('click', () => toggle());
+  GOO_ITEMS.forEach(([key], i) => { menu.icon(i).innerHTML = GOO_ICONS[key]; });
+  sc.onDispose(() => menu.destroy());
+  const main = host.querySelector('.dissolve-goo-main');
   return {
     async run() {
-      if (open) return;
-      await toggle(true);
-      await sc.wait(1100);
-      await toggle(false);
+      if (host.hasAttribute('data-open')) return;
+      main.click();
+      await sc.wait(1000 + 1100);
+      main.click();
+      await sc.wait(820);
     },
   };
 }

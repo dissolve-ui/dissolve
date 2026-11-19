@@ -1,4 +1,4 @@
-/* AI components: ThinkingOrb, ImageReveal, UploadTile, TaskCheck (cp/ai.js). */
+/* AI components demos (cp/ai.js). The components bring their own base styles; here the site looks. */
 
 .cp-ai {
   --ai-fg: var(--text);
@@ -11,6 +11,15 @@
   --ai-danger: #FF453A;
   --ai-primary: var(--text);
   --ai-primary-fg: var(--bg);
+  --dissolve-foreground: var(--ai-fg);
+  --dissolve-muted: var(--ai-muted);
+  --dissolve-surface-2: var(--ai-surface-2);
+  --dissolve-border: var(--ai-line);
+  --dissolve-accent: var(--ai-accent);
+  --dissolve-success: var(--ai-success);
+  --dissolve-danger: var(--ai-danger);
+  --dissolve-primary: var(--ai-primary);
+  --dissolve-primary-foreground: var(--ai-primary-fg);
   display: flex; flex-direction: column; align-items: center; gap: 16px;
   color: var(--ai-fg); user-select: none; -webkit-user-select: none;
 }
@@ -26,18 +35,18 @@
 .cp-ai-chip:hover { color: var(--text); }
 .cp-ai-chip.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), inset 0 0 0 1px var(--line); }
 .cp-ai-chip:active { transform: scale(0.96); }
-.cp-ai-chip:focus-visible, .cp-ai [tabindex]:focus-visible, .cp-tc-row:focus-visible, .cp-up-add:focus-visible, .cp-up-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cp-ai-chip:focus-visible, .cp-ai [tabindex]:focus-visible, .cp-up-add:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---------- ThinkingOrb ---------- */
 .cp-orb-cv { display: block; cursor: pointer; touch-action: pan-y; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
 
 /* ---------- ImageReveal ---------- */
 .cp-rv-frame {
-  position: relative; border-radius: 20px; overflow: hidden; cursor: pointer; isolation: isolate;
+  position: relative; border-radius: 20px; cursor: pointer; isolation: isolate;
   background: var(--ai-surface-2); box-shadow: inset 0 0 0 1px var(--line); -webkit-tap-highlight-color: transparent;
 }
 .cp-mode-tile .cp-rv-frame { border-radius: 16px; }
-.cp-rv-cv { position: absolute; inset: 0; display: block; transition: opacity .15s; }
+.cp-rv-img { position: absolute; inset: 0; border-radius: inherit; transition: opacity .15s; }
 .cp-rv-empty {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
   color: var(--muted); font-size: 12.5px; font-weight: 500; transition: opacity .2s;
@@ -49,35 +58,14 @@
   background: var(--ai-surface-2); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06); touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 .cp-mode-tile .cp-sw-view { border-radius: 16px; }
-.cp-sw-content, .cp-sw-over { position: absolute; inset: 0; display: block; }
-.cp-sw-over { opacity: 0; pointer-events: none; }
+.cp-sw-content { position: absolute; inset: 0; display: block; }
 
 /* ---------- UploadTile ---------- */
 .cp-up { gap: 12px; }
-.cp-up-tray { display: flex; align-items: center; justify-content: center; min-height: 84px; }
-.cp-up-slot {
-  width: 0; margin: 0; flex: none; height: 84px; position: relative;
-  transition: width .3s cubic-bezier(0.32, 0.72, 0, 1), margin .3s cubic-bezier(0.32, 0.72, 0, 1);
-}
-.cp-up-slot.in { width: 84px; margin-left: 6px; }
-.cp-up-slot.gone { width: 0; margin-left: 0; }
-.cp-up-tile { position: absolute; left: 0; top: 0; width: 84px; height: 84px; padding: 6px; }
-.cp-up-face { display: block; border-radius: 16px; }
-/* where the tile lands, until it is whole */
-.cp-up-tile::before { content: ''; position: absolute; inset: 6px; border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line-2); pointer-events: none; }
-.cp-up-tile.whole::before { display: none; }
-.cp-up-tile.busy { cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.cp-up-tile:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 22px; }
-.cp-up-asm { position: absolute; left: 0; top: 0; display: block; pointer-events: none; }
-.cp-up-x {
-  position: absolute; right: 0; top: 0; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--ai-primary); color: var(--ai-primary-fg); -webkit-tap-highlight-color: transparent;
-  opacity: 0; pointer-events: none;
-}
-.cp-up-tile.whole:not(.bad) .cp-up-x { pointer-events: auto; }
-.cp-up-x:active { opacity: .7; }
+/* The add button keeps the gap before the first tile; the tray gives back the gap after the last one. */
+.cp-up-tray { display: flex; align-items: center; justify-content: center; min-height: 84px; margin-right: -6px; }
 .cp-up-add {
-  flex: none; width: 84px; height: 84px; padding: 6px; display: grid; -webkit-tap-highlight-color: transparent;
+  flex: none; width: 84px; height: 84px; padding: 6px; margin-right: 6px; display: grid; -webkit-tap-highlight-color: transparent;
 }
 .cp-up-add > span {
   border-radius: 16px; display: grid; place-items: center; color: var(--muted);
@@ -95,19 +83,10 @@
 .cp-tc-head:first-child { padding-top: 0; }
 .cp-tc-head[hidden] { display: none; }
 .cp-tc-list { display: flex; flex-direction: column; }
-.cp-tc-row {
-  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 40px; padding: 8px 4px; text-align: left;
-  border-radius: 10px; color: var(--ai-fg); -webkit-tap-highlight-color: transparent;
-}
+.cp-tc-row { min-height: 40px; padding: 8px 4px; border-radius: 10px; }
 .cp-tc-row:hover { background: var(--wash); }
-.cp-tc-box { position: relative; flex: none; width: 24px; height: 24px; border-radius: 7px; box-shadow: inset 0 0 0 1.5px var(--line-2); }
-.cp-tc-row:hover .cp-tc-box { box-shadow: inset 0 0 0 1.5px var(--faint); }
-.cp-tc-fill { position: absolute; inset: 0; border-radius: inherit; background: var(--ai-primary); opacity: 0; }
-.cp-tc-box svg { position: absolute; inset: 0; display: block; }
-.cp-tc-text { position: relative; min-width: 0; font-size: 14.5px; line-height: 1.35; color: var(--ai-fg); }
-.cp-tc-strikes { position: absolute; inset: 0; pointer-events: none; }
-.cp-tc-strike { position: absolute; height: 1.5px; margin-top: -0.75px; background: var(--ai-muted); transform: scaleX(0); transform-origin: 0 50%; }
+.cp-tc-row:hover .dissolve-task-box { box-shadow: inset 0 0 0 1.5px var(--faint); }
+.cp-tc-text { font-size: 14.5px; line-height: 1.35; letter-spacing: normal; }
 .cp-tc-empty { display: flex; align-items: center; justify-content: space-between; min-height: 40px; padding: 0 4px; font-size: 14px; color: var(--muted); }
 .cp-tc.compact .cp-tc-row { min-height: 34px; padding: 5px 4px; }
 .cp-tc.compact .cp-tc-text { font-size: 13px; }
-.cp-ai-probe { display: none !important; }

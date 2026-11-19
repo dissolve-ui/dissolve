@@ -1,7 +1,7 @@
 /**
- * Motion helpers shared by the dissolve components (react-native-dissolve). This file is yours:
+ * Motion helpers shared by the dissolve components (dissolve-ui). This file is yours:
  * change the curve here and every component that imports it follows.
- * `npx react-native-dissolve add` copies it next to the components that use it.
+ * `npx dissolve-ui add` copies it next to the components that use it.
  */
 import { Easing } from 'react-native-reanimated';
 

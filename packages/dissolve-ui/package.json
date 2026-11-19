@@ -1,0 +1,73 @@
+{
+  "name": "dissolve-ui",
+  "version": "0.0.6",
+  "description": "Animated components you own, for React Native and React. npx dissolve-ui add copies the source into your app; the React Native engine turns any view into dust (Skia, Reanimated 4).",
+  "author": "Rayan Selmi",
+  "license": "MIT",
+  "homepage": "https://dissolve.rselmi.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rs-4/dissolve.git",
+    "directory": "packages/dissolve-ui"
+  },
+  "bugs": {
+    "url": "https://github.com/rs-4/dissolve/issues"
+  },
+  "keywords": [
+    "react",
+    "react-native",
+    "expo",
+    "skia",
+    "reanimated",
+    "components",
+    "animation",
+    "particles",
+    "dissolve",
+    "shadcn",
+    "cli"
+  ],
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "react-native": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "source": "src/index.tsx",
+  "bin": {
+    "dissolve-ui": "bin/dissolve.mjs"
+  },
+  "files": [
+    "lib",
+    "src",
+    "bin",
+    "registry",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "@shopify/react-native-skia": ">=2.0.0",
+    "expo-haptics": "*",
+    "react": "*",
+    "react-native": "*",
+    "react-native-gesture-handler": ">=2.20.0",
+    "react-native-reanimated": ">=4.0.0",
+    "react-native-worklets": ">=0.5.0"
+  },
+  "peerDependenciesMeta": {
+    "@shopify/react-native-skia": { "optional": true },
+    "expo-haptics": { "optional": true },
+    "react": { "optional": true },
+    "react-native": { "optional": true },
+    "react-native-gesture-handler": { "optional": true },
+    "react-native-reanimated": { "optional": true },
+    "react-native-worklets": { "optional": true }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepack": "sh ../../scripts/build-package.sh"
+  }
+}

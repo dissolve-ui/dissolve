@@ -1,9 +1,9 @@
 ---
-name: react-native-dissolve
-description: Add particle disintegration and assembly effects to React Native and Expo apps with react-native-dissolve (Skia snapshot + Reanimated 4 grains on the UI thread). Use when the user wants a view, list row, card, message, sticker or whole screen to dissolve, turn into dust or sand, burn, shatter, melt, peel off, fly into an icon, appear from particles, or be destroyed by a hold or swipe gesture, or when the code imports react-native-dissolve, DissolveProvider, useDissolve, DissolveIn, useAppear, useDissolveScrub, useDissolveHold, useDissolvePeel, useDissolveScreen or useDissolveMorph.
+name: dissolve-ui
+description: Add particle disintegration and assembly effects to React Native and Expo apps with dissolve-ui (Skia snapshot + Reanimated 4 grains on the UI thread). Use when the user wants a view, list row, card, message, sticker or whole screen to dissolve, turn into dust or sand, burn, shatter, melt, peel off, fly into an icon, appear from particles, or be destroyed by a hold or swipe gesture, or when the code imports dissolve-ui, DissolveProvider, useDissolve, DissolveIn, useAppear, useDissolveScrub, useDissolveHold, useDissolvePeel, useDissolveScreen or useDissolveMorph. Also covers the ready-made components (swipe to delete, toast, scratch card...) for React Native and React on the web, installed with npx dissolve-ui add.
 ---
 
-# react-native-dissolve
+# dissolve-ui
 
 Snapshots any view with Skia (`makeImageFromView`), cuts it into grains drawn with one `<Atlas>`, and animates every grain on the UI thread (Reanimated 4, react-native-worklets). Capped at 6000 grains per burst. Runs in Expo Go.
 
@@ -12,7 +12,7 @@ Snapshots any view with Skia (`makeImageFromView`), cuts it into grains drawn wi
 1. Install the package and its peers:
 
 ```sh
-npx expo install react-native-dissolve @shopify/react-native-skia react-native-reanimated react-native-worklets react-native-gesture-handler expo-haptics
+npx expo install dissolve-ui @shopify/react-native-skia react-native-reanimated react-native-worklets react-native-gesture-handler expo-haptics
 ```
 
 Known good: Expo SDK 57, React Native 0.86, Skia 2.6, Reanimated 4.5, worklets 0.10, gesture handler 2.32. Expo's Babel preset adds the worklets plugin; a bare React Native app needs `'react-native-worklets/plugin'` in `babel.config.js`.
@@ -23,7 +23,7 @@ Known good: Expo SDK 57, React Native 0.86, Skia 2.6, Reanimated 4.5, worklets 0
 // app/_layout.tsx
 import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { DissolveProvider } from 'react-native-dissolve';
+import { DissolveProvider } from 'dissolve-ui';
 
 export default function Layout() {
   return (
@@ -40,7 +40,7 @@ Before adding the provider, check it is not already there. Never add a second on
 
 ## Ready-made components
 
-Components are NOT exported by the package. They are copied into the app with the CLI, shadcn style, and the user owns the files. Never write `import { SlideToConfirm } from 'react-native-dissolve'`.
+Components are NOT exported by the package. They are copied into the app with the CLI, shadcn style, and the user owns the files. Never write `import { SlideToConfirm } from 'dissolve-ui'`.
 
 They need NativeWind v5 (Tailwind v4 on react-native-css) and tailwind-merge. On Expo SDK 57:
 
@@ -52,16 +52,18 @@ npm install --legacy-peer-deps nativewind@5.0.0-preview.4 react-native-css@3.0.7
 Then `metro.config.js` wraps the config with `withNativewind(getDefaultConfig(__dirname), { inlineVariables: false, globalClassNamePolyfill: false })` (from `nativewind/metro`), `postcss.config.mjs` uses `@tailwindcss/postcss`, `nativewind-env.d.ts` references `react-native-css/types`, and `global.css` imports `tailwindcss/theme.css`, `preflight.css` and `utilities.css` and is imported once in the root layout.
 
 ```sh
-npx react-native-dissolve init                 # once: tw.tsx primitives + --dissolve-* tokens in global.css, checks the setup
-npx react-native-dissolve add slide-to-confirm # one or more names; components they build on are copied too
-npx react-native-dissolve list                 # every name
+npx dissolve-ui init --native        # once: dissolve.json, tw.tsx primitives + --dissolve-* tokens in global.css, checks the setup
+npx dissolve-ui add slide-to-confirm # one or more names; components they build on are copied too
+npx dissolve-ui list                 # every name, and the platforms it runs on
 ```
+
+`init` asks the platform (React Native or React) and saves it in `dissolve.json`; `add` reads it.
 
 ```tsx
 import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
 ```
 
-Restyle with `className` and the part classNames (`textClassName`, `boxClassName`...): classes go through tailwind-merge, so later classes win. Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `muted`, `primary`, `primary-foreground`, `success`, `danger`, `danger-foreground`, `accent`, `border`, `chart-1` to `chart-3`, `chart-1`, `chart-2`, `chart-3`) live in `global.css` with a dark block; keep them in `@theme inline` so dark mode resolves. `toast` needs `<ToastProvider>` inside `<DissolveProvider>`.
+Restyle with `className` and the part classNames (`textClassName`, `boxClassName`...): classes go through tailwind-merge, so later classes win. Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `muted`, `primary`, `primary-foreground`, `success`, `danger`, `danger-foreground`, `accent`, `border`, `chart-1` to `chart-3`) live in `global.css` with a dark block; keep them in `@theme inline` so dark mode resolves. `toast` needs `<ToastProvider>` inside `<DissolveProvider>`.
 
 | Component | Use it for |
 |---|---|
@@ -90,10 +92,21 @@ Restyle with `className` and the part classNames (`textClassName`, `boxClassName
 | `search-morph` | The magnifier becomes the search field; clearing turns the query into dust. |
 | `mini-player` | Now playing pill that opens into a full player as one object, then folds back. |
 
+### React on the web
+
+In a React web app (Next.js, Vite, React 19), the components marked `web` by `npx dissolve-ui list` install the same way, with the same props, and need only `react` and `react-dom`: no engine, no Skia, no NativeWind, Tailwind optional.
+
+```sh
+npx dissolve-ui init --web
+npx dissolve-ui add scratch-card
+```
+
+Each one is a `'use client'` wrapper (`<name>.tsx`) around a framework free core (`<name>.core.ts`) drawing on a canvas; import it from its copied file like on native. Native only props such as `haptics` are accepted (haptics map to `navigator.vibrate`). The hooks and variants (`useDissolve`, `DissolveIn`...) are React Native only.
+
 ## Core pattern
 
 ```tsx
-import { useDissolve } from 'react-native-dissolve';
+import { useDissolve } from 'dissolve-ui';
 
 function Row({ item, onRemove }) {
   const { ref, dissolving, dissolve } = useDissolve();

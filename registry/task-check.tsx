@@ -1,5 +1,5 @@
 /**
- * TaskCheck, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * TaskCheck, from dissolve (dissolve-ui). This file is yours: restyle it with
  * classNames, change the timings, anything. Colors come from the dissolve theme tokens
  * (global.css), so it follows light and dark mode out of the box.
  *
@@ -27,7 +27,7 @@ import {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { useDissolve } from 'react-native-dissolve';
+import { useDissolve } from 'dissolve-ui';
 import { Animated, Pressable, View, cn, useToken } from './tw';
 import { CALM } from './motion';
 

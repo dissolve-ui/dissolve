@@ -1,5 +1,5 @@
 /**
- * PullToRefresh, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * PullToRefresh, from dissolve (dissolve-ui). This file is yours: restyle it with
  * classNames, change the timings, the ring, anything. Colors come from the dissolve theme tokens
  * (global.css), so it follows light and dark mode out of the box.
  *
@@ -60,7 +60,7 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { capture, frames, measure, runDissolve, useDissolveContext } from 'react-native-dissolve';
+import { capture, frames, measure, runDissolve, useDissolveContext } from 'dissolve-ui';
 import { Animated, View, cn, useToken } from './tw';
 import { CALM, CALM_FN, clamp01, hash, wait } from './motion';
 

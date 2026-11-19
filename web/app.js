@@ -1,13 +1,13 @@
 import { GETTING_STARTED, GROUPS, VARIANTS, ORDER } from './data.js';
 import { icon, GLYPH } from './icons.js';
 import { mountDemo, HINTS, tilesHTML, mountTiles } from './demo.js';
-import { cancelAll } from './engine/atlas.js';
+import { cancelAll } from './lib/engine.js';
 import { playgroundHTML, mountPlayground } from './playground.js';
 import { OPTIONS, PRACTICES, PEERS, INSTALL, PROVIDER, PKG } from './variants-content.js';
 import { showcaseHTML, effectsHTML, mountShowcase, mountScrub } from './showcase.js';
 import { ready } from './images.js';
 import { introductionPage, installationPage, cliPage, themingPage, agentPromptPage, agentsStripHTML } from './docs.js';
-import { COMPONENTS, COMPONENT_ORDER, mountComponent, componentsSectionHTML, galleryCols, mountComponentsSection, propsTable, componentPrompt } from './components.js';
+import { COMPONENTS, COMPONENT_ORDER, mountComponent, componentsSectionHTML, galleryCols, mountComponentsSection, propsTable, componentPrompt, hasWeb, platformOf, choosePlatform, usage, webCode } from './components.js';
 import { autoplay, sequence } from './autoplay.js';
 import { clearToasts } from './cp/core.js';
 import { onWidth } from './cp/kit.js';
@@ -74,7 +74,7 @@ function renderSidebar() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
         </a>
       </div>
-      <p>v0.0.5 · MIT</p>
+      <p>v0.0.6 · MIT</p>
     </div>`;
 }
 
@@ -204,7 +204,7 @@ function installPanel(extra) {
 const TOAST_LAYOUT = `import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DissolveProvider } from 'react-native-dissolve';
+import { DissolveProvider } from 'dissolve-ui';
 import { ToastProvider } from '@/components/dissolve/toast';
 
 export default function Layout() {
@@ -220,18 +220,68 @@ export default function Layout() {
   );
 }`;
 
-/** Splits the leading "// npx react-native-dissolve add ..." line off a snippet. */
-function splitAdd(code, id) {
-  const m = code.match(/^\/\/\s*(npx [^\n]+)\n+/);
-  return m ? { add: m[1].trim(), code: code.slice(m[0].length) } : { add: `npx ${PKG} add ${id}`, code };
+/** React Native / React switch of a component page. React shows up once registry/web/<id>.tsx exists. */
+function platformSwitch(id, plat) {
+  const btn = (p, label) => `<button class="plat${p === plat ? ' on' : ''}" data-platform="${p}" role="radio" aria-checked="${p === plat}">${label}</button>`;
+  return `<div class="platforms" role="radiogroup" aria-label="Platform">${btn('native', 'React Native')}${hasWeb(id) ? btn('web', 'React') : ''}</div>`;
+}
+
+/** Web notes of a component: what its native only props become in a browser. */
+function webNotes(c) {
+  const notes = [];
+  if (c.props.some((o) => o.name === 'haptics')) notes.push('<code>haptics</code> maps to <code>navigator.vibrate</code> where the browser has it.');
+  if (c.nativeOnly?.length) notes.push('Props tagged React Native in the table only apply on native.');
+  return notes.length ? `<p class="dc-note">${notes.join(' ')}</p>` : '';
+}
+
+/** A numbered step of a component's Install tab. */
+const installStep = (n, title, body) => `<h2 class="section-title dc-step"><span class="dc-num">${n}</span>${title}</h2>${body}`;
+
+/** Install tab, React Native: the engine and the provider once per app, then the component. */
+function nativeInstall(id, c, add) {
+  const toast = id === 'toast';
+  return `
+    <p class="dc-lead">Steps 1 and 2 happen once per app. Already using dissolve? Go to step 3.</p>
+    ${installStep(1, 'Install the engine', `
+      ${cmd(INSTALL)}
+      <details class="dc-more"><summary>Peer versions</summary>
+        <div class="dc-table-wrap">
+          <table class="dc-table">
+            <thead><tr><th>Peer</th><th>Tested</th><th>Used for</th></tr></thead>
+            <tbody>${PEERS.map(([p, ver, u]) => `<tr><td><code>${p}</code></td><td>${ver}</td><td>${u}</td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+        <p class="dc-note">Expo's Babel preset already adds the worklets plugin. In a bare React Native app, add <code>'react-native-worklets/plugin'</code> to <code>babel.config.js</code>.</p>
+      </details>`)}
+    ${installStep(2, toast ? 'Wrap your app, with the toast provider' : 'Wrap your app', `
+      <p class="dc-text">Once, in the root layout, above the navigator.</p>
+      ${codeBlock(toast ? TOAST_LAYOUT : PROVIDER, { title: 'app/_layout.tsx' })}`)}
+    ${installStep(3, `Add ${c.title}`, `
+      ${add}
+      <p class="dc-text">Copies <code>${id}.tsx</code> into <code>components/dissolve</code>. The code is yours to edit. The first run also sets up NativeWind styling (<code>tw.tsx</code>, the theme tokens) and tells you if anything is missing.</p>`)}`;
+}
+
+/** Install tab, React: one command, nothing to set up. */
+function webInstall(id, c, add) {
+  return `
+    <p class="dc-lead">One command. No engine, no provider, no Tailwind: React 19 and <code>react-dom</code> are enough.</p>
+    ${installStep(1, `Add ${c.title}`, `
+      ${add}
+      <p class="dc-text">Copies <code>${id}.tsx</code> and its core <code>${id}.core.ts</code> into <code>components/dissolve</code> (<code>src/components/dissolve</code> in a Vite app). The code is yours to edit. Works in the Next.js App Router as is.</p>`)}
+    ${installStep(2, 'Use it', codeBlock(webCode(id), { title: 'App.tsx' }))}
+    ${webNotes(c)}`;
 }
 
 function componentPage(id) {
   const c = COMPONENTS[id];
-  const needsToast = id === 'toast';
-  const snip = splitAdd(c.code, id);
+  const web = hasWeb(id);
+  const plat = platformOf(id);
+  const only = (p) => `data-for="${p}"${p === plat ? '' : ' hidden'}`;
+  const snip = usage(id);
+  // The command follows the switch: the flag picks the platform even before dissolve.json exists.
+  const addFor = (p) => cmd(`${snip.add} --${p}`);
   return `
-  ${pageHead(id, c.title, c.desc, null, COMPONENT_NAV)}
+  ${pageHead(id, c.title, c.note, null, COMPONENT_NAV)}
 
   <div class="toolbar">
     <div class="seg" role="tablist">
@@ -239,6 +289,7 @@ function componentPage(id) {
       <button class="seg-btn" data-tab="install" role="tab">Install</button>
     </div>
     <div class="toolbar-right">
+      ${platformSwitch(id, plat)}
       <button class="btn" data-copy-prompt>${copyIcon}Copy prompt</button>
     </div>
   </div>
@@ -251,21 +302,19 @@ function componentPage(id) {
     </section>
 
     <h2 class="section-title">Usage</h2>
-    ${cmd(snip.add)}
-    ${codeBlock(snip.code, { title: `${c.title}.tsx` })}
+    <div ${only('native')}>${addFor('native')}${codeBlock(snip.code, { title: `${c.title}.tsx` })}</div>
+    ${web ? `<div ${only('web')}>${addFor('web')}${codeBlock(webCode(id), { title: `${c.title}.tsx` })}</div>` : ''}
 
     <h2 class="section-title">Props</h2>
     ${propsTable(id)}
+
+    <h2 class="section-title">How it works</h2>
+    <p class="dc-text">${c.desc}</p>
   </div>
 
   <div class="tab-panel" data-panel="install" hidden>
-    <h2 class="section-title">Add the component</h2>
-    ${cmd(snip.add)}
-    <p class="dc-text">Copies <code>${id}.tsx</code> into <code>components/dissolve</code> (or <code>src/components/dissolve</code>), with any component it builds on. The first run also writes <code>tw.tsx</code> and the theme tokens. The file is yours: restyle it with the className props, or change the tokens on the <a class="dc-link" href="#/theming">Theming</a> page.</p>
-    <p class="dc-note">First time? Components need the engine, the provider and NativeWind v5 with <code>tailwind-merge</code>. The quickest way is to paste the <a class="dc-link" href="#/agent-prompt">agent prompt</a>, or follow <a class="dc-link" href="#/installation">Installation</a>. The engine part is below.</p>
-    <h2 class="section-title">Engine</h2>
-    ${installPanel('Skip it if dissolve already runs in your app.')}
-    ${needsToast ? `<h2 class="section-title">Toast provider</h2><p class="dc-text">Toasts need a <code>ToastProvider</code> inside the <code>DissolveProvider</code>.</p>${codeBlock(TOAST_LAYOUT, { title: 'app/_layout.tsx' })}` : ''}
+    <div ${only('native')}>${nativeInstall(id, c, addFor('native'))}</div>
+    ${web ? `<div ${only('web')}>${webInstall(id, c, addFor('web'))}</div>` : ''}
   </div>`;
 }
 
@@ -398,7 +447,7 @@ function mountComponentPage(root, id) {
   root.querySelector('[data-replay]').addEventListener('click', () => stage.run());
   const cp = root.querySelector('[data-copy-prompt]');
   cp.addEventListener('click', () => {
-    navigator.clipboard?.writeText(componentPrompt(id)).catch(() => {});
+    navigator.clipboard?.writeText(componentPrompt(id, platformOf(id))).catch(() => {});
     cp.classList.add('done');
     setTimeout(() => cp.classList.remove('done'), 900);
   });
@@ -413,6 +462,14 @@ function wire(root) {
   root.querySelectorAll('[data-plat]').forEach((b) => b.addEventListener('click', () => {
     root.querySelectorAll('[data-plat]').forEach((x) => x.classList.toggle('on', x === b));
     root.querySelectorAll('[data-code]').forEach((c) => (c.hidden = c.dataset.code !== b.dataset.plat));
+  }));
+  root.querySelectorAll('[data-platform]').forEach((b) => b.addEventListener('click', () => {
+    choosePlatform(b.dataset.platform);
+    root.querySelectorAll('[data-platform]').forEach((x) => {
+      x.classList.toggle('on', x === b);
+      x.setAttribute('aria-checked', String(x === b));
+    });
+    root.querySelectorAll('[data-for]').forEach((n) => (n.hidden = n.dataset.for !== b.dataset.platform));
   }));
   root.querySelectorAll('.chips').forEach((g) => g.addEventListener('click', (e) => {
     const c = e.target.closest('.chip');

@@ -1,5 +1,5 @@
 /**
- * Toast, from dissolve (react-native-dissolve). This file is yours: restyle it with classNames,
+ * Toast, from dissolve (dissolve-ui). This file is yours: restyle it with classNames,
  * change the timings, the copy, anything. Colors come from the dissolve theme tokens
  * (global.css), so it follows light and dark mode out of the box: the card is the inverted
  * surface (primary), dark on light mode and light on dark mode.
@@ -13,7 +13,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { View as RNView } from 'react-native';
 import { LinearTransition } from 'react-native-reanimated';
-import { DissolveIn, useDissolve, type VariantName } from 'react-native-dissolve';
+import { DissolveIn, useDissolve, type VariantName } from 'dissolve-ui';
 import { Animated, Pressable, Text, View, cn } from './tw';
 import { CALM } from './motion';
 

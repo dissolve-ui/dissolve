@@ -36,7 +36,7 @@ jobs:
       - name: Syntax check web and mcp modules
         run: |
           set -e
-          for f in web/*.js web/engine/*.js web/cp/*.js; do
+          for f in web/*.js web/lib/*.js web/cp/*.js; do
             [ -f "$f" ] || continue
             echo "node --check $f"
             node --check --input-type=module < "$f"
@@ -53,5 +53,5 @@ jobs:
         run: npm run build:package
 
       - name: Check the package contents
-        working-directory: packages/react-native-dissolve
+        working-directory: packages/dissolve-ui
         run: npm pack --dry-run --ignore-scripts

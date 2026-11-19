@@ -1,17 +1,8 @@
-// GlossyButton (registry/glossy-button.tsx), ported to real CSS: box-shadow for the drop shadow,
-// the ring and the inset light, a masked gradient for the 1 px top lit stroke. Same press spring
-// as the native source. On its page a playground tunes every layer and copies the JSX or the CSS.
-import { value, el, clamp, prop, add } from './kit.js';
-const RM = matchMedia('(prefers-reduced-motion: reduce)');
-const SPRING = { stiffness: 260, damping: 22, eps: 0.002 };
-const PRESSED_SCALE = 0.97;
-const PRESSED_LIGHT = 0.55;
-
-const SIZES = {
-  sm: { height: 36, padding: 14, font: 14, icon: 14, gap: 6 },
-  md: { height: 44, padding: 18, font: 15, icon: 16, gap: 7 },
-  lg: { height: 52, padding: 22, font: 17, icon: 18, gap: 8 },
-};
+// GlossyButton demo. The button is the React web component's core (registry/glossy-button.core.ts,
+// built into web/lib), the same code a React app installs. On its page a playground tunes every
+// layer and copies the JSX or the CSS.
+import { createGlossyButton, GLOSSY_SIZES } from '../lib/glossy-button.js';
+import { el, clamp, prop, add } from './kit.js';
 
 /** The native defaults, the playground starts from them and the copied code omits them. */
 const DEFAULTS = {
@@ -26,67 +17,30 @@ const CHECK = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" strok
 const COPY = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M10.5 3.2A1.8 1.8 0 0 0 9 2.5H4.3a1.8 1.8 0 0 0-1.8 1.8V9a1.8 1.8 0 0 0 .7 1.5"/></svg>';
 
 /* ======================================================================================
-   The button: CSS variables per setting, a spring for the press.
+   The button, from the playground settings. icon is a Plus or nothing here.
    ====================================================================================== */
 
 function glossy(sc, opts) {
-  const node = el('button', 'gb');
-  node.type = 'button';
-  const icon = el('span', '');
-  const text = el('span', '');
-  node.append(icon, text);
-  const p = value(sc, 0, () => {
-    const k = clamp(p.v, -0.2, 1.2);
-    node.style.setProperty('--gb-scale', (1 - (1 - PRESSED_SCALE) * (RM.matches ? 0 : k)).toFixed(4));
-    node.style.setProperty('--gb-light', (1 - (1 - PRESSED_LIGHT) * clamp(k)).toFixed(3));
-  });
-  const press = (to) => (RM.matches ? Promise.resolve(p.set(to)) : p.spring(to, SPRING));
+  const node = el('button');
+  const props = (o) => ({ ...o, icon: undefined, label: o.label || LABEL });
+  const b = createGlossyButton(node, props(opts));
+  sc.onDispose(() => b.destroy());
+  const pointer = (type) => node.dispatchEvent(new PointerEvent(type, { pointerId: 1e6, isPrimary: true, bubbles: true, button: 0 }));
 
   function apply(o) {
-    const s = SIZES[o.size] || SIZES.md;
-    const st = node.style;
-    node.classList.toggle('gb-full', !!o.fullWidth);
-    st.setProperty('--gb-fill', o.color);
-    st.setProperty('--gb-label', o.labelColor);
-    st.setProperty('--gb-r', Math.min(o.radius, s.height / 2) + 'px');
-    st.setProperty('--gb-stroke', o.strokeOpacity);
-    st.setProperty('--gb-in-o', o.innerOpacity);
-    st.setProperty('--gb-in-b', o.innerBlur + 'px');
-    st.setProperty('--gb-in-s', o.innerSpread + 'px');
-    st.setProperty('--gb-sh-o', o.shadowOpacity);
-    st.setProperty('--gb-sh-y', o.shadowY + 'px');
-    st.setProperty('--gb-sh-b', o.shadowBlur + 'px');
-    st.setProperty('--gb-ring', o.ringSpread + 'px');
-    st.height = s.height + 'px';
-    st.padding = `0 ${s.padding}px`;
-    st.gap = s.gap + 'px';
-    st.fontSize = s.font + 'px';
-    icon.innerHTML = o.icon ? PLUS(s.icon) : '';
-    icon.style.display = o.icon ? 'inline-flex' : 'none';
-    text.textContent = o.label || LABEL;
+    b.update(props(o));
+    b.icon.innerHTML = o.icon ? PLUS((GLOSSY_SIZES[o.size] ?? GLOSSY_SIZES.md).icon) : '';
   }
   apply(opts);
-
-  node.addEventListener('pointerdown', (e) => {
-    if (e.button !== 0) return;
-    press(1);
-    const up = () => { press(0); removeEventListener('pointerup', up); removeEventListener('pointercancel', up); };
-    addEventListener('pointerup', up);
-    addEventListener('pointercancel', up);
-  });
-  node.addEventListener('keydown', (e) => {
-    if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) press(1);
-  });
-  node.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') press(0); });
-  node.addEventListener('blur', () => press(0));
 
   return {
     node,
     apply,
     async tap() {
-      press(1);
+      pointer('pointerdown');
       await sc.wait(150);
-      await press(0);
+      pointer('pointerup');
+      await sc.wait(350);
     },
   };
 }
@@ -121,7 +75,7 @@ function rgba(hexColor, a) {
 }
 
 function css(o) {
-  const s = SIZES[o.size] || SIZES.md;
+  const s = GLOSSY_SIZES[o.size] || GLOSSY_SIZES.md;
   const r = o.radius >= s.height / 2 ? '999px' : o.radius + 'px';
   return `.glossy-button {
   position: relative;

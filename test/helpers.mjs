@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const REGISTRY_DIR = join(ROOT, 'registry');
-export const PKG_DIR = join(ROOT, 'packages', 'react-native-dissolve');
+export const PKG_DIR = join(ROOT, 'packages', 'dissolve-ui');
 
 export const read = (file) => readFileSync(file, 'utf8');
 export const readJSON = (file) => JSON.parse(read(file));

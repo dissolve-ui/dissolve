@@ -1,5 +1,5 @@
 /**
- * ReorderList, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * ReorderList, from dissolve (dissolve-ui). This file is yours: restyle it with
  * classNames, change the timings, the grains, anything. Colors come from the dissolve theme tokens
  * (global.css), so it follows light and dark mode out of the box.
  *
@@ -47,7 +47,7 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
-import { frames, runDissolve, useDissolveContext, type VariantName } from 'react-native-dissolve';
+import { frames, runDissolve, useDissolveContext, type VariantName } from 'dissolve-ui';
 import { View, cn, useToken } from './tw';
 import { makeSprite, notify, toRGB } from './dots';
 import { CALM, wait } from './motion';

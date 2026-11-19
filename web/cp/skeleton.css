@@ -1,10 +1,7 @@
 /* Skeleton (cp/skeleton.js) */
 .sk { --sk-fill: var(--raised); position: relative; display: flex; flex-direction: column; text-align: left; color: var(--text); user-select: none; -webkit-user-select: none; }
 [data-theme='light'] .sk { --sk-fill: var(--surface-2); }
-.sk-b { position: relative; }
-.sk-c { opacity: 0; }
-.sk-ph { position: absolute; left: 0; top: 0; display: flex; align-items: center; pointer-events: none; }
-.sk-ph i { display: block; flex: none; background: var(--sk-fill); }
+.sk-bar { background: var(--sk-fill); }
 .sk-profile { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
 .sk-names { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .sk-row { display: flex; align-items: center; gap: 14px; padding: 10px 0; }

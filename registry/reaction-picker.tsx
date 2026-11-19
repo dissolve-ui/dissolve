@@ -1,5 +1,5 @@
 /**
- * ReactionPicker, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * ReactionPicker, from dissolve (dissolve-ui). This file is yours: restyle it with
  * classNames, change the timings, the emojis, anything. Colors come from the dissolve theme tokens
  * (global.css), so it follows light and dark mode out of the box.
  *
@@ -14,7 +14,7 @@ import Reanimated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withSp
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { BlurView } from 'expo-blur';
-import { frames, measure, useDissolve, type Box, type Point, type ViewRef } from 'react-native-dissolve';
+import { frames, measure, useDissolve, type Box, type Point, type ViewRef } from 'dissolve-ui';
 import { Animated, Pressable, Text, View, cn } from './tw';
 import { CALM } from './motion';
 

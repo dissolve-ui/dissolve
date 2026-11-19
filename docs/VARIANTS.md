@@ -1,4 +1,4 @@
-# react-native-dissolve : 10 nouvelles variantes
+# dissolve-ui : 10 nouvelles variantes
 
 J'ai lu `src/dissolve/index.tsx`, `src/dissolve/Particles.tsx`, `src/dissolve/presets.ts` et `site/dissolve.js`. Je n'ai modifié aucun fichier.
 

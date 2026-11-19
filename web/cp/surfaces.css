@@ -1,52 +1,30 @@
-/* Surfaces: CardStack, Receipt, BeforeAfter (cp/surfaces.js). */
+/* Surfaces: CardStack, BeforeAfter demos (cp/surfaces.js). */
 
-/* ---------- CardStack ---------- */
+/* ---------- CardStack (the stack brings its own styles, web/lib) ---------- */
 
-.cp-cs { position: relative; overflow: hidden; margin: 0 auto; }
-.cp-cs-card {
-  position: absolute; left: 0; right: 0; top: 0;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.12);
-  cursor: pointer; touch-action: pan-y; user-select: none; -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent; will-change: transform, opacity;
-}
-.cp-cs-card.focused { cursor: grab; }
-.cp-cs-card.dragging { cursor: grabbing; }
-.cp-cs-card:focus-visible { outline-offset: 3px; border-radius: inherit; }
-.cp-cs-clip { position: absolute; inset: 0; overflow: hidden; }
+.cp-cs { overflow: hidden; margin: 0 auto; }
+.cp-cs-card { border-radius: 20px; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.12); }
+.cp-cs-card.cp-cs-tile { border-radius: 18px; }
+.cp-cs-card:focus-visible { outline-offset: 3px; }
 .cp-cs-face { position: absolute; inset: 0; color: #fff; }
 .cp-cs-strip { height: 58px; padding: 0 18px; display: flex; flex-direction: column; justify-content: center; }
 .cp-cs-tag { font: 400 9.5px/1.2 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.08em; opacity: 0.6; }
 .cp-cs-title { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; margin-top: 1px; line-height: 1.25; }
 .cp-cs-line { position: absolute; left: 18px; bottom: 16px; font: 400 13px/1 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.08em; opacity: 0.85; }
 
-/* ---------- BeforeAfter ---------- */
+/* ---------- BeforeAfter (the frame brings its own styles, web/lib) ---------- */
 
-.cp-ba {
-  position: relative; width: 100%; max-width: 440px; border-radius: 20px; overflow: hidden; isolation: isolate;
-  background: #E5E5EA; cursor: ew-resize; touch-action: pan-y; user-select: none; -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
+.cp-ba { width: 100%; max-width: 440px; background: #E5E5EA; }
 .cp-ba:focus-visible { outline-offset: 3px; }
 .cp-mode-tile.cp-is-before-after { padding: 16px; }
 .cp-mode-tile .cp-ba { border-radius: 16px; }
-.cp-ba-layer { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; }
-.cp-ba-layer img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-.cp-ba-layer > i { position: absolute; inset: 0; }
+.cp-ba img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 /* Vivid, as in the demo: a warm to teal overlay blend, plus a touch of light. */
+.cp-ba-grade, .cp-ba-lift { position: absolute; inset: 0; }
 .cp-ba-grade { background: linear-gradient(rgba(255, 214, 140, 0.9), rgba(30, 120, 140, 0.8)); mix-blend-mode: overlay; }
 .cp-ba-lift { background: rgba(255, 255, 255, 0.06); }
-.cp-ba-clip { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; overflow: hidden; will-change: transform; }
-.cp-ba-clip .cp-ba-layer { will-change: transform; }
-.cp-ba-pill {
-  position: absolute; top: 14px; padding: 5px 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.38);
-  color: #fff; font-size: 12px; font-weight: 600; letter-spacing: 0.008em; line-height: 1.2; pointer-events: none;
-}
-.cp-ba-line { position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: #fff; box-shadow: 0 0 4px rgba(0, 0, 0, 0.25); pointer-events: none; will-change: transform; }
-.cp-ba-knob {
-  position: absolute; left: 0; width: 40px; height: 40px; border-radius: 50%; background: #fff;
-  display: grid; place-items: center; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22); pointer-events: none; will-change: transform;
-}
-.cp-ba-knob svg { display: block; }
+.cp-ba-line { background: #fff; box-shadow: 0 0 4px rgba(0, 0, 0, 0.25); }
+.cp-ba-knob { background: #fff; color: #1C1C1E; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22); }
 
 /* Color cards: rich gradients with a soft glow and a glossy sheen, minimal content. */
 .cp-cs-sunset, .cp-cs-violet, .cp-cs-lagoon, .cp-cs-aurora { position: absolute; inset: 0; }

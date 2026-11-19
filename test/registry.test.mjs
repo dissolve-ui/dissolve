@@ -21,7 +21,7 @@ const localImports = (file) =>
 const ALLOWED_PACKAGES = [
   'react',
   'react-native',
-  'react-native-dissolve',
+  'dissolve-ui',
   '@shopify/react-native-skia',
   'react-native-reanimated',
   'react-native-worklets',

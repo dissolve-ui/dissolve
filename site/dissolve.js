@@ -1,4 +1,4 @@
-// Web port of the react-native-dissolve particle engine (Canvas 2D).
+// Web port of the dissolve-ui particle engine (Canvas 2D).
 // One fixed overlay canvas renders every burst, so grains can fly outside their element.
 
 export const DPR = Math.min(2, window.devicePixelRatio || 1);

@@ -11,7 +11,7 @@ body:
     attributes:
       label: Area
       options:
-        - Engine or variant (react-native-dissolve)
+        - Engine or variant (dissolve-ui)
         - Hook (useDissolve, useAppear, useDissolvePeel, ...)
         - Component installed with the CLI (registry)
         - CLI (init, add, list)
@@ -51,8 +51,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: react-native-dissolve version or commit
-      placeholder: 0.0.5
+      label: dissolve-ui version or commit
+      placeholder: 0.0.6
     validations:
       required: true
   - type: dropdown

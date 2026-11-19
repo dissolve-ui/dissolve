@@ -1,5 +1,5 @@
 name: Component request
-description: Propose a new copy paste component for the registry (npx react-native-dissolve add).
+description: Propose a new copy paste component for the registry (npx dissolve-ui add).
 labels: [component]
 body:
   - type: markdown
@@ -11,7 +11,7 @@ body:
     id: name
     attributes:
       label: Component name
-      description: Kebab case, as it would be typed in `npx react-native-dissolve add <name>`.
+      description: Kebab case, as it would be typed in `npx dissolve-ui add <name>`.
       placeholder: pull-to-refresh
     validations:
       required: true

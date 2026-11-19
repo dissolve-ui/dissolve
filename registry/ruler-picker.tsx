@@ -1,5 +1,5 @@
 /**
- * RulerPicker, from dissolve (react-native-dissolve). This file is yours: restyle it with
+ * RulerPicker, from dissolve (dissolve-ui). This file is yours: restyle it with
  * classNames, change the timings, the graduations, anything. Colors come from the dissolve theme
  * tokens (global.css), so it follows light and dark mode out of the box.
  *

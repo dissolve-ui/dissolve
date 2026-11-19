@@ -55,7 +55,7 @@
         <h2>Installation</h2>
         <p>Install with Expo, or give the prompt below to your coding agent.</p>
         <div class="code one">
-          <pre id="install"><span class="dim">$</span> npx expo install react-native-dissolve @shopify/react-native-skia</pre>
+          <pre id="install"><span class="dim">$</span> npx expo install dissolve-ui @shopify/react-native-skia</pre>
           <button class="copy" data-copy="#install" aria-label="Copy"></button>
         </div>
         <p class="small">Requires Reanimated 4 and react-native-worklets. Works in Expo Go and dev builds, iOS and Android.</p>
@@ -70,7 +70,7 @@
         </div>
         <div class="code" data-panel="qs:hook">
           <div class="code-title">MessageRow.tsx</div>
-<pre><span class="k">import</span> { useDissolve } <span class="k">from</span> <span class="s">'react-native-dissolve'</span>
+<pre><span class="k">import</span> { useDissolve } <span class="k">from</span> <span class="s">'dissolve-ui'</span>
 
 <span class="k">function</span> <span class="f">MessageRow</span>({ message, onDelete }) {
   <span class="k">const</span> { ref, dissolving, dissolve } = <span class="f">useDissolve</span>()
@@ -89,7 +89,7 @@
         </div>
         <div class="code" data-panel="qs:provider" hidden>
           <div class="code-title">app/_layout.tsx</div>
-<pre><span class="k">import</span> { DissolveProvider } <span class="k">from</span> <span class="s">'react-native-dissolve'</span>
+<pre><span class="k">import</span> { DissolveProvider } <span class="k">from</span> <span class="s">'dissolve-ui'</span>
 
 <span class="k">export default function</span> <span class="f">Layout</span>() {
   <span class="k">return</span> (
@@ -197,9 +197,9 @@
         <p>Paste this into your coding agent.</p>
         <div class="code">
           <div class="code-title">Tell your coding agent</div>
-          <pre id="prompt" class="prose">Add react-native-dissolve to my Expo app.
+          <pre id="prompt" class="prose">Add dissolve-ui to my Expo app.
 
-1. Install it: npx expo install react-native-dissolve @shopify/react-native-skia
+1. Install it: npx expo install dissolve-ui @shopify/react-native-skia
 2. Wrap the root layout in &lt;DissolveProvider&gt;.
 3. For each destructive action (delete, unsend, complete), use useDissolve() in the row component:
    attach ref to the row view, hide it with opacity when dissolving is true,

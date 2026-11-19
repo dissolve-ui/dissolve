@@ -1,6 +1,6 @@
 // Variant playground: a live stage driven by a control panel, mirroring app/playground.tsx.
 // The code blocks under it always show the exact snippet for the current settings.
-import { morph } from './engine/atlas.js';
+import { morph } from './lib/engine.js';
 import { play, snapshot, PKG, boxOf, hide, show as reveal, onTheme, redraw } from './cp/kit.js';
 import { drawCard, binSvg, attachFling, holdController, attachHold, peelController, attachPeel, attachScrub } from './demo.js';
 
@@ -191,11 +191,11 @@ ${lines.join('\n')}
 });`;
 }
 
-/** Same settings on the Canvas 2D port (web/engine/atlas.js). */
+/** Same settings on the web engine (registry/web/engine.ts, copied with any React web component). */
 function webSnippet(id, s) {
   const c = caps(id, s);
   if (id === 'morph') {
-    return `import { morph } from './engine/atlas.js';
+    return `import { morph } from '@/components/dissolve/engine';
 
 // a, b: { source: canvas, x, y, w, h } in viewport px
 await morph(a, b, { grain: ${s.grain}, duration: ${s.duration} }).done;
@@ -222,7 +222,7 @@ await morph(a, b, { grain: ${s.grain}, duration: ${s.duration}, reverse: true })
         ? '\n// pointermove: h.set(progress), commit: h.release(), rewind: h.cancel()'
         : '';
   const hold = id === 'charge' || (id === 'peel' && s.mode === 'hand') || s.mode === 'scrub';
-  return `import { play } from './engine/atlas.js';
+  return `import { play } from '@/components/dissolve/engine';
 
 // source: a canvas snapshot of the view, x, y, w, h: its viewport rect
 const h = play({

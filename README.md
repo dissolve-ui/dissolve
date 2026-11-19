@@ -1,11 +1,12 @@
 # dissolve
 
 An animation library for React Native. Turn any view into dust: a Skia snapshot, cut into grains,
-animated by Reanimated 4 on the UI thread.
+animated by Reanimated 4 on the UI thread. Its ready-made components also run on the web, as React
+components with the same props.
 
-[![npm](https://img.shields.io/npm/v/react-native-dissolve.svg)](https://www.npmjs.com/package/react-native-dissolve)
+[![npm](https://img.shields.io/npm/v/dissolve-ui.svg)](https://www.npmjs.com/package/dissolve-ui)
 [![CI](https://github.com/rs-4/dissolve/actions/workflows/ci.yml/badge.svg)](https://github.com/rs-4/dissolve/actions/workflows/ci.yml)
-[![npm downloads](https://img.shields.io/npm/dm/react-native-dissolve.svg)](https://www.npmjs.com/package/react-native-dissolve)
+[![npm downloads](https://img.shields.io/npm/dm/dissolve-ui.svg)](https://www.npmjs.com/package/dissolve-ui)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Expo SDK 57](https://img.shields.io/badge/Expo%20SDK-57-000020.svg)](https://expo.dev)
 
@@ -20,7 +21,7 @@ at 6000 per burst.
 ## Install
 
 ```sh
-npx expo install react-native-dissolve @shopify/react-native-skia react-native-reanimated react-native-worklets react-native-gesture-handler expo-haptics
+npx expo install dissolve-ui @shopify/react-native-skia react-native-reanimated react-native-worklets react-native-gesture-handler expo-haptics
 ```
 
 The demo app in this repo imports the source directly through the `@/dissolve` path alias.
@@ -119,16 +120,18 @@ The example app in `app/` has one screen per effect (`app/effect/[name].tsx`), o
 ## Components
 
 Ready-made components ship the shadcn way: the CLI copies their source into your project, you own it
-and restyle it with NativeWind classNames. They read the dissolve theme tokens, so light and dark
-follow the system automatically.
+and restyle it with classNames. They read the dissolve theme tokens, so light and dark follow the
+system automatically. One CLI for React Native and React on the web:
 
 ```sh
-npx react-native-dissolve init                  # tw primitives + theme tokens in your global.css
-npx react-native-dissolve add swipe-to-delete   # one or more components
-npx react-native-dissolve list                  # everything available
+npx dissolve-ui init                  # asks the platform, saves it in dissolve.json, theme tokens
+npx dissolve-ui add swipe-to-delete   # one or more components, for that platform
+npx dissolve-ui list                  # everything available, and where it runs
 ```
 
-Components land in `components/dissolve/` (or `src/components/dissolve/` with a `src/` layout):
+`init` preselects the platform from your `package.json` (`--native`, `--web` or `--yes` skip the
+question). Components land in `components/dissolve/`
+(or `src/components/dissolve/` with a `src/` layout):
 
 ```tsx
 import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
@@ -136,8 +139,20 @@ import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
 <SlideToConfirm label="Slide to pay 42 €" doneLabel="Paid" onConfirm={pay} className="mx-4 bg-zinc-100" />
 ```
 
-They need NativeWind v5 (Tailwind v4, react-native-css) and `tailwind-merge`, like shadcn: later classes
-win, so `className="bg-blue-500"` replaces the default background.
+On React Native they need NativeWind v5 (Tailwind v4, react-native-css) and `tailwind-merge`, like
+shadcn: later classes win, so `className="bg-blue-500"` replaces the default background.
+
+On the web they need React 19 and `react-dom`, nothing else: no engine, no Tailwind required. Each
+one is a `'use client'` React wrapper around a framework free core that draws on a canvas, with the
+same props as the native version (Next.js, Vite, any React 19 app):
+
+```tsx
+import { ScratchCard } from '@/components/dissolve/scratch-card';
+
+<ScratchCard onReveal={claim}>
+  <span className="text-4xl font-bold">$25</span>
+</ScratchCard>
+```
 
 | Component | |
 |---|---|
@@ -157,7 +172,7 @@ win, so `className="bg-blue-500"` replaces the default background.
 | `before-after` | Before / after image comparison. |
 
 Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `muted`, `primary`,
-`primary-foreground`, `success`, `danger`, `danger-foreground`, `accent`, `border`, `chart-1` to `chart-3`, `chart-1`, `chart-2`, `chart-3`) live in your
+`primary-foreground`, `success`, `danger`, `danger-foreground`, `accent`, `border`, `chart-1` to `chart-3`) live in your
 `global.css` after `init`: change them once and every component follows.
 
 ## Hooks
@@ -175,11 +190,14 @@ Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `mu
 ## Documentation
 
 - Website: the `web/` folder holds the docs and the showcase (gallery, variant pages, docs, agent
-  prompt), with a live Canvas 2D port of the engine. It has no build step:
+  prompt), with a live Canvas 2D port of the engine. Component pages run the React web cores, built
+  into `web/lib/` by `npm run web:stamp` and committed, so the server needs no build step:
 
   ```sh
   cd web && python3 -m http.server 8000
   ```
+
+- React web components: how a component becomes one, in [docs/WEB.md](docs/WEB.md).
 
 - Engine contract for variant authors: the documented types in `src/dissolve/types.ts` (`AtlasVariant`, `StepFn`, `CustomVariant`).
 - Variant math and intent: [docs/VARIANTS.md](docs/VARIANTS.md).
@@ -191,16 +209,16 @@ Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `mu
   project with:
 
   ```sh
-  mkdir -p ~/.claude/skills/react-native-dissolve
-  cp web/skills/dissolve/SKILL.md ~/.claude/skills/react-native-dissolve/SKILL.md
+  mkdir -p ~/.claude/skills/dissolve-ui
+  cp web/skills/dissolve/SKILL.md ~/.claude/skills/dissolve-ui/SKILL.md
   ```
 
 - MCP server: [mcp/server.mjs](mcp/server.mjs), dependency free, Node over stdio. Tools:
   `list_variants`, `get_variant`, `get_setup`. Register it with:
 
   ```sh
-  claude mcp add dissolve -- npx -y react-native-dissolve-mcp
-  codex mcp add dissolve -- npx -y react-native-dissolve-mcp
+  claude mcp add dissolve -- npx -y dissolve-ui-mcp
+  codex mcp add dissolve -- npx -y dissolve-ui-mcp
   ```
 
   More clients in [mcp/README.md](mcp/README.md).
@@ -210,7 +228,7 @@ Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `mu
 ```sh
 npm install
 npm start          # then open in Expo Go
-npm run typecheck  # tsc --noEmit
+npm run typecheck  # tsc for the app and registry/web
 npm test           # CLI, registry, theme, engine and package tests (node:test)
 ```
 

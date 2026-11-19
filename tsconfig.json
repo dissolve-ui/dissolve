@@ -8,7 +8,7 @@
       "@/*": [
         "./src/*"
       ],
-      "react-native-dissolve": [
+      "dissolve-ui": [
         "./src/dissolve"
       ],
       "@registry/*": [
@@ -23,8 +23,9 @@
     "jest.config.js",
     "android",
     "ios",
-    "packages/react-native-dissolve/src",
-    "packages/react-native-dissolve/lib",
-    "packages/react-native-dissolve/registry"
+    "packages/dissolve-ui/src",
+    "packages/dissolve-ui/lib",
+    "packages/dissolve-ui/registry",
+    "registry/web"
   ]
 }
