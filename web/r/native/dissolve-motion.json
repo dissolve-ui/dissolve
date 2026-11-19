@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "dissolve-motion",
+  "type": "registry:lib",
+  "title": "dissolve-motion",
+  "description": "Shared helper motion of the dissolve components.",
+  "dependencies": [
+    "react-native-reanimated"
+  ],
+  "files": [
+    {
+      "path": "registry/motion.ts",
+      "content": "/**\n * Motion helpers shared by the dissolve components (dissolve-ui). This file is yours:\n * change the curve here and every component that imports it follows.\n * `npx dissolve-ui add` copies it next to the components that use it.\n */\nimport { Easing } from 'react-native-reanimated';\n\n/** The calm iOS curve, no bounce: for withTiming and layout transitions. */\nexport const CALM = Easing.bezier(0.32, 0.72, 0, 1);\n\n/** The same curve as a plain function of t (0..1), callable per element inside a frame worklet. */\nexport const CALM_FN = Easing.bezierFn(0.32, 0.72, 0, 1);\n\n/** Resolves after `ms` milliseconds (JS thread). */\nexport const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));\n\n/** Clamps to 0..1. */\nexport function clamp01(v: number) {\n  'worklet';\n  return v < 0 ? 0 : v > 1 ? 1 : v;\n}\n\n/** Deterministic 0..1 noise from two integers: the same on every run and on the web ports. */\nexport function hash(i: number, k: number) {\n  'worklet';\n  const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;\n  return x - Math.floor(x);\n}\n",
+      "type": "registry:lib",
+      "target": "components/dissolve/motion.ts"
+    }
+  ]
+}
