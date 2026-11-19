@@ -121,6 +121,8 @@ const step = (n, title, id) => `<h2 class="section-title dc-step" id="${id}"><sp
 /* ---------- Components: CLI, NativeWind v5, theme ---------- */
 
 const CLI = `npx ${PKG}`;
+/** The shadcn registry served by the site (web/r, built by scripts/build-shadcn.mjs). */
+export const SHADCN = 'https://dissolve.rselmi.com/r';
 const STYLE_INSTALL = 'npx expo install nativewind@5.0.0-preview.4 react-native-css@3.0.7 tailwindcss @tailwindcss/postcss tailwind-merge';
 
 const METRO = `const { getDefaultConfig } = require('expo/metro-config');
@@ -294,6 +296,7 @@ export function installationPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) 
     ${cmd(`${CLI} add scratch-card`)}
     ${codeBlock(WEB_EXAMPLE, { title: 'app/page.tsx' })}
     <p class="dc-note">Same props as on React Native. <code>${CLI} list</code> shows which components run on the web, and every component page has a React Native / React switch.</p>
+    <p class="dc-note">Using shadcn? <code>npx shadcn@latest add ${SHADCN}/scratch-card.json</code> works too, see <a class="dc-link" href="#/cli">CLI</a>.</p>
 
     <h2 class="section-title" id="dc-manual">React Native, by hand</h2>
     ${step(1, 'Install the engine', 'dc-install')}
@@ -417,6 +420,14 @@ export function cliPage({ pageHead, codeBlock, cmd, GLYPH }) {
     <h2 class="section-title">Where files go</h2>
     <p class="dc-text">By default <code>components/dissolve</code>. When <code>tsconfig.json</code> maps <code>@/*</code> to <code>./src/*</code> and a <code>src</code> folder exists, <code>src/components/dissolve</code>. Import lines use your <code>@/</code> alias when there is one, a relative path otherwise.</p>
     ${codeBlock(ADD_OUTPUT, { title: 'Terminal', lang: 'sh' })}
+
+    <h2 class="section-title" id="dc-shadcn">With the shadcn CLI</h2>
+    <p class="dc-text">Already on shadcn? Every component is also a shadcn registry item. Pass its URL to <code>shadcn add</code>, no <code>init</code> or <code>dissolve.json</code> needed. The React item lives at <code>/r/&lt;name&gt;.json</code>, the React Native one at <code>/r/native/&lt;name&gt;.json</code>.</p>
+    ${cmd(`npx shadcn@latest add ${SHADCN}/scratch-card.json`)}
+    ${cmd(`npx shadcn@latest add ${SHADCN}/native/scratch-card.json`)}
+    <p class="dc-text">shadcn follows the dependencies for you: the component, its core, the shared files (engine, kit, the React hook, or <code>tw.tsx</code> on native) and the npm packages. Shared files are installed once, however many components you add. Files land in <code>components/dissolve</code>, the same place as with the dissolve CLI.</p>
+    <p class="dc-text">The theme tokens come as a <code>dissolve-theme</code> item: shadcn writes them in your CSS, light on <code>:root</code> and dark on <code>.dark</code>, the class shadcn projects already toggle. On React Native, you still install the engine and wrap the app in <code>&lt;DissolveProvider&gt;</code>, see <a class="dc-link" href="#/installation">Installation</a>.</p>
+    <p class="dc-note">The full list is in <a class="dc-link" href="${SHADCN}/registry.json" target="_blank" rel="noopener">registry.json</a> and <a class="dc-link" href="${SHADCN}/native/registry.json" target="_blank" rel="noopener">native/registry.json</a>.</p>
 
     <h2 class="section-title">What init writes</h2>
     <p class="dc-text">On the web, <code>dissolve.json</code> and the theme tokens, as plain CSS variables when the project has no Tailwind. Each component comes with its framework free core (<code>&lt;name&gt;.core.ts</code>) and the shared files it imports, nothing to install.</p>
