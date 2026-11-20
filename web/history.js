@@ -64,7 +64,7 @@ export function historyHTML() {
       <a class="bx-pill gh-repo" href="https://github.com/${REPO}" target="_blank" rel="noopener">View on GitHub</a>
     </header>
     <div class="gh-card gh-graph-card">
-      <div class="gh-card-head"><span>History of main</span><span class="gh-lanes" data-gh-lanes></span></div>
+      <div class="gh-card-head"><span>Latest on main</span><span class="gh-lanes" data-gh-lanes></span></div>
       <div class="gh-graph" data-gh-graph></div>
     </div>
   </section>`;
@@ -81,6 +81,8 @@ const ago = (t) => {
 const escH = (x) => String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 const ROW = 56, GAP = 34, LANE = 26, X0 = 18;
+/** Rows shown before the fade (the next one is the blurred sixth). */
+const SHOWN = 5;
 /** Lane colors: main in the text color, branches in soft hues. */
 const HUES = ['#8AB4FF', '#C9A2FF', '#7FD6B0', '#F5B97A', '#FF9DB4'];
 
@@ -202,7 +204,15 @@ export function mountHistory(root) {
     const first = Math.min(d.created, d.log.at(-1)?.at ?? d.created);
     const days = Math.max(1, Math.ceil((Date.now() - first) / DAY));
     el.querySelector('[data-gh-sub]').textContent = `Started ${fmtDay(first)}, ${days} day${days > 1 ? 's' : ''} ago. Every commit and pull request is public.`;
-    el.querySelector('[data-gh-graph]').innerHTML = graphHTML(g);
+    const box = el.querySelector('[data-gh-graph]');
+    box.innerHTML = graphHTML(g);
+    // Only the latest five, the sixth fades out under a blur: the rest is on GitHub.
+    const last = g.rows[Math.min(SHOWN, g.rows.length - 1)];
+    if (g.rows.length > SHOWN) {
+      box.style.height = `${last.y + last.h / 2}px`;
+      box.classList.add('gh-cut');
+      box.insertAdjacentHTML('beforeend', `<div class="gh-fade" style="height:${last.h + 12}px"></div>`);
+    }
     const n = g.lanes.length;
     el.querySelector('[data-gh-lanes]').textContent = `${d.log.length} commits · ${n} pull request${n > 1 ? 's' : ''}`;
   }).catch(() => {});

@@ -157,7 +157,7 @@ body { padding-top: var(--top-h); }
 .gh-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
 .gh-head h2 { margin: 0; font-size: 32px; line-height: 1.1; font-weight: 700; letter-spacing: -0.035em; font-variation-settings: var(--round); }
 .gh-sub { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
-.gh-card { padding: 18px 20px 16px; border-radius: var(--bx-r); background: var(--card); margin-bottom: 12px; }
+.gh-card { padding: 18px 20px 16px; border-radius: var(--bx-r); background: var(--surface); margin-bottom: 12px; }
 .gh-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-size: 14px; color: var(--text-2); }
 @media (max-width: 860px) {
   .gh { margin-top: 80px; }
@@ -168,6 +168,13 @@ body { padding-top: var(--top-h); }
 .gh-lanes { color: var(--muted); font-size: 13px; }
 .gh-graph { position: relative; margin: 0 -8px; }
 .gh-svg { position: absolute; left: 8px; top: 0; overflow: visible; }
+.gh-cut { overflow: hidden; }
+.gh-fade {
+  position: absolute; left: 0; right: 0; bottom: 0; pointer-events: none;
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  background: linear-gradient(to bottom, transparent, var(--surface) 92%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 45%); mask-image: linear-gradient(to bottom, transparent, #000 45%);
+}
 .gh-main { stroke: color-mix(in srgb, var(--text) 55%, transparent); }
 .gh-node-x circle { fill: var(--bg); stroke: var(--c); stroke-width: 2; }
 .gh-node-x path { stroke: var(--c); stroke-width: 1.6; stroke-linecap: round; }
