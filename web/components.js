@@ -80,41 +80,44 @@ export const tagOf = (id) => TAG_OF[id] ?? 'Press';
 const sliders = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5H3M12 19H3M14 3v4M16 17v4M21 12h-9M21 19h-5M21 5h-7M8 10v4M8 12H3"/></svg>';
 const playIcon = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.4v9.2a.6.6 0 0 0 .9.5l7.4-4.6a.6.6 0 0 0 0-1L5.9 2.9a.6.6 0 0 0-.9.5Z"/></svg>';
 
-export function componentsSectionHTML(tag = 'All') {
-  // Columns filled in reading order. The page re-renders when the count changes (app.js).
-  const cols = galleryCols();
+/**
+ * Gallery cards that take more room, so the grid has a rhythm: wide (two columns), tall (two rows)
+ * or big (both). The rest are single cells; the grid packs them without holes.
+ */
+const SIZE = {
+  'bar-chart': 'big', 'scratch-card': 'wide', 'image-reveal': 'wide', 'before-after': 'wide', 'thinking-orb': 'wide',
+  'reorder-list': 'tall', 'card-stack': 'tall', 'pull-to-refresh': 'tall', 'voice-note': 'wide',
+  stream: 'wide',
+};
+
+export function componentsSectionHTML() {
   const items = [];
   // Gallery order: the sidebar order, with a few swaps for the layout.
-  const order = [...COMPONENT_ORDER].filter((id) => tag === 'All' || tagOf(id) === tag);
+  const order = [...COMPONENT_ORDER];
   const swap = (a, b) => { const i = order.indexOf(a), j = order.indexOf(b); if (i >= 0 && j >= 0) [order[i], order[j]] = [order[j], order[i]]; };
   swap('bar-chart', 'before-after');
   order.forEach((id) => {
-    // Engine effects sit among the components only in the unfiltered gallery.
-    while (tag === 'All' && FX[items.length]) items.push({ fx: FX[items.length] });
+    // A few engine effects sit among the components.
+    while (FX[items.length]) items.push({ fx: FX[items.length] });
     items.push({ id });
   });
-  // The demo sits alone on a dot grid; its name, number and interaction are a caption under it.
-  // Numbered in reading order (the columns render column by column).
   let n = 0;
-  items.forEach((it) => { it.num = it.fx ? 'fx' : String(++n).padStart(2, '0'); });
-  const item = (it, i) => {
+  return `<div class="cp-grid cp-grid-home bx-grid">${items.map((it, i) => {
     const fx = !!it.fx;
+    const key = fx ? it.fx.id : it.id;
     const title = fx ? it.fx.title : COMPONENTS[it.id].title, href = fx ? it.fx.href : `#/${it.id}`;
-    const num = it.num;
+    const num = fx ? 'fx' : String(++n).padStart(2, '0');
     const body = fx
       ? `<div class="cp-panel-body cp-fx-body" data-fx="${it.fx.id}" data-rank="${i}"><div class="stage-slot"></div></div>`
       : `<div class="cp-panel-body" data-cp="${it.id}" data-rank="${i}"></div>`;
-    return `<figure class="bx-item">
+    return `<figure class="bx-item${SIZE[key] ? ` bx-${SIZE[key]}` : ''}">
       <section class="cp-panel bx-card${fx ? ' cp-panel-fx' : ''}" aria-label="${title}">
         ${body}
         <span class="bx-acts">${fx ? '' : `<button class="bx-act" data-bx-play aria-label="Play ${title}">${playIcon}</button>`}<a class="bx-act" href="${href}" aria-label="Open ${title}">${sliders}</a></span>
       </section>
       <figcaption class="bx-cap"><span class="bx-num">${num}</span><a class="bx-name" href="${href}">${title}</a><span class="bx-kind">${fx ? 'Effect' : tagOf(it.id)}</span></figcaption>
     </figure>`;
-  };
-  return `<div class="cp-grid cp-grid-home">${Array.from({ length: cols }, (_, col) => `<div class="cp-col">
-    ${items.map((it, i) => (i % cols !== col ? '' : item(it, i))).join('')}
-  </div>`).join('')}</div>`;
+  }).join('')}</div>`;
 }
 
 const NO_AUTOPLAY = new Set(['toast']);
