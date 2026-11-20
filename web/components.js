@@ -80,9 +80,10 @@ export const tagOf = (id) => TAG_OF[id] ?? 'Press';
 const sliders = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5H3M12 19H3M14 3v4M16 17v4M21 12h-9M21 19h-5M21 5h-7M8 10v4M8 12H3"/></svg>';
 const playIcon = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.4v9.2a.6.6 0 0 0 .9.5l7.4-4.6a.6.6 0 0 0 0-1L5.9 2.9a.6.6 0 0 0-.9.5Z"/></svg>';
 
-/** The interaction filters above the gallery. */
+/** The interaction filters above the gallery: one track, a glide under the pick, a count per tag. */
 export function filtersHTML(tag = 'All') {
-  return `<div class="bx-filters" role="toolbar" aria-label="Filter by interaction">${['All', ...TAGS].map((t) => `<button class="bx-filter${t === tag ? ' on' : ''}" data-tag="${t}">${t}</button>`).join('')}</div>`;
+  const count = (t) => (t === 'All' ? COMPONENT_ORDER.length : COMPONENT_ORDER.filter((id) => tagOf(id) === t).length);
+  return `<div class="bx-filters" role="tablist" aria-label="Filter by interaction"><span class="bx-glide" aria-hidden="true"></span>${['All', ...TAGS].map((t) => `<button class="bx-filter${t === tag ? ' on' : ''}" role="tab" aria-selected="${t === tag}" data-tag="${t}">${t}<sup>${count(t)}</sup></button>`).join('')}</div>`;
 }
 
 export function componentsSectionHTML(tag = 'All') {
@@ -98,22 +99,27 @@ export function componentsSectionHTML(tag = 'All') {
     while (tag === 'All' && FX[items.length]) items.push({ fx: FX[items.length] });
     items.push({ id });
   });
-  // A card has no header: its name and actions show on hover, over the demo.
-  const foot = (title, href, play) => `<div class="bx-foot">
-      <a class="bx-name" href="${href}">${title}</a>
-      <span class="bx-acts">${play ? `<button class="bx-act" data-bx-play aria-label="Play ${title}">${playIcon}</button>` : ''}<a class="bx-act" href="${href}" aria-label="Open ${title}">${sliders}</a></span>
-    </div>`;
-  const panel = (it, i) => it.fx
-    ? `<section class="cp-panel bx-card cp-panel-fx" aria-label="${it.fx.title}">
-      <div class="cp-panel-body cp-fx-body" data-fx="${it.fx.id}" data-rank="${i}"><div class="stage-slot"></div></div>
-      ${foot(it.fx.title, it.fx.href, false)}
-    </section>`
-    : `<section class="cp-panel bx-card" aria-label="${COMPONENTS[it.id].title}">
-      <div class="cp-panel-body" data-cp="${it.id}" data-rank="${i}"></div>
-      ${foot(COMPONENTS[it.id].title, `#/${it.id}`, true)}
-    </section>`;
+  // The demo sits alone on a dot grid; its name, number and interaction are a caption under it.
+  // Numbered in reading order (the columns render column by column).
+  let n = 0;
+  items.forEach((it) => { it.num = it.fx ? 'fx' : String(++n).padStart(2, '0'); });
+  const item = (it, i) => {
+    const fx = !!it.fx;
+    const title = fx ? it.fx.title : COMPONENTS[it.id].title, href = fx ? it.fx.href : `#/${it.id}`;
+    const num = it.num;
+    const body = fx
+      ? `<div class="cp-panel-body cp-fx-body" data-fx="${it.fx.id}" data-rank="${i}"><div class="stage-slot"></div></div>`
+      : `<div class="cp-panel-body" data-cp="${it.id}" data-rank="${i}"></div>`;
+    return `<figure class="bx-item">
+      <section class="cp-panel bx-card${fx ? ' cp-panel-fx' : ''}" aria-label="${title}">
+        ${body}
+        <span class="bx-acts">${fx ? '' : `<button class="bx-act" data-bx-play aria-label="Play ${title}">${playIcon}</button>`}<a class="bx-act" href="${href}" aria-label="Open ${title}">${sliders}</a></span>
+      </section>
+      <figcaption class="bx-cap"><span class="bx-num">${num}</span><a class="bx-name" href="${href}">${title}</a><span class="bx-kind">${fx ? 'Effect' : tagOf(it.id)}</span></figcaption>
+    </figure>`;
+  };
   return `<div class="cp-grid cp-grid-home">${Array.from({ length: cols }, (_, col) => `<div class="cp-col">
-    ${items.map((it, i) => (i % cols !== col ? '' : panel(it, i))).join('')}
+    ${items.map((it, i) => (i % cols !== col ? '' : item(it, i))).join('')}
   </div>`).join('')}</div>`;
 }
 
