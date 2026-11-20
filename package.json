@@ -33,7 +33,7 @@
     "test:package": "node --test test/package.test.mjs",
     "build:package": "sh scripts/build-package.sh",
     "check": "npm run typecheck && npm test",
-    "web:stamp": "node scripts/build-web.mjs && node scripts/build-shadcn.mjs && node scripts/stamp-web.mjs",
+    "web:stamp": "node scripts/build-web.mjs && node scripts/build-shadcn.mjs && node scripts/build-history.mjs && node scripts/stamp-web.mjs",
     "web:registry": "node scripts/build-shadcn.mjs",
     "web:build": "node scripts/build-web.mjs"
   },
