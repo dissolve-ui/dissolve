@@ -6,7 +6,7 @@ import {
   morph,
   play,
   snapshot
-} from "./chunks/chunk-6TDGCXIW.js";
+} from "./chunks/chunk-R2UPSOGD.js";
 import "./chunks/chunk-BCIF2ROM.js";
 export {
   DPR,

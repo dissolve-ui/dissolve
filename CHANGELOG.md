@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Web: the rain effect draws adjacent settled grains in a row together when aligned to device pixels, reducing Canvas 2D calls as the view comes together.
+
 ## [0.0.6] - 2026-11-19
 
 ### Changed

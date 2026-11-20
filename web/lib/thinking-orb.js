@@ -1,7 +1,7 @@
 // Built from registry/web by scripts/build-web.mjs, do not edit.
 import {
   DPR
-} from "./chunks/chunk-6TDGCXIW.js";
+} from "./chunks/chunk-R2UPSOGD.js";
 import {
   CALM,
   clamp,
