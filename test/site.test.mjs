@@ -42,8 +42,8 @@ describe('component pages', () => {
     });
   }
 
-  test('the side panel shows the note, the description sits under How it works', () => {
-    assert.match(APP, /<p class="bx-desc">\$\{c\.note\}<\/p>/);
+  test('the page subtitle is the note, the description sits under How it works', () => {
+    assert.match(APP, /pageHead\(id, c\.title, c\.note,/);
     assert.match(APP, /How it works<\/h2>\s*<p class="dc-text">\$\{c\.desc\}<\/p>/);
   });
 
