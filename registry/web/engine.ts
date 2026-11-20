@@ -1110,9 +1110,27 @@ function frame(now: number) {
       gctx.setTransform(1, 0, 0, 1, 0, 0);
       gctx.clearRect(0, 0, goo.width, goo.height);
     }
+    const dx = (P.x + offX) * DPR, dy = (P.y + offY) * DPR;
+    // Shared edges must land on device pixels or merging the draws changes their filtering.
+    const batchResting = v === rain && Number.isInteger(sg) && Number.isInteger(dx) && Number.isInteger(dy);
     for (let i = 0; i < b.count; i++) {
       const k = i * stride;
       let t = (p - d[k + 6]) / d[k + 7];
+      if (batchResting && t >= 1) {
+        const col = i % P.cols, row = Math.floor(i / P.cols);
+        const rowEnd = i + P.cols - col;
+        const first = i;
+        while (i + 1 < rowEnd) {
+          const next = (i + 1) * stride;
+          if (p - d[next + 6] < d[next + 7]) break;
+          i++;
+        }
+        const sx = col * sg, sy = row * sg, width = (i - first + 1) * sg;
+        x.setTransform(1, 0, 0, 1, dx, dy);
+        x.globalAlpha = 1;
+        x.drawImage(b.source, sx, sy, width, sg, sx, sy, width, sg);
+        continue;
+      }
       t = t < 0 ? 0 : t > 1 ? 1 : t;
       o.cx = P.x + d[k]; o.cy = P.y + d[k + 1]; o.s = 1; o.rot = 0; o.k = 0; o.shade = 1; o.dark = 0; o.paper = 0;
       o.a = 1 - t * t * (3 - 2 * t);

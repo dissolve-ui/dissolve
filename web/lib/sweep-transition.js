@@ -4,7 +4,7 @@ import {
 } from "./chunks/chunk-OQW5JTMC.js";
 import {
   DPR
-} from "./chunks/chunk-6TDGCXIW.js";
+} from "./chunks/chunk-R2UPSOGD.js";
 import {
   CALM,
   el,
