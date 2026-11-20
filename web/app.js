@@ -12,6 +12,7 @@ import { autoplay, sequence } from './autoplay.js';
 import { clearToasts } from './cp/core.js';
 import { onWidth } from './cp/kit.js';
 import { historyHTML, mountHistory } from './history.js';
+import { footerHTML, mountFooter } from './footer.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -533,12 +534,23 @@ function mountGallery(view) {
   return () => stops.forEach((f) => f());
 }
 
-/** Gallery filters: rebuild the grid for the picked interaction. */
+/** Gallery filters: the glide slides under the pick, the grid rebuilds for that interaction. */
 function wireFilters(view) {
-  view.querySelectorAll('[data-tag]').forEach((b) => b.addEventListener('click', () => {
+  const bar = view.querySelector('.bx-filters');
+  if (!bar) return;
+  const glide = bar.querySelector('.bx-glide');
+  const place = (b, instant) => {
+    if (instant) glide.style.transition = 'none';
+    glide.style.width = `${b.offsetWidth}px`;
+    glide.style.transform = `translateX(${b.offsetLeft}px)`;
+    if (instant) { glide.offsetWidth; glide.style.transition = ''; }
+  };
+  place(bar.querySelector('.bx-filter.on'), true);
+  bar.querySelectorAll('[data-tag]').forEach((b) => b.addEventListener('click', () => {
     if (b.dataset.tag === galleryTag) return;
     galleryTag = b.dataset.tag;
-    view.querySelectorAll('[data-tag]').forEach((x) => x.classList.toggle('on', x === b));
+    bar.querySelectorAll('[data-tag]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-selected', String(x === b)); });
+    place(b);
     galleryDispose?.();
     $('#view .cp-grid').outerHTML = componentsSectionHTML(galleryTag);
     galleryDispose = mountGallery(view);
@@ -597,6 +609,8 @@ function wire(root) {
 
 renderTop();
 renderSidebar();
+$('#foot').innerHTML = footerHTML();
+mountFooter($('#foot'));
 loadStars();
 const applyTheme = (t) => {
   document.documentElement.dataset.theme = t;

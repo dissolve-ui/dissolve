@@ -81,32 +81,41 @@ body { padding-top: var(--top-h); }
 .bx-wide .hx-src { border-radius: var(--pill); background: transparent; }
 .bx-wide .hx-glide, .bx-wide .hx-src-btn { border-radius: 50%; }
 
-/* ---------- Filters ---------- */
+/* ---------- Filters: one track, a glide under the pick ---------- */
 
-.bx-filters { display: flex; gap: 6px; flex-wrap: wrap; margin: 96px 0 14px; }
+.bx-filters { position: relative; display: inline-flex; gap: 2px; padding: 4px; margin: 96px 0 18px; border-radius: 14px; background: var(--card); max-width: 100%; }
+.bx-glide { position: absolute; left: 0; top: 4px; bottom: 4px; border-radius: 10px; background: var(--card-2); box-shadow: inset 0 0 0 1px var(--line); transition: transform .45s cubic-bezier(0.32, 0.72, 0, 1), width .45s cubic-bezier(0.32, 0.72, 0, 1); }
 .bx-filter {
-  height: 36px; padding: 0 16px; border: 0; border-radius: var(--pill); background: var(--card); color: var(--muted);
-  font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: background .2s, color .2s;
+  position: relative; z-index: 1; height: 34px; padding: 0 14px; border: 0; border-radius: 10px; background: none; color: var(--muted);
+  font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: color .2s; white-space: nowrap;
 }
-.bx-filter:hover { color: var(--text); }
-.bx-filter.on { background: var(--text); color: var(--bg); }
+.bx-filter sup { margin-left: 4px; font: 500 10.5px var(--mono); color: var(--faint); vertical-align: 5px; }
+.bx-filter:hover { color: var(--text-2); }
+.bx-filter.on { color: var(--text); }
 .bx-wide .cp-grid-home { margin-top: 0; width: auto; left: auto; transform: none; }
 
-/* ---------- Headerless cards ---------- */
+/* ---------- Cards: the demo on a dot grid, a caption under it ---------- */
 
-.bx-card { border-radius: var(--bx-r); background: var(--card); overflow: hidden; }
-.bx-card .cp-panel-body { min-height: 300px; padding: 44px 24px; display: grid; place-items: center; }
-.bx-card .cp-fx-body { min-height: 300px; }
-.bx-foot {
-  position: absolute; inset: auto 12px 12px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  opacity: 0; transform: translateY(4px); transition: opacity .25s var(--ease), transform .3s var(--ease); pointer-events: none;
+.bx-item { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.bx-card {
+  position: relative; border-radius: 22px; overflow: hidden;
+  background-color: var(--card);
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--text) 9%, transparent) 0.8px, transparent 1.2px);
+  background-size: 14px 14px; background-position: 7px 7px;
+  box-shadow: inset 0 0 0 1px var(--line);
 }
-.bx-card:hover .bx-foot, .bx-card:focus-within .bx-foot { opacity: 1; transform: none; pointer-events: auto; }
-.bx-name { height: 32px; display: flex; align-items: center; padding: 0 13px; border-radius: var(--pill); background: var(--card-2); color: var(--text); font-size: 13px; font-weight: 500; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-.bx-acts { display: flex; gap: 6px; }
-.bx-act { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--card-2); color: var(--text-2); cursor: pointer; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: color .2s, transform .25s var(--spring); }
+.bx-card .cp-panel-body { min-height: 280px; padding: 40px 24px; display: grid; place-items: center; }
+.bx-card .cp-fx-body { min-height: 280px; }
+.bx-acts { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; opacity: 0; transform: translateY(-3px); transition: opacity .25s var(--ease), transform .3s var(--ease); }
+.bx-card:hover .bx-acts, .bx-card:focus-within .bx-acts { opacity: 1; transform: none; }
+.bx-act { width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 10px; background: var(--card-2); color: var(--text-2); cursor: pointer; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: color .2s, transform .25s var(--spring); }
 .bx-act:hover { color: var(--text); transform: scale(1.06); }
-@media (hover: none) { .bx-foot { opacity: 1; transform: none; pointer-events: auto; } }
+.bx-cap { display: flex; align-items: baseline; gap: 10px; padding: 0 6px; font-size: 13.5px; }
+.bx-num { font: 500 11px var(--mono); color: var(--faint); }
+.bx-name { color: var(--text-2); font-weight: 520; transition: color .2s; }
+.bx-item:hover .bx-name { color: var(--text); }
+.bx-kind { margin-left: auto; color: var(--faint); font-size: 12.5px; }
+@media (hover: none) { .bx-acts { opacity: 1; transform: none; } }
 
 /* ---------- Component page: stage + side panel ---------- */
 
@@ -193,6 +202,36 @@ body { padding-top: var(--top-h); }
 .gh-pr { color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); }
 @media (prefers-reduced-motion: reduce) { .gh-line, .gh-node, .gh-row { transition: none !important; } }
 
+/* ---------- Footer (footer.js) ---------- */
+
+.foot { position: relative; margin-top: 140px; border-top: 1px solid var(--line); }
+.foot-in { max-width: 1240px; margin: 0 auto; padding: 56px 32px 28px; }
+@media (min-width: 861px) { body:not(.bx-wide) .foot { margin-left: var(--rail); } }
+.foot-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 48px; }
+.foot-lead p { margin: 0 0 18px; max-width: 320px; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+.foot-cmd { display: inline-flex; align-items: center; gap: 12px; height: 40px; padding: 0 6px 0 14px; border: 0; border-radius: 12px; background: var(--card); cursor: pointer; color: var(--text); }
+.foot-cmd code { font: 12.5px var(--mono); }
+.foot-cmd span { height: 28px; display: grid; place-items: center; padding: 0 10px; border-radius: 8px; background: var(--card-2); font-size: 12px; color: var(--text-2); }
+.foot-cols { display: grid; grid-template-columns: repeat(4, minmax(110px, auto)); gap: 32px; }
+.foot-col { display: flex; flex-direction: column; gap: 10px; }
+.foot-col p { margin: 0 0 4px; font-size: 12.5px; color: var(--faint); }
+.foot-col a { font-size: 14px; color: var(--text-2); transition: color .2s; }
+.foot-col a:hover { color: var(--text); }
+.foot-word { position: relative; margin: 56px 0 8px; cursor: crosshair; user-select: none; }
+.foot-word canvas { display: block; width: 100%; }
+.foot-hint { position: absolute; right: 0; bottom: -4px; font-size: 12px; color: var(--faint); opacity: 0; transition: opacity .3s; }
+.foot-word:hover .foot-hint { opacity: 1; }
+.foot-bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--faint); }
+.foot-theme { display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--card); }
+.foot-theme button { height: 28px; padding: 0 12px; border: 0; border-radius: 8px; background: none; color: var(--muted); font: inherit; font-size: 12.5px; cursor: pointer; }
+.foot-theme button.on { background: var(--card-2); color: var(--text); }
+@media (max-width: 860px) {
+  .foot { margin-top: 96px; }
+  .foot-in { padding: 40px 16px 24px; }
+  .foot-top { grid-template-columns: 1fr; gap: 36px; }
+  .foot-cols { grid-template-columns: 1fr 1fr; gap: 28px; }
+}
+
 /* ---------- Search palette ---------- */
 
 .pal { position: fixed; z-index: 60; inset: 0; display: grid; justify-items: center; align-items: start; padding-top: 14vh; background: rgba(0, 0, 0, 0.5); animation: pal-in .16s var(--ease); }
@@ -226,7 +265,11 @@ body { padding-top: var(--top-h); }
   .shell { padding-top: 12px; }
   .bx-wide .view { padding: 0; }
   .bx-wide .sc-hero2 { margin-top: 40px; }
-  .bx-filters { margin-top: 56px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .bx-filters { margin-top: 56px; overflow-x: auto; scrollbar-width: none; }
   .bx-filter { flex: none; }
-  .bx-card .cp-panel-body { min-height: 240px; }
+  .bx-card .cp-panel-body { min-height: 230px; }
 }
+
+/* Captions under the cards need a little more air between rows. */
+.bx-wide .cp-grid { gap: 14px; }
+.bx-wide .cp-col { gap: 22px; }
