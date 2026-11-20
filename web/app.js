@@ -7,7 +7,7 @@ import { OPTIONS, PRACTICES, PEERS, INSTALL, PROVIDER, PKG } from './variants-co
 import { showcaseHTML, effectsHTML, mountShowcase, mountScrub } from './showcase.js';
 import { ready } from './images.js';
 import { introductionPage, installationPage, cliPage, themingPage, agentPromptPage, agentsStripHTML, SHADCN } from './docs.js';
-import { COMPONENTS, COMPONENT_ORDER, mountComponent, componentsSectionHTML, galleryCols, mountComponentsSection, propsTable, componentPrompt, hasWeb, platformOf, choosePlatform, usage, webCode } from './components.js';
+import { COMPONENTS, COMPONENT_ORDER, mountComponent, componentsSectionHTML, filtersHTML, tagOf, galleryCols, mountComponentsSection, propsTable, componentPrompt, hasWeb, platformOf, choosePlatform, usage, webCode } from './components.js';
 import { autoplay, sequence } from './autoplay.js';
 import { clearToasts } from './cp/core.js';
 import { onWidth } from './cp/kit.js';
@@ -77,6 +77,83 @@ function renderSidebar() {
       <p>v0.0.6 · MIT</p>
     </div>`;
 }
+
+/* ---------- Top bar ---------- */
+
+const GH = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
+const SEARCH = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="m10.4 10.4 3.1 3.1"/></svg>';
+/** Top bar sections: each one lights up on its own pages. */
+const TOP = [
+  { href: '#/gallery', label: 'Components', on: (id) => isGallery(id) || !!COMPONENTS[id] },
+  { href: '#/effects', label: 'Effects', on: (id) => id === 'effects' || !!VARIANTS[id] },
+  { href: '#/introduction', label: 'Docs', on: (id) => !!GETTING_STARTED.find((p) => p.id === id) && id !== 'agent-prompt' },
+  { href: '#/agent-prompt', label: 'Agents', on: (id) => id === 'agent-prompt' },
+];
+
+function renderTop() {
+  $('#top').innerHTML = `
+    <a href="#/gallery" class="top-brand" aria-label="dissolve home">dissolve</a>
+    <nav class="top-nav">${TOP.map((t) => `<a class="top-link" href="${t.href}">${t.label}</a>`).join('')}</nav>
+    <button class="top-search" data-palette aria-label="Search components">${SEARCH}<span>Search</span><kbd>⌘K</kbd></button>
+    <div class="top-right">
+      <a class="top-icon" href="https://github.com/rs-4/dissolve" target="_blank" rel="noopener" aria-label="dissolve on GitHub">${GH}</a>
+      <a class="bx-pill bx-pill-light top-cta" href="#/installation">Get started</a>
+    </div>`;
+  $('#top').querySelector('[data-palette]').addEventListener('click', openPalette);
+}
+
+function markTop(id) {
+  document.querySelectorAll('.top-link').forEach((a, i) => a.classList.toggle('on', TOP[i].on(id)));
+}
+
+/* ---------- Search (⌘K) ---------- */
+
+const ENTRIES_ALL = () => [
+  ...COMPONENT_ORDER.map((id) => ({ id, title: COMPONENTS[id].title, kind: tagOf(id) })),
+  ...ORDER.map((id) => ({ id, title: VARIANTS[id].title, kind: 'Effect' })),
+  ...GETTING_STARTED.map((p) => ({ id: p.id, title: p.title, kind: 'Docs' })),
+];
+
+function openPalette() {
+  if ($('.pal')) return;
+  const all = ENTRIES_ALL();
+  const el = document.createElement('div');
+  el.className = 'pal';
+  el.innerHTML = `<div class="pal-box" role="dialog" aria-label="Search">
+    <div class="pal-in">${SEARCH}<input placeholder="Search components, effects, docs" aria-label="Search" autocomplete="off" spellcheck="false" /><kbd>esc</kbd></div>
+    <div class="pal-list" role="listbox"></div>
+  </div>`;
+  document.body.append(el);
+  const input = el.querySelector('input'), list = el.querySelector('.pal-list');
+  let hits = all, sel = 0;
+  const draw = () => {
+    list.innerHTML = hits.length
+      ? hits.map((h, i) => `<a class="pal-item${i === sel ? ' on' : ''}" href="#/${h.id}" role="option" data-i="${i}"><span>${esc(h.title)}</span><span class="pal-kind">${h.kind}</span></a>`).join('')
+      : '<p class="pal-empty">Nothing matches.</p>';
+    list.querySelector('.on')?.scrollIntoView({ block: 'nearest' });
+  };
+  const close = () => { el.classList.add('out'); setTimeout(() => el.remove(), 160); removeEventListener('keydown', key, true); };
+  const key = (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); close(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); sel = (sel + (e.key === 'ArrowDown' ? 1 : -1) + hits.length) % Math.max(1, hits.length); draw(); }
+    else if (e.key === 'Enter' && hits[sel]) { e.preventDefault(); location.hash = `#/${hits[sel].id}`; close(); }
+  };
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    hits = !q ? all : all.filter((h) => h.title.toLowerCase().includes(q) || h.id.includes(q) || h.kind.toLowerCase() === q);
+    sel = 0; draw();
+  });
+  list.addEventListener('click', (e) => { if (e.target.closest('.pal-item')) close(); });
+  el.addEventListener('mousedown', (e) => { if (e.target === el) close(); });
+  addEventListener('keydown', key, true);
+  draw();
+  requestAnimationFrame(() => input.focus());
+}
+
+addEventListener('keydown', (e) => {
+  const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
+  if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && !typing)) { e.preventDefault(); openPalette(); }
+});
 
 /* ---------- Building blocks ---------- */
 
@@ -285,39 +362,61 @@ function componentPage(id) {
   const snip = usage(id);
   // The command follows the switch: the flag picks the platform even before dissolve.json exists.
   const addFor = (p) => cmd(`${snip.add} --${p}`);
+  const i = COMPONENT_ORDER.indexOf(id);
+  const prev = COMPONENT_ORDER[i - 1], next = COMPONENT_ORDER[i + 1];
   return `
-  ${pageHead(id, c.title, c.note, null, COMPONENT_NAV)}
-
-  <div class="toolbar">
-    <div class="seg" role="tablist">
-      <button class="seg-btn on" data-tab="preview" role="tab">Preview</button>
-      <button class="seg-btn" data-tab="install" role="tab">Install</button>
-    </div>
-    <div class="toolbar-right">
-      ${platformSwitch(id, plat)}
-      <button class="btn" data-copy-prompt>${copyIcon}Copy prompt</button>
-    </div>
-  </div>
-
-  <div class="tab-panel" data-panel="preview">
-    <section class="stage cp-stage" id="cp-stage">
-      <div class="stage-slot"><div class="cp-stage-body" data-cp-stage="${id}"></div></div>
-      <p class="stage-hint">${c.hint}</p>
-      <button class="btn btn-sm stage-replay" data-replay>Play demo</button>
+  <div class="bx-detail">
+    <section class="bx-stage">
+      <div class="bx-stage-top">
+        <div class="seg bx-seg" role="tablist">
+          <button class="seg-btn on" data-tab="preview" role="tab">Preview</button>
+          <button class="seg-btn" data-tab="code" role="tab">Code</button>
+        </div>
+        <div class="bx-stage-nav">
+          <a class="bx-round" ${prev ? `href="#/${prev}" title="${COMPONENTS[prev].title}"` : 'aria-disabled="true"'} aria-label="Previous component">${arrow('l')}</a>
+          <a class="bx-round" ${next ? `href="#/${next}" title="${COMPONENTS[next].title}"` : 'aria-disabled="true"'} aria-label="Next component">${arrow('r')}</a>
+        </div>
+      </div>
+      <div class="tab-panel bx-panel-preview" data-panel="preview" id="cp-stage">
+        <div class="stage-slot"><div class="cp-stage-body" data-cp-stage="${id}"></div></div>
+        <p class="stage-hint">${c.hint}</p>
+        <button class="bx-play" data-replay aria-label="Play demo"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.4v9.2a.6.6 0 0 0 .9.5l7.4-4.6a.6.6 0 0 0 0-1L5.9 2.9a.6.6 0 0 0-.9.5Z"/></svg></button>
+      </div>
+      <div class="tab-panel bx-panel-code" data-panel="code" hidden>
+        <div ${only('native')}>${codeBlock(snip.code, { title: `${c.title}.tsx` })}</div>
+        ${web ? `<div ${only('web')}>${codeBlock(webCode(id), { title: `${c.title}.tsx` })}</div>` : ''}
+      </div>
     </section>
 
-    <h2 class="section-title">Usage</h2>
-    <div ${only('native')}>${addFor('native')}${codeBlock(snip.code, { title: `${c.title}.tsx` })}</div>
-    ${web ? `<div ${only('web')}>${addFor('web')}${codeBlock(webCode(id), { title: `${c.title}.tsx` })}</div>` : ''}
+    <aside class="bx-side">
+      <div class="bx-side-head">
+        <h1>${c.title}</h1>
+        <span class="bx-tag">${tagOf(id)}</span>
+      </div>
+      <p class="bx-desc">${c.note}</p>
+      <div class="bx-rows">
+        <div class="bx-row"><span>Platform</span>${platformSwitch(id, plat)}</div>
+      </div>
+      <div class="bx-add">
+        <p class="bx-label">Add it</p>
+        <div ${only('native')}>${addFor('native')}</div>
+        ${web ? `<div ${only('web')}>${addFor('web')}</div>` : ''}
+      </div>
+      <div class="bx-side-foot">
+        <button class="bx-pill bx-pill-line" data-copy-prompt>${copyIcon}Copy prompt</button>
+        <button class="bx-pill bx-pill-light" data-scroll="bx-install">Install guide</button>
+      </div>
+    </aside>
+  </div>
 
+  <div class="bx-docs">
     <h2 class="section-title">Props</h2>
     ${propsTable(id)}
 
     <h2 class="section-title">How it works</h2>
     <p class="dc-text">${c.desc}</p>
-  </div>
 
-  <div class="tab-panel" data-panel="install" hidden>
+    <h2 class="section-title" id="bx-install">Install</h2>
     <div ${only('native')}>${nativeInstall(id, c, addFor('native'))}</div>
     ${web ? `<div ${only('web')}>${webInstall(id, c, addFor('web'))}</div>` : ''}
   </div>`;
@@ -345,7 +444,7 @@ const PAGES = {
   cli: () => cliPage(DOC),
   theming: () => themingPage(DOC),
   'agent-prompt': () => agentPromptPage(DOC),
-  gallery: () => showcaseHTML({ components: componentsSectionHTML }) + agentsStripHTML(),
+  gallery: () => showcaseHTML({ components: () => filtersHTML(galleryTag) + componentsSectionHTML(galleryTag) }) + agentsStripHTML(),
   effects: () => effectsHTML(),
 };
 
@@ -368,7 +467,7 @@ function tiles() {
 /* ---------- Router ---------- */
 
 let teardown = [];
-let galleryDispose = null, lastCols = 0;
+let galleryDispose = null, lastCols = 0, galleryTag = 'All';
 
 const routeId = () => location.hash.replace(/^#\/?/, '') || 'gallery';
 const isGallery = (id) => !(VARIANTS[id] || PAGES[id] || COMPONENTS[id]) || id === 'gallery';
@@ -385,6 +484,9 @@ function route(keepScroll) {
   const comp = COMPONENTS[id];
   view.innerHTML = VARIANTS[id] ? variantPage(id) : comp ? componentPage(id) : (PAGES[id] ?? PAGES.gallery)();
   document.querySelectorAll('.side-link').forEach((a) => a.classList.toggle('on', a.dataset.id === id));
+  markTop(id);
+  // The gallery and component pages take the full width, without the sidebar.
+  document.body.classList.toggle('bx-wide', isGallery(id) || !!comp);
   document.title = `${VARIANTS[id]?.title ?? comp?.title ?? (GETTING_STARTED.find((p) => p.id === id)?.title || (id === 'gallery' ? 'Gallery' : id === 'effects' ? 'Effects' : 'Introduction'))} · dissolve`;
   document.body.classList.remove('side-open');
   if (keepScroll !== true) window.scrollTo(0, 0);
@@ -406,6 +508,7 @@ function route(keepScroll) {
       lastCols = galleryCols();
       galleryDispose = mountGallery(view);
       teardown.push(() => galleryDispose?.());
+      wireFilters(view);
     }
   } else document.body.classList.remove('is-showcase');
   if (id === 'effects') {
@@ -443,6 +546,18 @@ function mountGallery(view) {
     if (el.dataset.fx !== 'scrub') stops.push(autoplay(el, api, { threshold: 0.35, rank: Number(el.dataset.rank) }));
   });
   return () => stops.forEach((f) => f());
+}
+
+/** Gallery filters: rebuild the grid for the picked interaction. */
+function wireFilters(view) {
+  view.querySelectorAll('[data-tag]').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.tag === galleryTag) return;
+    galleryTag = b.dataset.tag;
+    view.querySelectorAll('[data-tag]').forEach((x) => x.classList.toggle('on', x === b));
+    galleryDispose?.();
+    $('#view .cp-grid').outerHTML = componentsSectionHTML(galleryTag);
+    galleryDispose = mountGallery(view);
+  }));
 }
 
 /** Mounts the live parts of a component page (stage, autoplay, buttons). Returns a dispose function. */
@@ -495,6 +610,7 @@ function wire(root) {
   }));
 }
 
+renderTop();
 renderSidebar();
 loadStars();
 const applyTheme = (t) => {
@@ -524,7 +640,7 @@ addEventListener('resize', () => {
       if (cols === lastCols || !galleryDispose) return;
       lastCols = cols;
       galleryDispose();
-      $('#view .cp-grid').outerHTML = componentsSectionHTML();
+      $('#view .cp-grid').outerHTML = componentsSectionHTML(galleryTag);
       galleryDispose = mountGallery($('#view'));
     } else if (wide && (VARIANTS[id] || id === 'effects')) route(true);
   }, 250);

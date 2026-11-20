@@ -61,34 +61,56 @@ const arrowR = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stro
 const FX = { 0: { id: 'dust', title: 'Dust', href: '#/dust' }, 4: { id: 'stream', title: 'Stream', href: '#/stream' }, 8: { id: 'scrub', title: 'Scrub', href: '#/effects' } };
 
 /** Masonry columns of the gallery section for the current width. */
-export const galleryCols = () => (innerWidth >= 1400 ? 3 : 2);
+export const galleryCols = () => (innerWidth >= 1000 ? 3 : 2);
 
-export function componentsSectionHTML() {
+/** How you interact with each component: the gallery filters. */
+export const TAGS = ['Press', 'Drag', 'Swipe', 'Type', 'Select', 'Loading'];
+const TAG_OF = {
+  'glossy-button': 'Press', 'like-button': 'Press', 'morph-button': 'Press', 'split-button': 'Press', 'gooey-menu': 'Press',
+  'reaction-picker': 'Press', 'quantity-stepper': 'Press', 'task-check': 'Press', toast: 'Press',
+  'slide-to-confirm': 'Drag', 'reorder-list': 'Drag', 'before-after': 'Drag', 'signature-pad': 'Drag', 'scratch-card': 'Drag',
+  'ruler-picker': 'Drag', 'pull-to-refresh': 'Drag',
+  'swipe-to-delete': 'Swipe', 'card-stack': 'Swipe',
+  'otp-input': 'Type', 'number-ticker': 'Type',
+  'segmented-control': 'Select', 'bar-chart': 'Select', 'mini-player': 'Select', 'voice-note': 'Select',
+  'thinking-orb': 'Loading', skeleton: 'Loading', 'upload-tile': 'Loading', 'image-reveal': 'Loading', 'sweep-transition': 'Loading',
+};
+export const tagOf = (id) => TAG_OF[id] ?? 'Press';
+
+const sliders = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5H3M12 19H3M14 3v4M16 17v4M21 12h-9M21 19h-5M21 5h-7M8 10v4M8 12H3"/></svg>';
+const playIcon = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.4v9.2a.6.6 0 0 0 .9.5l7.4-4.6a.6.6 0 0 0 0-1L5.9 2.9a.6.6 0 0 0-.9.5Z"/></svg>';
+
+/** The interaction filters above the gallery. */
+export function filtersHTML(tag = 'All') {
+  return `<div class="bx-filters" role="toolbar" aria-label="Filter by interaction">${['All', ...TAGS].map((t) => `<button class="bx-filter${t === tag ? ' on' : ''}" data-tag="${t}">${t}</button>`).join('')}</div>`;
+}
+
+export function componentsSectionHTML(tag = 'All') {
   // Columns filled in reading order. The page re-renders when the count changes (app.js).
   const cols = galleryCols();
   const items = [];
   // Gallery order: the sidebar order, with a few swaps for the layout.
-  const order = [...COMPONENT_ORDER];
+  const order = [...COMPONENT_ORDER].filter((id) => tag === 'All' || tagOf(id) === tag);
   const swap = (a, b) => { const i = order.indexOf(a), j = order.indexOf(b); if (i >= 0 && j >= 0) [order[i], order[j]] = [order[j], order[i]]; };
   swap('bar-chart', 'before-after');
   order.forEach((id) => {
-    while (FX[items.length]) items.push({ fx: FX[items.length] });
+    // Engine effects sit among the components only in the unfiltered gallery.
+    while (tag === 'All' && FX[items.length]) items.push({ fx: FX[items.length] });
     items.push({ id });
   });
+  // A card has no header: its name and actions show on hover, over the demo.
+  const foot = (title, href, play) => `<div class="bx-foot">
+      <a class="bx-name" href="${href}">${title}</a>
+      <span class="bx-acts">${play ? `<button class="bx-act" data-bx-play aria-label="Play ${title}">${playIcon}</button>` : ''}<a class="bx-act" href="${href}" aria-label="Open ${title}">${sliders}</a></span>
+    </div>`;
   const panel = (it, i) => it.fx
-    ? `<section class="cp-panel cp-panel-fx" aria-label="${it.fx.title}">
-      <a class="cp-panel-head" href="${it.fx.href}">
-        <span class="cp-panel-text"><span class="cp-name">${it.fx.title}</span></span>
-        <span class="cp-go">${arrowR}</span>
-      </a>
+    ? `<section class="cp-panel bx-card cp-panel-fx" aria-label="${it.fx.title}">
       <div class="cp-panel-body cp-fx-body" data-fx="${it.fx.id}" data-rank="${i}"><div class="stage-slot"></div></div>
+      ${foot(it.fx.title, it.fx.href, false)}
     </section>`
-    : `<section class="cp-panel" aria-label="${COMPONENTS[it.id].title}">
-      <a class="cp-panel-head" href="#/${it.id}">
-        <span class="cp-panel-text"><span class="cp-name">${COMPONENTS[it.id].title}</span></span>
-        <span class="cp-go">${arrowR}</span>
-      </a>
+    : `<section class="cp-panel bx-card" aria-label="${COMPONENTS[it.id].title}">
       <div class="cp-panel-body" data-cp="${it.id}" data-rank="${i}"></div>
+      ${foot(COMPONENTS[it.id].title, `#/${it.id}`, true)}
     </section>`;
   return `<div class="cp-grid cp-grid-home">${Array.from({ length: cols }, (_, col) => `<div class="cp-col">
     ${items.map((it, i) => (i % cols !== col ? '' : panel(it, i))).join('')}
@@ -100,6 +122,8 @@ export function mountComponentsSection(root) {
   const mounted = [...root.querySelectorAll('[data-cp]')].map((b) => {
     const m = mountComponent(b.dataset.cp, b, { mode: 'panel' });
     const stop = autoplay(b, m, { threshold: 0.35, rank: Number(b.dataset.rank) });
+    const play = b.parentElement.querySelector('[data-bx-play]');
+    play?.addEventListener('click', () => m.run());
     return { dispose: () => { stop(); m.dispose(); } };
   });
   return () => mounted.forEach((m) => m.dispose());
