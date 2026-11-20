@@ -2,7 +2,7 @@
 import {
   play,
   snapshot
-} from "./chunks/chunk-6TDGCXIW.js";
+} from "./chunks/chunk-R2UPSOGD.js";
 import {
   el,
   fit,
