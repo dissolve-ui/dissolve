@@ -142,7 +142,7 @@ function graphHTML(g) {
   // main: solid between commits, dotted across folded runs.
   g.rows.forEach((r, i) => {
     const top = i === 0 ? r.y : r.y - r.h / 2, bottom = i === g.rows.length - 1 ? r.y : r.y + r.h / 2;
-    paths.push(`<path class="gh-line gh-main${r.kind === 'fold' ? ' gh-dots' : ''}" style="--d:${i}" d="M${lx(0)} ${top} V${bottom}" />`);
+    paths.push(`<path class="gh-line gh-main${r.kind === 'fold' ? ' gh-dots' : ''}" data-y0="${top}" data-y1="${bottom}" d="M${lx(0)} ${top} V${bottom}" />`);
   });
   for (const l of g.lanes) {
     const x = lx(l.lane), c = color(l), r = 22;
@@ -152,34 +152,35 @@ function graphHTML(g) {
       const my = ry(l.merge);
       dPath += ` V${my + r} C${x} ${my + r * 0.5}, ${lx(0)} ${my + r}, ${lx(0)} ${my}`;
     } else dPath += ` V${ry(l.prRow)}`;
-    paths.push(`<path class="gh-line" style="--c:${c};--d:${l.fork}" d="${dPath}" />`);
-    if (l.p.open) paths.push(`<path class="gh-line gh-dash" style="--c:${c}" d="M${x} ${ry(l.prRow)} V0" />`);
+    const topY = l.merge >= 0 ? ry(l.merge) : ry(l.prRow);
+    paths.push(`<path class="gh-line" data-rev data-y0="${topY}" data-y1="${fy}" style="--c:${c}" d="${dPath}" />`);
+    if (l.p.open) paths.push(`<path class="gh-line gh-dots" data-y0="0" data-y1="${ry(l.prRow)}" style="--c:${c}" d="M${x} ${ry(l.prRow)} V0" />`);
   }
   const nodes = g.rows.map((r, i) => {
     if (r.kind === 'fold') return '';
     if (r.kind === 'commit') {
       const merged = g.lanes.find((l) => l.merge === i);
-      return `<circle class="gh-node${r.c.tag ? ' gh-node-tag' : ''}" style="--i:${i}${merged ? `;--c:${color(merged)}` : ''}" cx="${lx(0)}" cy="${r.y}" r="${r.c.tag ? 6 : 4.5}" />`;
+      return `<circle class="gh-node${r.c.tag ? ' gh-node-tag' : ''}" data-y="${r.y}" style="--i:${i}${merged ? `;--c:${color(merged)}` : ''}" cx="${lx(0)}" cy="${r.y}" r="${r.c.tag ? 6 : 4.5}" />`;
     }
     const l = g.lanes.find((x) => x.p === r.x.p);
     const shut = !l.p.open && !l.p.merged;
     return shut
-      ? `<g class="gh-node gh-node-x" style="--i:${i};--c:${color(l)}"><circle cx="${lx(l.lane)}" cy="${r.y}" r="6" /><path d="M${lx(l.lane) - 2.5} ${r.y - 2.5}l5 5m0-5l-5 5" /></g>`
-      : `<circle class="gh-node gh-node-pr" style="--i:${i};--c:${color(l)}" cx="${lx(l.lane)}" cy="${r.y}" r="5" />`;
+      ? `<g class="gh-node gh-node-x" data-y="${r.y}" style="--i:${i};--c:${color(l)}"><circle cx="${lx(l.lane)}" cy="${r.y}" r="6" /><path d="M${lx(l.lane) - 2.5} ${r.y - 2.5}l5 5m0-5l-5 5" /></g>`
+      : `<circle class="gh-node gh-node-pr" data-y="${r.y}" style="--i:${i};--c:${color(l)}" cx="${lx(l.lane)}" cy="${r.y}" r="5" />`;
   }).join('');
   const avatar = (u) => (u ? `<img src="${u}${u.includes('?') ? '&' : '?'}s=40" alt="" width="16" height="16" loading="lazy">` : '');
   const rows = g.rows.map((r, i) => {
-    if (r.kind === 'fold') return `<div class="gh-fold" style="--i:${i}">${r.n} commit${r.n > 1 ? 's' : ''}</div>`;
+    if (r.kind === 'fold') return `<div class="gh-fold" data-y="${r.y}">${r.n} commit${r.n > 1 ? 's' : ''}</div>`;
     if (r.kind === 'commit') {
       const c = r.c, merged = g.lanes.find((l) => l.merge === i);
-      return `<a class="gh-row" style="--i:${i}" href="https://github.com/${REPO}/commit/${c.sha}" target="_blank" rel="noopener">
+      return `<a class="gh-row" data-y="${r.y}" href="https://github.com/${REPO}/commit/${c.sha}" target="_blank" rel="noopener">
         <span class="gh-msg"><span class="gh-text">${escH(c.msg.replace(/\s*\(#\d+\)$/, ''))}</span>${c.tag ? `<span class="gh-tag">${escH(c.tag)}</span>` : ''}${merged ? `<span class="gh-pr" style="--c:${color(merged)}">#${merged.p.n} merged</span>` : ''}</span>
         <span class="gh-meta">${avatar(c.avatar)}${escH(c.author)} · <code>${c.sha.slice(0, 7)}</code> · ${ago(c.at)}</span>
       </a>`;
     }
     const p = r.x.p, l = g.lanes.find((x) => x.p === p);
     const state = p.open ? 'open' : p.merged ? 'merged' : 'closed';
-    return `<a class="gh-row gh-row-pr" style="--i:${i};--c:${color(l)}" href="https://github.com/${REPO}/pull/${p.n}" target="_blank" rel="noopener">
+    return `<a class="gh-row gh-row-pr" data-y="${r.y}" style="--c:${color(l)}" href="https://github.com/${REPO}/pull/${p.n}" target="_blank" rel="noopener">
       <span class="gh-msg"><span class="gh-text">${escH(p.title)}</span><span class="gh-pr gh-${state}">#${p.n} ${state}</span></span>
       <span class="gh-meta">${avatar(p.avatar)}${escH(p.author.replace(/\[bot\]$/, ''))} opened a pull request · ${ago(p.created)}</span>
     </a>`;
@@ -188,12 +189,29 @@ function graphHTML(g) {
     <div class="gh-rows" style="--gw:${g.width + 14}px">${rows}</div>`;
 }
 
-/** Loads the data and draws the graph, which draws itself in once it scrolls into view. Returns a dispose function. */
+/**
+ * Loads the data and draws the graph with the scroll: a drawing head sits at 70% of the viewport,
+ * every line is drawn down to it, and each node and row lights up once the head passes it.
+ * Scrolling back up undraws it. Returns a dispose function.
+ */
 export function mountHistory(root) {
   const el = root.querySelector('[data-gh]');
   if (!el) return () => {};
-  let alive = true;
-  const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { io.disconnect(); el.classList.add('gh-in'); } }, { threshold: 0.15 });
+  let alive = true, raf = 0, parts = null, svg = null;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const update = () => {
+    raf = 0;
+    if (!parts) return;
+    const head = still ? 1e9 : innerHeight * 0.7 - svg.getBoundingClientRect().top;
+    for (const p of parts.lines) {
+      const f = Math.min(1, Math.max(0, (head - p.y0) / Math.max(1, p.y1 - p.y0)));
+      if (p.dots) { p.el.classList.toggle('on', f > 0.5); continue; }
+      // A lane is drawn from its fork upward: reveal it from its end so it grows top down.
+      p.el.style.strokeDashoffset = String((p.rev ? -1 : 1) * p.len * (1 - f));
+    }
+    for (const n of parts.marks) n.el.classList.toggle('on', head >= n.y);
+  };
+  const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
   load().then((d) => {
     if (!alive) return;
     const g = graph(d);
@@ -205,10 +223,18 @@ export function mountHistory(root) {
     el.querySelector('[data-gh-graph]').innerHTML = graphHTML(g);
     const n = g.lanes.length;
     el.querySelector('[data-gh-lanes]').textContent = `${d.log.length} commits · ${n} pull request${n > 1 ? 's' : ''}`;
-    // Each line draws itself in: its length becomes the dash.
-    el.querySelectorAll('.gh-line').forEach((p) => p.style.setProperty('--len', Math.ceil(p.getTotalLength())));
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) el.classList.add('gh-in');
-    else io.observe(el);
+    svg = el.querySelector('.gh-svg');
+    parts = {
+      lines: [...el.querySelectorAll('.gh-line')].map((p) => {
+        const len = Math.ceil(p.getTotalLength());
+        if (!p.classList.contains('gh-dots')) { p.style.strokeDasharray = `${len} ${len}`; }
+        return { el: p, len, y0: +p.dataset.y0, y1: +p.dataset.y1, rev: p.hasAttribute('data-rev'), dots: p.classList.contains('gh-dots') };
+      }),
+      marks: [...el.querySelectorAll('[data-y]')].map((m) => ({ el: m, y: +m.dataset.y })),
+    };
+    update();
   }).catch(() => {});
-  return () => { alive = false; io.disconnect(); };
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', onScroll);
+  return () => { alive = false; cancelAnimationFrame(raf); removeEventListener('scroll', onScroll); removeEventListener('resize', onScroll); };
 }

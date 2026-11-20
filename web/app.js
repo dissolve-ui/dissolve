@@ -6,8 +6,8 @@ import { playgroundHTML, mountPlayground } from './playground.js';
 import { OPTIONS, PRACTICES, PEERS, INSTALL, PROVIDER, PKG } from './variants-content.js';
 import { showcaseHTML, effectsHTML, mountShowcase, mountScrub } from './showcase.js';
 import { ready } from './images.js';
-import { introductionPage, installationPage, cliPage, themingPage, agentPromptPage, agentsStripHTML, SHADCN } from './docs.js';
-import { COMPONENTS, COMPONENT_ORDER, mountComponent, componentsSectionHTML, filtersHTML, tagOf, galleryCols, mountComponentsSection, propsTable, componentPrompt, hasWeb, platformOf, choosePlatform, usage, webCode } from './components.js';
+import { introductionPage, installationPage, cliPage, themingPage, agentPromptPage, SHADCN } from './docs.js';
+import { COMPONENTS, COMPONENT_ORDER, mountComponent, componentsSectionHTML, tagOf, galleryCols, mountComponentsSection, propsTable, componentPrompt, hasWeb, platformOf, choosePlatform, usage, webCode } from './components.js';
 import { autoplay, sequence } from './autoplay.js';
 import { clearToasts } from './cp/core.js';
 import { onWidth } from './cp/kit.js';
@@ -429,7 +429,7 @@ const PAGES = {
   cli: () => cliPage(DOC),
   theming: () => themingPage(DOC),
   'agent-prompt': () => agentPromptPage(DOC),
-  gallery: () => showcaseHTML({ components: () => filtersHTML(galleryTag) + componentsSectionHTML(galleryTag) }) + historyHTML() + agentsStripHTML(),
+  gallery: () => showcaseHTML({ components: () => componentsSectionHTML() }) + historyHTML(),
   effects: () => effectsHTML(),
 };
 
@@ -452,7 +452,7 @@ function tiles() {
 /* ---------- Router ---------- */
 
 let teardown = [];
-let galleryDispose = null, lastCols = 0, galleryTag = 'All';
+let galleryDispose = null, lastCols = 0;
 
 const routeId = () => location.hash.replace(/^#\/?/, '') || 'gallery';
 const isGallery = (id) => !(VARIANTS[id] || PAGES[id] || COMPONENTS[id]) || id === 'gallery';
@@ -493,7 +493,6 @@ function route(keepScroll) {
       lastCols = galleryCols();
       galleryDispose = mountGallery(view);
       teardown.push(() => galleryDispose?.());
-      wireFilters(view);
       teardown.push(mountHistory(view));
     }
   } else document.body.classList.remove('is-showcase');
@@ -532,29 +531,6 @@ function mountGallery(view) {
     if (el.dataset.fx !== 'scrub') stops.push(autoplay(el, api, { threshold: 0.35, rank: Number(el.dataset.rank) }));
   });
   return () => stops.forEach((f) => f());
-}
-
-/** Gallery filters: the glide slides under the pick, the grid rebuilds for that interaction. */
-function wireFilters(view) {
-  const bar = view.querySelector('.bx-filters');
-  if (!bar) return;
-  const glide = bar.querySelector('.bx-glide');
-  const place = (b, instant) => {
-    if (instant) glide.style.transition = 'none';
-    glide.style.width = `${b.offsetWidth}px`;
-    glide.style.transform = `translateX(${b.offsetLeft}px)`;
-    if (instant) { glide.offsetWidth; glide.style.transition = ''; }
-  };
-  place(bar.querySelector('.bx-filter.on'), true);
-  bar.querySelectorAll('[data-tag]').forEach((b) => b.addEventListener('click', () => {
-    if (b.dataset.tag === galleryTag) return;
-    galleryTag = b.dataset.tag;
-    bar.querySelectorAll('[data-tag]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-selected', String(x === b)); });
-    place(b);
-    galleryDispose?.();
-    $('#view .cp-grid').outerHTML = componentsSectionHTML(galleryTag);
-    galleryDispose = mountGallery(view);
-  }));
 }
 
 /** Mounts the live parts of a component page (stage, autoplay, buttons). Returns a dispose function. */
@@ -639,7 +615,7 @@ addEventListener('resize', () => {
       if (cols === lastCols || !galleryDispose) return;
       lastCols = cols;
       galleryDispose();
-      $('#view .cp-grid').outerHTML = componentsSectionHTML(galleryTag);
+      $('#view .cp-grid').outerHTML = componentsSectionHTML();
       galleryDispose = mountGallery($('#view'));
     } else if (wide && (VARIANTS[id] || id === 'effects')) route(true);
   }, 250);

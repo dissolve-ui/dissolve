@@ -80,12 +80,6 @@ export const tagOf = (id) => TAG_OF[id] ?? 'Press';
 const sliders = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5H3M12 19H3M14 3v4M16 17v4M21 12h-9M21 19h-5M21 5h-7M8 10v4M8 12H3"/></svg>';
 const playIcon = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.4v9.2a.6.6 0 0 0 .9.5l7.4-4.6a.6.6 0 0 0 0-1L5.9 2.9a.6.6 0 0 0-.9.5Z"/></svg>';
 
-/** The interaction filters above the gallery: one track, a glide under the pick, a count per tag. */
-export function filtersHTML(tag = 'All') {
-  const count = (t) => (t === 'All' ? COMPONENT_ORDER.length : COMPONENT_ORDER.filter((id) => tagOf(id) === t).length);
-  return `<div class="bx-filters" role="tablist" aria-label="Filter by interaction"><span class="bx-glide" aria-hidden="true"></span>${['All', ...TAGS].map((t) => `<button class="bx-filter${t === tag ? ' on' : ''}" role="tab" aria-selected="${t === tag}" data-tag="${t}">${t}<sup>${count(t)}</sup></button>`).join('')}</div>`;
-}
-
 export function componentsSectionHTML(tag = 'All') {
   // Columns filled in reading order. The page re-renders when the count changes (app.js).
   const cols = galleryCols();
