@@ -117,11 +117,14 @@ export function componentsSectionHTML(tag = 'All') {
   </div>`).join('')}</div>`;
 }
 
+const NO_AUTOPLAY = new Set(['toast']);
+
 /** Mounts every panel of the gallery section. Returns a dispose function. */
 export function mountComponentsSection(root) {
   const mounted = [...root.querySelectorAll('[data-cp]')].map((b) => {
     const m = mountComponent(b.dataset.cp, b, { mode: 'panel' });
-    const stop = autoplay(b, m, { threshold: 0.35, rank: Number(b.dataset.rank) });
+    // The toast fires over the whole page: in the gallery it only plays when asked.
+    const stop = NO_AUTOPLAY.has(b.dataset.cp) ? () => {} : autoplay(b, m, { threshold: 0.35, rank: Number(b.dataset.rank) });
     const play = b.parentElement.querySelector('[data-bx-play]');
     play?.addEventListener('click', () => m.run());
     return { dispose: () => { stop(); m.dispose(); } };
