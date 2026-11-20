@@ -189,29 +189,11 @@ function graphHTML(g) {
     <div class="gh-rows" style="--gw:${g.width + 14}px">${rows}</div>`;
 }
 
-/**
- * Loads the data and draws the graph with the scroll: a drawing head sits at 70% of the viewport,
- * every line is drawn down to it, and each node and row lights up once the head passes it.
- * Scrolling back up undraws it. Returns a dispose function.
- */
+/** Loads the data and draws the graph, all at once. Returns a dispose function. */
 export function mountHistory(root) {
   const el = root.querySelector('[data-gh]');
   if (!el) return () => {};
-  let alive = true, raf = 0, parts = null, svg = null;
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const update = () => {
-    raf = 0;
-    if (!parts) return;
-    const head = still ? 1e9 : innerHeight * 0.7 - svg.getBoundingClientRect().top;
-    for (const p of parts.lines) {
-      const f = Math.min(1, Math.max(0, (head - p.y0) / Math.max(1, p.y1 - p.y0)));
-      if (p.dots) { p.el.classList.toggle('on', f > 0.5); continue; }
-      // A lane is drawn from its fork upward: reveal it from its end so it grows top down.
-      p.el.style.strokeDashoffset = String((p.rev ? -1 : 1) * p.len * (1 - f));
-    }
-    for (const n of parts.marks) n.el.classList.toggle('on', head >= n.y);
-  };
-  const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+  let alive = true;
   load().then((d) => {
     if (!alive) return;
     const g = graph(d);
@@ -223,18 +205,6 @@ export function mountHistory(root) {
     el.querySelector('[data-gh-graph]').innerHTML = graphHTML(g);
     const n = g.lanes.length;
     el.querySelector('[data-gh-lanes]').textContent = `${d.log.length} commits · ${n} pull request${n > 1 ? 's' : ''}`;
-    svg = el.querySelector('.gh-svg');
-    parts = {
-      lines: [...el.querySelectorAll('.gh-line')].map((p) => {
-        const len = Math.ceil(p.getTotalLength());
-        if (!p.classList.contains('gh-dots')) { p.style.strokeDasharray = `${len} ${len}`; }
-        return { el: p, len, y0: +p.dataset.y0, y1: +p.dataset.y1, rev: p.hasAttribute('data-rev'), dots: p.classList.contains('gh-dots') };
-      }),
-      marks: [...el.querySelectorAll('[data-y]')].map((m) => ({ el: m, y: +m.dataset.y })),
-    };
-    update();
   }).catch(() => {});
-  addEventListener('scroll', onScroll, { passive: true });
-  addEventListener('resize', onScroll);
-  return () => { alive = false; cancelAnimationFrame(raf); removeEventListener('scroll', onScroll); removeEventListener('resize', onScroll); };
+  return () => { alive = false; };
 }

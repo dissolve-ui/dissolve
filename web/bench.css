@@ -176,19 +176,13 @@ body { padding-top: var(--top-h); }
 .gh-node-tag { fill: var(--text); }
 .gh-node-pr { fill: var(--c); }
 .gh-rows { position: relative; }
-/* Scroll drawn (history.js): lines grow with the scroll, nodes and rows light up as the line reaches them. */
 .gh-line { fill: none; stroke: var(--c, var(--text)); stroke-width: 2; stroke-linecap: round; opacity: .85; }
 .gh-main { stroke: color-mix(in srgb, var(--text) 55%, transparent); }
-.gh-dots { stroke-dasharray: 1 6 !important; stroke-dashoffset: 0 !important; opacity: 0; transition: opacity .3s; }
-.gh-dots.on { opacity: .6; }
-.gh-node { fill: var(--bg); stroke: var(--c, var(--text)); stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(.3); transition: opacity .25s, transform .45s var(--spring); }
-.gh-node.on { opacity: 1; transform: none; }
+.gh-dots { stroke-dasharray: 1 6; opacity: .6; }
+.gh-node { fill: var(--bg); stroke: var(--c, var(--text)); stroke-width: 2; }
 .gh-node-x { fill: none; }
-.gh-fold { height: 34px; display: flex; align-items: center; padding-left: var(--gw); font-size: 12.5px; color: var(--faint); opacity: 0; transition: opacity .3s; }
-.gh-fold.on { opacity: 1; }
-.gh-row { height: 56px; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 0 12px 0 var(--gw); border-radius: 14px; min-width: 0; opacity: 0; transform: translateX(-8px); transition: opacity .35s, transform .45s var(--ease), background .2s; }
-.gh-row.on { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) { .gh-node, .gh-row, .gh-fold, .gh-dots { transition: none; } }
+.gh-fold { height: 34px; display: flex; align-items: center; padding-left: var(--gw); font-size: 12.5px; color: var(--faint); }
+.gh-row { height: 56px; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 0 12px 0 var(--gw); border-radius: 14px; min-width: 0; transition: background .2s; }
 .gh-row:hover { background: var(--card); }
 .gh-msg { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gh-row-pr .gh-msg { color: var(--text-2); }
