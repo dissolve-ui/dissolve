@@ -368,61 +368,39 @@ function componentPage(id) {
   const snip = usage(id);
   // The command follows the switch: the flag picks the platform even before dissolve.json exists.
   const addFor = (p) => cmd(`${snip.add} --${p}`);
-  const i = COMPONENT_ORDER.indexOf(id);
-  const prev = COMPONENT_ORDER[i - 1], next = COMPONENT_ORDER[i + 1];
   return `
-  <div class="bx-detail">
-    <section class="bx-stage">
-      <div class="bx-stage-top">
-        <div class="seg bx-seg" role="tablist">
-          <button class="seg-btn on" data-tab="preview" role="tab">Preview</button>
-          <button class="seg-btn" data-tab="code" role="tab">Code</button>
-        </div>
-        <div class="bx-stage-nav">
-          <a class="bx-round" ${prev ? `href="#/${prev}" title="${COMPONENTS[prev].title}"` : 'aria-disabled="true"'} aria-label="Previous component">${arrow('l')}</a>
-          <a class="bx-round" ${next ? `href="#/${next}" title="${COMPONENTS[next].title}"` : 'aria-disabled="true"'} aria-label="Next component">${arrow('r')}</a>
-        </div>
-      </div>
-      <div class="tab-panel bx-panel-preview" data-panel="preview" id="cp-stage">
-        <div class="stage-slot"><div class="cp-stage-body" data-cp-stage="${id}"></div></div>
-        <p class="stage-hint">${c.hint}</p>
-        <button class="bx-play" data-replay aria-label="Play demo"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.4v9.2a.6.6 0 0 0 .9.5l7.4-4.6a.6.6 0 0 0 0-1L5.9 2.9a.6.6 0 0 0-.9.5Z"/></svg></button>
-      </div>
-      <div class="tab-panel bx-panel-code" data-panel="code" hidden>
-        <div ${only('native')}>${codeBlock(snip.code, { title: `${c.title}.tsx` })}</div>
-        ${web ? `<div ${only('web')}>${codeBlock(webCode(id), { title: `${c.title}.tsx` })}</div>` : ''}
-      </div>
-    </section>
+  ${pageHead(id, c.title, c.note, null, COMPONENT_NAV)}
 
-    <aside class="bx-side">
-      <div class="bx-side-head">
-        <h1>${c.title}</h1>
-        <span class="bx-tag">${tagOf(id)}</span>
-      </div>
-      <p class="bx-desc">${c.note}</p>
-      <div class="bx-rows">
-        <div class="bx-row"><span>Platform</span>${platformSwitch(id, plat)}</div>
-      </div>
-      <div class="bx-add">
-        <p class="bx-label">Add it</p>
-        <div ${only('native')}>${addFor('native')}</div>
-        ${web ? `<div ${only('web')}>${addFor('web')}</div>` : ''}
-      </div>
-      <div class="bx-side-foot">
-        <button class="bx-pill bx-pill-line" data-copy-prompt>${copyIcon}Copy prompt</button>
-        <button class="bx-pill bx-pill-light" data-scroll="bx-install">Install guide</button>
-      </div>
-    </aside>
+  <div class="toolbar">
+    <div class="seg" role="tablist">
+      <button class="seg-btn on" data-tab="preview" role="tab">Preview</button>
+      <button class="seg-btn" data-tab="install" role="tab">Install</button>
+    </div>
+    <div class="toolbar-right">
+      ${platformSwitch(id, plat)}
+      <button class="btn" data-copy-prompt>${copyIcon}Copy prompt</button>
+    </div>
   </div>
 
-  <div class="bx-docs">
+  <div class="tab-panel" data-panel="preview">
+    <section class="stage cp-stage" id="cp-stage">
+      <div class="stage-slot"><div class="cp-stage-body" data-cp-stage="${id}"></div></div>
+      <p class="stage-hint">${c.hint}</p>
+      <button class="btn btn-sm stage-replay" data-replay>Play demo</button>
+    </section>
+
+    <h2 class="section-title">Usage</h2>
+    <div ${only('native')}>${addFor('native')}${codeBlock(snip.code, { title: `${c.title}.tsx` })}</div>
+    ${web ? `<div ${only('web')}>${addFor('web')}${codeBlock(webCode(id), { title: `${c.title}.tsx` })}</div>` : ''}
+
     <h2 class="section-title">Props</h2>
     ${propsTable(id)}
 
     <h2 class="section-title">How it works</h2>
     <p class="dc-text">${c.desc}</p>
+  </div>
 
-    <h2 class="section-title" id="bx-install">Install</h2>
+  <div class="tab-panel" data-panel="install" hidden>
     <div ${only('native')}>${nativeInstall(id, c, addFor('native'))}</div>
     ${web ? `<div ${only('web')}>${webInstall(id, c, addFor('web'))}</div>` : ''}
   </div>`;
@@ -491,8 +469,8 @@ function route(keepScroll) {
   view.innerHTML = VARIANTS[id] ? variantPage(id) : comp ? componentPage(id) : (PAGES[id] ?? PAGES.gallery)();
   document.querySelectorAll('.side-link').forEach((a) => a.classList.toggle('on', a.dataset.id === id));
   markTop(id);
-  // The gallery and component pages take the full width, without the sidebar.
-  document.body.classList.toggle('bx-wide', isGallery(id) || !!comp);
+  // The gallery takes the full width, without the sidebar.
+  document.body.classList.toggle('bx-wide', isGallery(id));
   document.title = `${VARIANTS[id]?.title ?? comp?.title ?? (GETTING_STARTED.find((p) => p.id === id)?.title || (id === 'gallery' ? 'Gallery' : id === 'effects' ? 'Effects' : 'Introduction'))} · dissolve`;
   document.body.classList.remove('side-open');
   if (keepScroll !== true) window.scrollTo(0, 0);
