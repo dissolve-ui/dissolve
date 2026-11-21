@@ -5,12 +5,12 @@ import { Pressable, Text, View } from '@registry/tw';
 
 const STEPS = ['Account', 'Profile', 'Payment', 'Done'];
 
-/** A checkout flow: Back and Next move the current step, a done step can be pressed to go back. */
+/** Story bars over a numbered checkout flow, both driven by Back and Next. A done step can be pressed to go back. */
 export default function ProgressStepsDemo() {
   const [step, setStep] = useState(1);
-  const [small, setSmall] = useState(2);
   return (
     <View style={st.root}>
+      <ProgressSteps variant="bars" steps={STEPS} current={step} onStepPress={setStep} />
       <ProgressSteps steps={STEPS} current={step} onStepPress={(i) => i < step && setStep(i)} />
       <View style={st.buttons}>
         <Pressable onPress={() => setStep((s) => Math.max(0, s - 1))} className="bg-dissolve-surface" style={st.button}>
@@ -24,7 +24,6 @@ export default function ProgressStepsDemo() {
           </Text>
         </Pressable>
       </View>
-      <ProgressSteps steps={6} current={small} size="sm" onStepPress={setSmall} className="w-[260px] self-center" />
     </View>
   );
 }

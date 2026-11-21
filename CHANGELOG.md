@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `toggle`: iOS style switch whose thumb breaks into grains, flows to the other end of the track on a slight arc and reassembles there while the track fills with the on color. Tap or swipe the thumb, a selection tick per flip. React Native and React.
-- `progress-steps`: numbered steps joined by a line. Moving forward, the current disc streams along the line in grains, filling it behind its front, and gathers on the new step; moving back streams home and empties the line. Done steps show a check, the current one a soft ring. React Native and React.
+- `progress-steps`: steps for multi step flows in two looks. `variant="numbers"`: numbered discs on a hairline, the current disc streams along the line in grains to the next step, filling it, and back. `variant="bars"`: story style segments with no numbers, the fill runs on with its head gathering from grains, and sheds them as dust going back. React Native and React.
 - shadcn registry: every component installs with the shadcn CLI, `npx shadcn@latest add https://dissolve.rselmi.com/r/<name>.json` for React and `.../r/native/<name>.json` for React Native. Shared files (engine, kit, the React hook, tw primitives, helpers) and the theme tokens are their own items, pulled in as dependencies. Built from `registry/` by `scripts/build-shadcn.mjs` into `web/r`, as part of `npm run web:stamp`. Component pages show the command under the dissolve-ui one.
 
 ### Changed

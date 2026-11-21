@@ -5,4 +5,4 @@
 .ps-btn:active { transform: scale(.96); }
 .ps-btn:disabled { opacity: .4; cursor: default; }
 .ps-next { background: var(--text); color: var(--bg); }
-.ps-small { width: 260px; align-self: center; }
+.ps-bars { margin-bottom: -4px; }
