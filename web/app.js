@@ -444,7 +444,7 @@ const componentsPage = () => `
     <h1>Components</h1>
     <p class="sub">${COMPONENT_ORDER.length} animated components for React Native and React. Each one is a file you copy into your app and own: <code>npx ${PKG} add &lt;name&gt;</code>.</p>
   </header>
-  ${componentsSectionHTML({ cols: innerWidth >= 860 ? 2 : 1, fx: false })}`;
+  ${componentsSectionHTML({ cols: innerWidth > 860 ? 2 : 1, fx: false })}`;
 
 const PAGES = {
   components: componentsPage,

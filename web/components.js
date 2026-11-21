@@ -64,7 +64,8 @@ const arrowR = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stro
 const FX = { 3: { id: 'dust', title: 'Dust', href: '#/dust' }, 7: { id: 'stream', title: 'Stream', href: '#/stream' }, 11: { id: 'scrub', title: 'Scrub', href: '#/effects' } };
 
 /** Masonry columns of the gallery section for the current width. */
-export const galleryCols = () => (innerWidth >= 1000 ? 3 : 2);
+// Under 861 px the CSS stacks the columns (components.css): build one, so the reading order holds.
+export const galleryCols = () => (innerWidth >= 1000 ? 3 : innerWidth > 860 ? 2 : 1);
 
 /** How you interact with each component: the gallery filters. */
 export const TAGS = ['Press', 'Drag', 'Swipe', 'Type', 'Select', 'Loading'];
