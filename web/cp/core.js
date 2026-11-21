@@ -81,8 +81,11 @@ const AUTO = 1e6 + 1;
 // A plain row: one line of text on the card color, nothing around it.
 function drawMailRow(ctx, w, h, m) {
   const c = pal();
+  // Same corners as the row's clip (.cp-swipe-clip, 18px): the grains gather into the shape it pops into.
   ctx.fillStyle = c.card;
-  ctx.fillRect(0, 0, w, h);
+  ctx.beginPath();
+  ctx.roundRect(0, 0, w, h, 18);
+  ctx.fill();
   ctx.font = `500 15px ${FONT}`;
   label(ctx, fit(ctx, m.title, w - 36), 18, h / 2 + 5.5, 15, 500, c.ink);
 }
