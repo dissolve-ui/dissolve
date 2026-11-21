@@ -84,14 +84,16 @@ const playIcon = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentC
 
 /** The demos that open the gallery: the biggest ones, side by side on the first row. */
 const LEAD = ['bar-chart', 'scratch-card', 'card-stack'];
+/** The newest components, right after the lead row. */
+const NEW = ['toggle', 'progress-steps'];
 
 export function componentsSectionHTML() {
   // Columns filled in reading order. The page re-renders when the count changes (app.js).
   const cols = galleryCols();
   const items = [];
   // Gallery order: the sidebar order, with a few swaps for the layout.
-  // The three biggest demos open the gallery, the rest follow the sidebar order.
-  const order = [...LEAD, ...COMPONENT_ORDER.filter((id) => !LEAD.includes(id))].filter((id) => COMPONENTS[id]);
+  // The three biggest demos open the gallery, the newest follow, the rest in the sidebar order.
+  const order = [...LEAD, ...NEW, ...COMPONENT_ORDER.filter((id) => !LEAD.includes(id) && !NEW.includes(id))].filter((id) => COMPONENTS[id]);
   order.forEach((id) => {
     // A few engine effects sit among the components.
     while (FX[items.length]) items.push({ fx: FX[items.length] });
