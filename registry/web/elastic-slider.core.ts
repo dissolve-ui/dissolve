@@ -142,17 +142,21 @@ export function createElasticSlider(host: HTMLElement, initial: ElasticSliderPro
   let W = 0;
 
   const render = () => {
-    const o = over.v, k = Math.min(1, Math.abs(o) / REACH), q = fillP.v, pr = press.v;
-    track.style.transform = `translateX(${o / 2}px) scale(${1 + Math.abs(o) / Math.max(1, W) + 0.012 * pr}, ${(1 - THIN * k) * (1 + PRESS * pr)})`;
+    const o = over.v, q = fillP.v, pr = press.v;
+    // Only the end being pulled moves (the right one when full, the left one when empty), the other
+    // stays anchored, through the bounce too: e > 0 stretches, e < 0 is the bounce squeezing back in.
+    const side = q > 0.5 ? 1 : -1, e = side * o;
+    const k = Math.max(-0.5, Math.min(1, e / REACH));
+    track.style.transform = `translateX(${o / 2}px) scale(${1 + e / Math.max(1, W) + 0.012 * pr}, ${(1 - THIN * k) * (1 + PRESS * pr)})`;
     fill.style.transform = `translateX(${-(1 - q) * W}px)`;
-    // The texts ride with the end that stretches, without being stretched.
+    // The texts ride with the end that moves, without being stretched.
     for (const x of [base, inked]) {
-      x.left.style.transform = `translateX(${Math.min(0, o)}px)`;
-      x.val.style.transform = `translateX(${Math.max(0, o)}px)`;
+      x.left.style.transform = `translateX(${side < 0 ? o : 0}px)`;
+      x.val.style.transform = `translateX(${side > 0 ? o : 0}px)`;
     }
-    // The inked copy is clipped to where the fill ends on screen: at full, the stretched right end;
-    // empty, the stretched left end, so nothing shows.
-    const shift = q * W + (q > 0.5 ? Math.max(0, o) : Math.min(0, o)) - W - REACH;
+    // The inked copy is clipped to where the fill ends on screen: the moving right end when full,
+    // the moving left end when empty (so nothing shows).
+    const shift = q * W + o - W - REACH;
     clip.style.left = -REACH + 'px';
     clip.style.width = W + REACH * 2 + 'px';
     clip.style.transform = `translateX(${shift}px)`;

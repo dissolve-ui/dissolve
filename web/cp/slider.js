@@ -1,6 +1,6 @@
 // ElasticSlider demo. The slider is the React web component's core (registry/web/elastic-slider.core.ts,
-// built into web/lib), the same code a React app installs. This file keeps the demo: a few sliders
-// in a control card, and the autoplay, which drags with real pointer events, past the end included.
+// built into web/lib), the same code a React app installs. This file keeps the demo: one slider in
+// the gallery, three on its page, and the autoplay, which drags with real pointer events, past the end included.
 import { createElasticSlider } from '../lib/elastic-slider.js';
 import { el, fitTile, availW, tween, QUAD, AUTO, prop, add } from './kit.js';
 
@@ -15,7 +15,7 @@ function mountSlider(body, { sc, mode }) {
   const W = tile ? 300 : mode === 'stage' ? 360 : Math.round(Math.min(340, (availW(body) || 340) - 4));
   const root = el('div', 'es-demo');
   root.style.width = W + 'px';
-  body.append(tile ? fitTile(body, root, W, 44 * 2 + 14) : root);
+  body.append(tile ? fitTile(body, root, W, 44) : root);
 
   const make = (opts) => {
     const host = el('div');
@@ -28,8 +28,11 @@ function mountSlider(body, { sc, mode }) {
     return { host, set(v) { value = v; s.update({ value: v }); } };
   };
   const volume = make({ label: 'Volume', glyph: 'volume', value: 40, formatValue: (v) => `${v}%` });
-  make({ label: 'Brightness', glyph: 'sun', value: 72, formatValue: (v) => `${v}%` });
-  if (mode === 'stage') make({ label: 'Rating', glyph: 'star', min: 0, max: 10, value: 7, size: 'sm' });
+  // The gallery shows the one slider; its page adds two more.
+  if (mode === 'stage') {
+    make({ label: 'Brightness', glyph: 'sun', value: 72, formatValue: (v) => `${v}%` });
+    make({ label: 'Rating', glyph: 'star', min: 0, max: 10, value: 7, size: 'sm' });
+  }
 
   // A real pointer on a slider stops the script.
   let user = false;
