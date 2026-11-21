@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "UploadTile, UploadTray",
   "description": "Attachment that assembles from grains, fills a progress ring, rejected files leave as dust.",
-  "docs": "https://dissolve.rselmi.com/#/upload-tile",
+  "docs": "https://dissolve.rselmi.com/components/upload-tile/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

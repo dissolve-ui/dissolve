@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- seo:head (scripts/build-seo.mjs writes the page head and content below) -->
+    <title>Installation · dissolve docs</title>
+    <meta name="description" content="Paste one prompt into your coding agent and it sets up everything: engine, provider, NativeWind and components. Or follow the steps by hand." />
+    <link rel="canonical" href="https://dissolve.rselmi.com/docs/installation/" />
+    <link rel="alternate" type="text/markdown" href="/docs/installation.md" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="dissolve" />
+    <meta property="og:title" content="Installation · dissolve docs" />
+    <meta property="og:description" content="Paste one prompt into your coding agent and it sets up everything: engine, provider, NativeWind and components. Or follow the steps by hand." />
+    <meta property="og:url" content="https://dissolve.rselmi.com/docs/installation/" />
+    <meta property="og:image" content="https://dissolve.rselmi.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="dissolve: animated components for React Native and React" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Installation · dissolve docs" />
+    <meta name="twitter:description" content="Paste one prompt into your coding agent and it sets up everything: engine, provider, NativeWind and components. Or follow the steps by hand." />
+    <meta name="twitter:image" content="https://dissolve.rselmi.com/og.png" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://dissolve.rselmi.com/#website","url":"https://dissolve.rselmi.com/","name":"dissolve","description":"Animated components you own, for React Native and React. npx dissolve-ui add copies the source into your app; the React Native engine turns any view into dust (Skia, Reanimated 4).","inLanguage":"en","publisher":{"@id":"https://dissolve.rselmi.com/#author"}},{"@type":"SoftwareSourceCode","@id":"https://dissolve.rselmi.com/#library","name":"dissolve-ui","description":"Animated components you own, for React Native and React. npx dissolve-ui add copies the source into your app; the React Native engine turns any view into dust (Skia, Reanimated 4).","url":"https://dissolve.rselmi.com/","codeRepository":"https://github.com/rs-4/dissolve","programmingLanguage":["TypeScript","JavaScript"],"runtimePlatform":["React Native","React","Expo"],"license":"https://opensource.org/licenses/MIT","version":"0.0.7","keywords":"react, react-native, expo, skia, reanimated, components, animation, particles, dissolve, shadcn, cli","author":{"@id":"https://dissolve.rselmi.com/#author"},"sameAs":["https://github.com/rs-4/dissolve","https://www.npmjs.com/package/dissolve-ui"]},{"@type":"Person","@id":"https://dissolve.rselmi.com/#author","name":"Rayan Selmi","url":"https://github.com/rs-4"},{"@type":"TechArticle","@id":"https://dissolve.rselmi.com/docs/installation/#article","headline":"dissolve Installation","description":"Paste one prompt into your coding agent and it sets up everything: engine, provider, NativeWind and components. Or follow the steps by hand.","url":"https://dissolve.rselmi.com/docs/installation/","mainEntityOfPage":"https://dissolve.rselmi.com/docs/installation/","isPartOf":{"@id":"https://dissolve.rselmi.com/#website"},"about":{"@id":"https://dissolve.rselmi.com/#library"},"author":{"@id":"https://dissolve.rselmi.com/#author"},"image":"https://dissolve.rselmi.com/og.png","inLanguage":"en"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"dissolve","item":"https://dissolve.rselmi.com/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://dissolve.rselmi.com/docs/introduction/"},{"@type":"ListItem","position":3,"name":"Installation","item":"https://dissolve.rselmi.com/docs/installation/"}]}]}</script>
+    <!-- /seo:head -->
+    <meta name="theme-color" content="#121212" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-48.png" type="image/png" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/fonts/allo/AlloVariable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/styles.css?v=a3dccb06b5" />
+    <link rel="stylesheet" href="/docs.css?v=741d78c34c" />
+    <link rel="stylesheet" href="/playground.css?v=af552c378b" />
+    <link rel="stylesheet" href="/components.css?v=dad90181f1" />
+    <link rel="stylesheet" href="/cp/inputs.css?v=2488679e54" />
+    <link rel="stylesheet" href="/cp/messages.css?v=2b60e10506" />
+    <link rel="stylesheet" href="/cp/surfaces.css?v=ea43522768" />
+    <link rel="stylesheet" href="/cp/ai.css?v=b941a3757f" />
+    <link rel="stylesheet" href="/cp/controls.css?v=2ed761991c" />
+    <link rel="stylesheet" href="/cp/pull.css?v=787202502a" />
+    <link rel="stylesheet" href="/cp/reorder.css?v=8bc90adb8b" />
+    <link rel="stylesheet" href="/cp/button.css?v=90d46f684c" />
+    <link rel="stylesheet" href="/cp/scratch.css?v=6c8033eb37" />
+    <link rel="stylesheet" href="/cp/skeleton.css?v=25cf9deed0" />
+    <link rel="stylesheet" href="/cp/segmented.css?v=5d4246d48f" />
+    <link rel="stylesheet" href="/cp/toggle.css?v=b9bb10c055" />
+    <link rel="stylesheet" href="/cp/steps.css?v=17258a3bbe" />
+    <link rel="stylesheet" href="/cp/slider.css?v=afb8da4193" />
+    <link rel="stylesheet" href="/bench.css?v=77e03383e6" />
+    <script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
+  </head>
+  <body>
+    <button id="menu" class="icon-btn menu-fab" aria-label="Open navigation">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 6h12M3 12h12"/></svg>
+        </button>
+
+    <header id="top" class="top"></header>
+    <div class="shell">
+      <nav id="side" class="side" aria-label="Documentation"><!-- seo:nav --><div data-prerender><div class="side-group"><p class="side-label">Getting started</p><a class="side-link" href="/">Gallery</a><a class="side-link" href="/effects/">Effects</a><a class="side-link" href="/docs/introduction/">Introduction</a><a class="side-link" href="/docs/agent-prompt/">Agent prompt</a><a class="side-link" href="/docs/installation/">Installation</a><a class="side-link" href="/docs/cli/">CLI</a><a class="side-link" href="/docs/theming/">Theming</a></div><div class="side-group"><p class="side-label">Components</p><a class="side-link" href="/components/">All components</a><a class="side-link" href="/components/swipe-to-delete/">SwipeToDelete</a><a class="side-link" href="/components/toast/">Toast</a><a class="side-link" href="/components/glossy-button/">GlossyButton</a><a class="side-link" href="/components/like-button/">LikeButton</a><a class="side-link" href="/components/morph-button/">MorphButton</a><a class="side-link" href="/components/split-button/">SplitButton</a><a class="side-link" href="/components/gooey-menu/">GooeyMenu</a><a class="side-link" href="/components/slide-to-confirm/">SlideToConfirm</a><a class="side-link" href="/components/otp-input/">OTPInput</a><a class="side-link" href="/components/number-ticker/">NumberTicker</a><a class="side-link" href="/components/reaction-picker/">ReactionPicker</a><a class="side-link" href="/components/voice-note/">VoiceNote</a><a class="side-link" href="/components/signature-pad/">SignaturePad</a><a class="side-link" href="/components/card-stack/">CardStack</a><a class="side-link" href="/components/before-after/">BeforeAfter</a><a class="side-link" href="/components/thinking-orb/">ThinkingOrb</a><a class="side-link" href="/components/image-reveal/">ImageReveal</a><a class="side-link" href="/components/sweep-transition/">SweepTransition</a><a class="side-link" href="/components/upload-tile/">UploadTile</a><a class="side-link" href="/components/task-check/">TaskCheck</a><a class="side-link" href="/components/quantity-stepper/">QuantityStepper</a><a class="side-link" href="/components/ruler-picker/">RulerPicker</a><a class="side-link" href="/components/bar-chart/">BarChart</a><a class="side-link" href="/components/mini-player/">MiniPlayer</a><a class="side-link" href="/components/pull-to-refresh/">PullToRefresh</a><a class="side-link" href="/components/reorder-list/">ReorderList</a><a class="side-link" href="/components/scratch-card/">ScratchCard</a><a class="side-link" href="/components/skeleton/">Skeleton</a><a class="side-link" href="/components/segmented-control/">SegmentedControl</a><a class="side-link" href="/components/toggle/">Toggle</a><a class="side-link" href="/components/progress-steps/">ProgressSteps</a><a class="side-link" href="/components/elastic-slider/">ElasticSlider</a></div><div class="side-group"><p class="side-label">Exits</p><a class="side-link" href="/effects/dust/">Dust</a><a class="side-link" href="/effects/sand/">Sand</a><a class="side-link" href="/effects/ember/">Ember</a><a class="side-link" href="/effects/pixel/">Pixel</a><a class="side-link" href="/effects/vortex/">Vortex</a><a class="side-link" href="/effects/shatter/">Shatter</a><a class="side-link" href="/effects/stream/">Stream</a></div><div class="side-group"><p class="side-label">Entrances</p><a class="side-link" href="/effects/gather/">Gather</a><a class="side-link" href="/effects/rain/">Rain</a><a class="side-link" href="/effects/print/">Print</a></div><div class="side-group"><p class="side-label">Gestures</p><a class="side-link" href="/effects/snap/">Snap</a><a class="side-link" href="/effects/fling/">Fling</a><a class="side-link" href="/effects/charge/">Charge</a></div><div class="side-group"><p class="side-label">Special</p><a class="side-link" href="/effects/morph/">Morph</a></div><div class="side-group"><p class="side-label">Casual</p><a class="side-link" href="/effects/peel/">Peel</a><a class="side-link" href="/effects/melt/">Melt</a></div></div><!-- /seo:nav --></nav>
+      <main id="view" class="view"><!-- seo:view --><article data-prerender class="dc-static"><nav aria-label="Breadcrumb"><ol class="dc-crumbs"><li><a href="/">dissolve</a></li><li><a href="/docs/introduction/">Docs</a></li><li><a href="/docs/installation/">Installation</a></li></ol></nav>
+    <h1>Installation</h1><p>Paste one prompt into your coding agent and it sets up everything: engine, provider, NativeWind and components. Or follow the steps by hand.</p>
+    <h2 class="section-title" id="dc-agent">With your agent <span class="badge">Fastest</span></h2>
+    <p class="dc-text">Works with Claude Code, Codex, Cursor or any chat. It installs the engine, wraps the root layout, sets up NativeWind v5, runs <code>init</code> and adds the components you ask for. More options, like the skill and the MCP server, are on the <a class="dc-link" href="/docs/agent-prompt/">Agent prompt</a> page.</p>
+    <div class="prompt">
+      <div class="prompt-head"><span>Tell your coding agent</span></div>
+      <div class="prompt-body"><pre><code class="language-text">Add dissolve-ui to this React Native / Expo app. It snapshots any view with Skia and turns it into grains animated on the UI thread (Reanimated 4).
+
+1. Install the package and its peers:
+   npx expo install dissolve-ui @shopify/react-native-skia react-native-reanimated react-native-worklets react-native-gesture-handler expo-haptics
+   (Known good: Expo SDK 57, Skia 2.6, Reanimated 4.5, react-native-worklets 0.10, gesture handler 2.32. Bare React Native needs 'react-native-worklets/plugin' in babel.config.js.)
+
+2. Wrap the root layout once, above the navigator, inside GestureHandlerRootView:
+   &lt;GestureHandlerRootView style={{ flex: 1 }}&gt;
+     &lt;DissolveProvider&gt;&lt;Stack /&gt;&lt;/DissolveProvider&gt;
+   &lt;/GestureHandlerRootView&gt;
+   Do not add a second provider if one exists.
+
+3. Use the hook on the view that should disappear:
+   const { ref, dissolving, dissolve } = useDissolve();
+   &lt;View ref={ref} collapsable={false} style={{ opacity: dissolving ? 0 : 1 }}&gt;...&lt;/View&gt;
+   await dissolve({ preset: 'dust' });
+   then remove the item from state. Never unmount the view before the await resolves.
+
+4. Ready-made components (swipe to delete, toasts, like button, slide to confirm, OTP input, thinking orb, mini player...) are not exported by the package. They are copied into the project with the CLI, shadcn style, and need NativeWind v5 (Tailwind v4 on react-native-css) plus tailwind-merge. Skip a) if NativeWind v5 already runs in the app.
+   a) NativeWind v5 on Expo SDK 57:
+      npm pkg set overrides.lightningcss=1.30.1
+      npm install --legacy-peer-deps nativewind@5.0.0-preview.4 react-native-css@3.0.7 tailwindcss@^4 @tailwindcss/postcss tailwind-merge
+      metro.config.js: module.exports = withNativewind(getDefaultConfig(__dirname), { inlineVariables: false, globalClassNamePolyfill: false }) (withNativewind from 'nativewind/metro')
+      postcss.config.mjs: export default { plugins: { '@tailwindcss/postcss': {} } };
+      nativewind-env.d.ts: /// &lt;reference types="react-native-css/types" /&gt;
+      global.css starts with: @import "tailwindcss/theme.css" layer(theme); @import "tailwindcss/preflight.css" layer(base); @import "tailwindcss/utilities.css"; and is imported once at the top of the root layout.
+   b) npx dissolve-ui init --native   (once: dissolve.json, tw.tsx primitives + --dissolve-* theme tokens in global.css, then it checks the setup and prints what is missing: fix everything it reports)
+   c) npx dissolve-ui add &lt;name&gt;      (npx dissolve-ui list shows the names; dependencies between components are copied too)
+      import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
+   Restyle with className and the part classNames (textClassName, boxClassName...), or change the --dissolve-* tokens in global.css. Light and dark follow the system.
+   Finish by running npx tsc --noEmit and starting the app.
+
+Pick the variant from the intent:
+- Exits (useDissolve): delete a row or card: dust. Delete forever: sand. Unsend or burn: ember. Tap to pop: snap with origin { x: locationX, y: locationY }. Error or broken: shatter. Playful: melt. Clear all: field: 'cascade' with rows (local Y of each row) on the list container.
+- Archive or move: stream with to: iconRef and onArrive to bump the icon.
+- Entrances: new message or card: &lt;DissolveIn preset="gather"&gt;. List: &lt;DissolveIn preset="rain" delay={i * 40}&gt;. Generated text: useAppear().appear({ preset: 'print' }).
+- Gestures: swipe to dismiss: fling with the release velocity, or useDissolveScrub({ preset, onCommit }) for a reversible drag. Sticker or card dismissal by hand: useDissolvePeel({ onCommit }), both return { ref, gesture, style } for a GestureDetector around an Animated.View. Destructive confirm (delete account, wipe data): useDissolveHold({ onCommit }) instead of an alert, spread pressHandlers on a Pressable.
+- Transitions: toggle state (Follow to Following): useDissolveMorph. Leave a screen: useDissolveScreen().dissolveScreen({ preset: 'sand', then: () =&gt; router.back() }).
+
+Rules:
+- One effect per user action, on user intent only, 0.9 s to 1.8 s.
+- Reduced motion is handled by the provider (the effect is skipped), do not add a custom fallback.
+- Keep grain counts reasonable: default grain on cards, a larger grain on big views, useDissolveScreen for full screens, one cascade burst instead of one burst per row.
+- Import the engine and hooks from dissolve-ui. Import components from their copied file, never from the package.
+
+For a React web app (Next.js, Vite) there is no engine to install: run npx dissolve-ui init --web, then npx dissolve-ui add &lt;name&gt; (npx dissolve-ui list shows which components run on the web). The components need React 19 and react-dom only, and take the same props as on native.</code></pre></div>
+    </div>
+
+    <h2 class="section-title" id="dc-web">React on the web</h2>
+    <p class="dc-text">Building a Next.js or Vite app? Skip the engine and NativeWind: web components need React 19 and <code>react-dom</code>, nothing else. <code>init</code> asks the platform (React is preselected in a web project), saves it in <code>dissolve.json</code> and writes the theme tokens, as plain CSS when the project has no Tailwind.</p>
+    <figure class="code"><pre><code class="language-sh">npx dissolve-ui init --web</code></pre></figure>
+    <figure class="code"><pre><code class="language-sh">npx dissolve-ui add scratch-card</code></pre></figure>
+    <figure class="code"><figcaption>app/page.tsx</figcaption><pre><code class="language-tsx">import { ScratchCard } from '@/components/dissolve/scratch-card';
+
+export default function Page() {
+  return (
+    &lt;ScratchCard onReveal={claim}&gt;
+      &lt;span className=&quot;text-4xl font-bold&quot;&gt;$25&lt;/span&gt;
+    &lt;/ScratchCard&gt;
+  );
+}</code></pre></figure>
+    <p class="dc-note">Same props as on React Native. <code>npx dissolve-ui list</code> shows which components run on the web, and every component page has a React Native / React switch.</p>
+    <p class="dc-note">Using shadcn? <code>npx shadcn@latest add https://dissolve.rselmi.com/r/scratch-card.json</code> works too, see <a class="dc-link" href="/docs/cli/">CLI</a>.</p>
+
+    <h2 class="section-title" id="dc-manual">React Native, by hand</h2>
+    <h2 class="section-title dc-step" id="dc-install"><span class="dc-num">1</span>Install the engine</h2>
+    <p class="dc-text">The package holds the engine and the hooks. It is all you need for the variants.</p>
+    <figure class="code"><pre><code class="language-sh">npx expo install dissolve-ui @shopify/react-native-skia react-native-reanimated react-native-worklets react-native-gesture-handler expo-haptics</code></pre></figure>
+    <div class="dc-table-wrap">
+      <table class="dc-table">
+        <thead><tr><th>Peer</th><th>Tested</th><th>Used for</th></tr></thead>
+        <tbody><tr><td><code>@shopify/react-native-skia</code></td><td>2.6</td><td>Snapshot and Atlas drawing</td></tr><tr><td><code>react-native-reanimated</code></td><td>4.5</td><td>UI thread animation</td></tr><tr><td><code>react-native-worklets</code></td><td>0.10</td><td>Worklets runtime for Reanimated 4</td></tr><tr><td><code>react-native-gesture-handler</code></td><td>2.32</td><td>Scrub, peel and hold gestures</td></tr><tr><td><code>expo-haptics</code></td><td>57</td><td>Haptic ticks during the effect</td></tr></tbody>
+      </table>
+    </div>
+    <p class="dc-note">Built on Expo SDK 57 and React Native 0.86, runs in Expo Go. Expo's Babel preset already adds the worklets plugin. In a bare React Native app, add <code>'react-native-worklets/plugin'</code> to <code>babel.config.js</code>.</p>
+
+    <h2 class="section-title dc-step" id="dc-provider"><span class="dc-num">2</span>Add the provider</h2>
+    <p class="dc-text">The provider draws grains in a full screen overlay that ignores touches. Put it above your navigator so an effect survives a screen pop.</p>
+    <figure class="code"><figcaption>app/_layout.tsx</figcaption><pre><code class="language-tsx">import { Stack } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { DissolveProvider } from 'dissolve-ui';
+
+export default function Layout() {
+  return (
+    &lt;GestureHandlerRootView style={{ flex: 1 }}&gt;
+      &lt;DissolveProvider&gt;
+        &lt;Stack /&gt;
+      &lt;/DissolveProvider&gt;
+    &lt;/GestureHandlerRootView&gt;
+  );
+}</code></pre></figure>
+
+    <h2 class="section-title dc-step" id="dc-quick"><span class="dc-num">3</span>Quick start</h2>
+    <p class="dc-text">Put the ref on the view to snapshot, hide it while it dissolves, and remove the item once the promise resolves.</p>
+    <figure class="code"><figcaption>Row.tsx</figcaption><pre><code class="language-tsx">import { Pressable, View } from 'react-native';
+import { useDissolve } from 'dissolve-ui';
+
+export function Row({ item, onRemove }) {
+  const { ref, dissolving, dissolve } = useDissolve();
+
+  return (
+    &lt;Pressable onPress={async () =&gt; {
+      await dissolve({ preset: 'sand' });
+      onRemove(item.id); // the space can be reclaimed
+    }}&gt;
+      &lt;View ref={ref} collapsable={false} style={{ opacity: dissolving ? 0 : 1 }}&gt;
+        {/* row content */}
+      &lt;/View&gt;
+    &lt;/Pressable&gt;
+  );
+}</code></pre></figure>
+    <p class="dc-note">Reduced motion is handled for you: the effect is skipped and the view hides at once.</p>
+
+    <h2 class="section-title" id="dc-components">Components</h2>
+    <p class="dc-text">Components are copied into your project instead of imported from the package, like shadcn. You own the file, edit it freely, and restyle it with classNames. They need NativeWind v5 (Tailwind v4 on <code>react-native-css</code>) and <code>tailwind-merge</code>.</p>
+
+    <h2 class="section-title dc-step" id="dc-nativewind"><span class="dc-num">4</span>Set up NativeWind v5</h2>
+    <p class="dc-text">Skip this step if your app already runs NativeWind v5.</p>
+    <figure class="code"><pre><code class="language-sh">npx expo install nativewind@5.0.0-preview.4 react-native-css@3.0.7 tailwindcss @tailwindcss/postcss tailwind-merge</code></pre></figure>
+    <div class="dc-table-wrap">
+      <table class="dc-table">
+        <thead><tr><th>Package</th><th>Tested</th><th>Used for</th></tr></thead>
+        <tbody><tr><td><code>nativewind</code></td><td>5.0.0-preview.4</td><td>className on React Native views</td></tr><tr><td><code>react-native-css</code></td><td>3.0.7</td><td>The CSS runtime behind NativeWind v5</td></tr><tr><td><code>tailwindcss + @tailwindcss/postcss</code></td><td>4</td><td>Tailwind v4 compiler</td></tr><tr><td><code>tailwind-merge</code></td><td>3</td><td>Your classes win over the defaults</td></tr><tr><td><code>lightningcss (override)</code></td><td>1.30.1</td><td>Pinned for Expo SDK 57</td></tr></tbody>
+      </table>
+    </div>
+    <p class="dc-text" style="margin-top: 16px">On Expo SDK 57, pin <code>lightningcss</code> with npm <code>overrides</code> (<code>resolutions</code> is Yarn only), then reinstall with <code>npm install --legacy-peer-deps</code>.</p>
+    <figure class="code"><figcaption>package.json</figcaption><pre><code class="language-json">{
+  &quot;overrides&quot;: {
+    &quot;lightningcss&quot;: &quot;1.30.1&quot;
+  }
+}</code></pre></figure>
+    <figure class="code"><figcaption>metro.config.js</figcaption><pre><code class="language-js">const { getDefaultConfig } = require('expo/metro-config');
+const { withNativewind } = require('nativewind/metro');
+
+const config = getDefaultConfig(__dirname);
+
+module.exports = withNativewind(config, {
+  inlineVariables: false,         // keeps the theme tokens live, light and dark
+  globalClassNamePolyfill: false, // className comes from the tw primitives
+});</code></pre></figure>
+    <figure class="code"><figcaption>postcss.config.mjs</figcaption><pre><code class="language-js">export default {
+  plugins: {
+    '@tailwindcss/postcss': {},
+  },
+};</code></pre></figure>
+    <figure class="code"><figcaption>global.css</figcaption><pre><code class="language-css">@import &quot;tailwindcss/theme.css&quot; layer(theme);
+@import &quot;tailwindcss/preflight.css&quot; layer(base);
+@import &quot;tailwindcss/utilities.css&quot;;
+
+/* npx dissolve-ui init appends the dissolve tokens below */</code></pre></figure>
+    <p class="dc-note">Import <code>global.css</code> once at the top of <code>app/_layout.tsx</code>. The full guide is on <a class="dc-link" href="https://www.nativewind.dev/v5" target="_blank" rel="noopener">nativewind.dev</a>.</p>
+
+    <h2 class="section-title dc-step" id="dc-init"><span class="dc-num">5</span>Init</h2>
+    <p class="dc-text">Once per project. It asks the platform (React Native is preselected in an Expo or React Native project) and saves it in <code>dissolve.json</code>, writes <code>tw.tsx</code>, the className primitives every component shares, and appends the theme tokens to your <code>global.css</code>. It also tells you which dependency is missing.</p>
+    <figure class="code"><pre><code class="language-sh">npx dissolve-ui init</code></pre></figure>
+
+    <h2 class="section-title dc-step" id="dc-add"><span class="dc-num">6</span>Add components</h2>
+    <p class="dc-text">Name one or more. Files land in <code>components/dissolve</code>, or <code>src/components/dissolve</code> with a <code>src/</code> layout, and the CLI prints the import line.</p>
+    <figure class="code"><pre><code class="language-sh">npx dissolve-ui add slide-to-confirm swipe-to-delete</code></pre></figure>
+    <figure class="code"><pre><code class="language-sh">npx dissolve-ui list</code></pre></figure>
+    <figure class="code"><figcaption>Checkout.tsx</figcaption><pre><code class="language-tsx">import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
+
+&lt;SlideToConfirm
+  label=&quot;Slide to pay 42 €&quot;
+  doneLabel=&quot;Paid&quot;
+  onConfirm={pay}
+  className=&quot;mx-4&quot;
+/&gt;</code></pre></figure>
+    <p class="dc-note">Every option is on the <a class="dc-link" href="/docs/cli/">CLI</a> page. Every component page shows its own <code>add</code> command and props.</p>
+
+    <h2 class="section-title dc-step" id="dc-theme"><span class="dc-num">7</span>Theme</h2>
+    <p class="dc-text">Components read <code>--dissolve-*</code> tokens: <code>background</code>, <code>surface</code>, <code>surface-2</code>, <code>foreground</code>, <code>muted</code>, <code>primary</code>, <code>primary-foreground</code>, <code>success</code>, <code>danger</code>, <code>danger-foreground</code>, <code>accent</code>, <code>border</code>, <code>chart-1</code> to <code>chart-3</code>. Change a value in <code>global.css</code> and every component follows. Dark values sit in a <code>prefers-color-scheme: dark</code> block, so dark mode follows the system.</p>
+    <p class="dc-text">For one instance, pass a className. Classes are merged with <code>tailwind-merge</code>, so yours replace the default of the same kind: <code>className="bg-amber-100"</code> replaces <code>bg-dissolve-surface</code>.</p>
+    <figure class="code"><figcaption>Order.tsx</figcaption><pre><code class="language-tsx">// Defaults: track bg-dissolve-surface, number text-dissolve-foreground
+&lt;SlideToConfirm
+  label=&quot;Slide to order&quot;
+  onConfirm={order}
+  className=&quot;bg-amber-100&quot;                      // replaces bg-dissolve-surface
+/&gt;
+
+&lt;NumberTicker
+  value={total}
+  textClassName=&quot;text-emerald-600 font-bold&quot;    // replaces the color and the weight
+/&gt;</code></pre></figure>
+    <div class="dc-actions">
+      <a class="btn btn-accent" href="/">Pick a variant </a>
+      <a class="btn" href="/docs/theming/">Theming</a>
+      <a class="btn" href="/docs/agent-prompt/">Let your agent do it</a>
+    </div><p>dissolve is MIT licensed. Source on <a href="https://github.com/rs-4/dissolve">GitHub</a>, package on <a href="https://www.npmjs.com/package/dissolve-ui">npm</a>. This page as <a href="/docs/installation.md">markdown</a>. For AI agents: <a href="/llms.txt">llms.txt</a>.</p></article><!-- /seo:view --></main>
+    </div>
+    <footer id="foot" class="foot"></footer>
+    <div id="scrim" class="scrim"></div>
+
+    <script type="importmap" data-stamp>{
+  "imports": {
+    "/app.js": "/app.js?v=404ad6c91a",
+    "/autoplay.js": "/autoplay.js?v=7fe52696f0",
+    "/components.js": "/components.js?v=9f6223ace9",
+    "/cp/ai.js": "/cp/ai.js?v=e0ead96208",
+    "/cp/button.js": "/cp/button.js?v=3853907472",
+    "/cp/controls.js": "/cp/controls.js?v=ba8c76addf",
+    "/cp/core.js": "/cp/core.js?v=1ea928f975",
+    "/cp/inputs.js": "/cp/inputs.js?v=df7042e2c2",
+    "/cp/kit.js": "/cp/kit.js?v=cc54566c1d",
+    "/cp/messages.js": "/cp/messages.js?v=4d7fc15b28",
+    "/cp/pull.js": "/cp/pull.js?v=94d2a23f5d",
+    "/cp/reorder.js": "/cp/reorder.js?v=0cdc768d2d",
+    "/cp/scratch.js": "/cp/scratch.js?v=36cfaf610c",
+    "/cp/segmented.js": "/cp/segmented.js?v=e92fd01bcf",
+    "/cp/skeleton.js": "/cp/skeleton.js?v=6a46e0cb6a",
+    "/cp/slider.js": "/cp/slider.js?v=b48a2fbeea",
+    "/cp/steps.js": "/cp/steps.js?v=cabe26243a",
+    "/cp/surfaces.js": "/cp/surfaces.js?v=89457d83d2",
+    "/cp/toggle.js": "/cp/toggle.js?v=d1a81ed2f1",
+    "/data.js": "/data.js?v=4d0c7dcdaa",
+    "/demo.js": "/demo.js?v=58c91af6f4",
+    "/docs.js": "/docs.js?v=75891f1fb7",
+    "/footer.js": "/footer.js?v=b4925c9b63",
+    "/history.js": "/history.js?v=4ada9cdbb7",
+    "/icons.js": "/icons.js?v=f80b8839ec",
+    "/images.js": "/images.js?v=5dca8c6582",
+    "/lib/available.js": "/lib/available.js?v=a603945d18",
+    "/lib/bar-chart.js": "/lib/bar-chart.js?v=fbbbe628f2",
+    "/lib/before-after.js": "/lib/before-after.js?v=2b8f2edc64",
+    "/lib/card-stack.js": "/lib/card-stack.js?v=0a0368affd",
+    "/lib/chunks/chunk-5BYG7LQO.js": "/lib/chunks/chunk-5BYG7LQO.js?v=ff06077a6b",
+    "/lib/chunks/chunk-BCIF2ROM.js": "/lib/chunks/chunk-BCIF2ROM.js?v=d72c02e665",
+    "/lib/chunks/chunk-OQW5JTMC.js": "/lib/chunks/chunk-OQW5JTMC.js?v=9925729270",
+    "/lib/chunks/chunk-R2UPSOGD.js": "/lib/chunks/chunk-R2UPSOGD.js?v=d890a92e43",
+    "/lib/elastic-slider.js": "/lib/elastic-slider.js?v=86c303a629",
+    "/lib/engine.js": "/lib/engine.js?v=f83603ad4e",
+    "/lib/glossy-button.js": "/lib/glossy-button.js?v=2b68d8f624",
+    "/lib/gooey-menu.js": "/lib/gooey-menu.js?v=d4315105f0",
+    "/lib/image-reveal.js": "/lib/image-reveal.js?v=97668f5400",
+    "/lib/kit.js": "/lib/kit.js?v=99620eaeb0",
+    "/lib/like-button.js": "/lib/like-button.js?v=fe349047f1",
+    "/lib/mini-player.js": "/lib/mini-player.js?v=abfd80795a",
+    "/lib/morph-button.js": "/lib/morph-button.js?v=bbeb9490d3",
+    "/lib/number-ticker.js": "/lib/number-ticker.js?v=bf687bb8d9",
+    "/lib/otp-input.js": "/lib/otp-input.js?v=6365780b17",
+    "/lib/progress-steps.js": "/lib/progress-steps.js?v=559c344e36",
+    "/lib/pull-to-refresh.js": "/lib/pull-to-refresh.js?v=24d44c950c",
+    "/lib/quantity-stepper.js": "/lib/quantity-stepper.js?v=a1ab5a8759",
+    "/lib/reaction-picker.js": "/lib/reaction-picker.js?v=41514ed352",
+    "/lib/reorder-list.js": "/lib/reorder-list.js?v=0638bb105c",
+    "/lib/ruler-picker.js": "/lib/ruler-picker.js?v=fad9334a17",
+    "/lib/scratch-card.js": "/lib/scratch-card.js?v=ed0bfd20fc",
+    "/lib/segmented-control.js": "/lib/segmented-control.js?v=f93e3e0162",
+    "/lib/signature-pad.js": "/lib/signature-pad.js?v=c7a39a2f23",
+    "/lib/skeleton.js": "/lib/skeleton.js?v=7d28497ae5",
+    "/lib/slide-to-confirm.js": "/lib/slide-to-confirm.js?v=b1bfe2c0c9",
+    "/lib/split-button.js": "/lib/split-button.js?v=ecea91211e",
+    "/lib/sweep-transition.js": "/lib/sweep-transition.js?v=401bdd2270",
+    "/lib/swipe-to-delete.js": "/lib/swipe-to-delete.js?v=96111d30a2",
+    "/lib/task-check.js": "/lib/task-check.js?v=8d759c26e8",
+    "/lib/thinking-orb.js": "/lib/thinking-orb.js?v=fe61a12100",
+    "/lib/toast.js": "/lib/toast.js?v=427adb016f",
+    "/lib/toggle.js": "/lib/toggle.js?v=6533b68b3c",
+    "/lib/upload-tile.js": "/lib/upload-tile.js?v=10fad8e11a",
+    "/lib/voice-note.js": "/lib/voice-note.js?v=cf071b2a22",
+    "/logo.js": "/logo.js?v=53a154bd5b",
+    "/playground.js": "/playground.js?v=58e0f28c5a",
+    "/routes.js": "/routes.js?v=70da173b7c",
+    "/showcase.js": "/showcase.js?v=7f8e78cc9b",
+    "/variants-content.js": "/variants-content.js?v=7e5bad6150"
+  }
+}</script>
+
+    <script type="module" src="/app.js?v=404ad6c91a"></script>
+  </body>
+</html>

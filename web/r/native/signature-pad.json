@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "SignaturePad",
   "description": "Variable width Skia signature, undo, clear into dust, PNG export.",
-  "docs": "https://dissolve.rselmi.com/#/signature-pad. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/#/installation.",
+  "docs": "https://dissolve.rselmi.com/components/signature-pad/. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/docs/installation/.",
   "dependencies": [
     "dissolve-ui",
     "@shopify/react-native-skia",

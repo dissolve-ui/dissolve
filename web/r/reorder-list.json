@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "ReorderList",
   "description": "Long press a row to lift it, drag to reorder, the others make room, it settles with a tick.",
-  "docs": "https://dissolve.rselmi.com/#/reorder-list",
+  "docs": "https://dissolve.rselmi.com/components/reorder-list/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "LikeButton",
   "description": "Heart that pops with sparks on like and snaps into grains on unlike.",
-  "docs": "https://dissolve.rselmi.com/#/like-button",
+  "docs": "https://dissolve.rselmi.com/components/like-button/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

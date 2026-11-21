@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "OTPInput",
   "description": "One time code boxes, verify sweep, success tint, shake and dust on reject.",
-  "docs": "https://dissolve.rselmi.com/#/otp-input",
+  "docs": "https://dissolve.rselmi.com/components/otp-input/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

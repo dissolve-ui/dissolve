@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "Skeleton, SkeletonBlock",
   "description": "Loading placeholders that break into grains and recompose into the real content, block by block.",
-  "docs": "https://dissolve.rselmi.com/#/skeleton",
+  "docs": "https://dissolve.rselmi.com/components/skeleton/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

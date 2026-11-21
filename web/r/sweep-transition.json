@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "SweepTransition",
   "description": "A crisp liquid band sweeps across a view and leaves the new state behind it.",
-  "docs": "https://dissolve.rselmi.com/#/sweep-transition",
+  "docs": "https://dissolve.rselmi.com/components/sweep-transition/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "VoiceNote",
   "description": "Voice message bubble: play, scrub the waveform with ticks, unsend as dust.",
-  "docs": "https://dissolve.rselmi.com/#/voice-note",
+  "docs": "https://dissolve.rselmi.com/components/voice-note/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

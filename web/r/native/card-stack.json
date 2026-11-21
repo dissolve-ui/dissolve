@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "CardStack",
   "description": "Wallet style card stack: tap to focus, drag down to put back, swipe to cycle.",
-  "docs": "https://dissolve.rselmi.com/#/card-stack. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/#/installation.",
+  "docs": "https://dissolve.rselmi.com/components/card-stack/. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/docs/installation/.",
   "dependencies": [
     "dissolve-ui",
     "@shopify/react-native-skia",

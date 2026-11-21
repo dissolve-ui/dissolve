@@ -123,7 +123,7 @@ function mountBeforeAfter(body, { sc, mode, initial = 0.42 }) {
     dividerClassName: 'cp-ba-line',
     onChange: (v) => { now = v; },
   });
-  const src = 'assets/paintings/tuscany.jpg';
+  const src = '/assets/paintings/tuscany.jpg';
   ba.after.innerHTML = `<img src="${src}" alt="" draggable="false"><i class="cp-ba-grade"></i><i class="cp-ba-lift"></i>`;
   ba.before.innerHTML = `<img src="${src}" alt="" draggable="false">`;
   sc.onDispose(() => ba.destroy());

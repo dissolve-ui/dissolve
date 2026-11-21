@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "SweepTransition",
   "description": "A crisp liquid band sweeps across a view and leaves the new state behind it.",
-  "docs": "https://dissolve.rselmi.com/#/sweep-transition. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/#/installation.",
+  "docs": "https://dissolve.rselmi.com/components/sweep-transition/. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/docs/installation/.",
   "dependencies": [
     "dissolve-ui",
     "@shopify/react-native-skia",

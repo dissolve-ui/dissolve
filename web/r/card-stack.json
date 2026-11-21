@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "CardStack",
   "description": "Wallet style card stack: tap to focus, drag down to put back, swipe to cycle.",
-  "docs": "https://dissolve.rselmi.com/#/card-stack",
+  "docs": "https://dissolve.rselmi.com/components/card-stack/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",

@@ -43,7 +43,7 @@ function mountStepper(body, { sc, mode }) {
   const row = el('div', 'cc cc-qs-row');
   row.style.width = W + 'px';
   const art = el('span', 'cc-qs-art');
-  art.style.backgroundImage = 'url(assets/paintings/tuscany.jpg)';
+  art.style.backgroundImage = 'url(/assets/paintings/tuscany.jpg)';
   if (tile) { art.style.width = art.style.height = '40px'; row.style.gap = '10px'; }
   const text = el('span', 'cc-qs-text', '<span class="cc-qs-title">Tuscany print</span><span class="cc-qs-sub">A3 matte, 24 €</span>');
   const host = el('div');
@@ -277,7 +277,7 @@ function mountPlayer(body, { sc, mode }) {
   frame.style.width = CW + 'px';
   frame.style.height = CH + 'px';
   // What sits behind the player in the frame: a small library grid.
-  const lib = el('div', 'cc-mp-lib', `<p class="cc-mp-lib-h">Library</p><div class="cc-mp-grid">${LIBRARY.map(([img, t]) => `<div><i style="background-image:url(assets/paintings/${img}.jpg)"></i><span>${t}</span></div>`).join('')}</div>`);
+  const lib = el('div', 'cc-mp-lib', `<p class="cc-mp-lib-h">Library</p><div class="cc-mp-grid">${LIBRARY.map(([img, t]) => `<div><i style="background-image:url(/assets/paintings/${img}.jpg)"></i><span>${t}</span></div>`).join('')}</div>`);
   const host = el('div');
   frame.append(lib, host);
   body.append(tile ? fitTile(body, frame, CW, CH) : frame);
@@ -285,7 +285,7 @@ function mountPlayer(body, { sc, mode }) {
   let idx = 0, playing = false, progress = 0.32, opened = false;
   const track = () => {
     const tr = TRACKS[idx];
-    return { title: tr.title, subtitle: tr.artist, artwork: `assets/paintings/${tr.img}.jpg`, progress };
+    return { title: tr.title, subtitle: tr.artist, artwork: `/assets/paintings/${tr.img}.jpg`, progress };
   };
   const skip = (d) => { idx = (idx + d + TRACKS.length) % TRACKS.length; progress = 0.02; player.update(track()); };
   const togglePlay = () => player.update({ playing: (playing = !playing) });

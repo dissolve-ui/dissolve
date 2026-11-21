@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "PullToRefresh",
   "description": "Pull a list down: grains gather into a loader, release and the content rebuilds itself.",
-  "docs": "https://dissolve.rselmi.com/#/pull-to-refresh",
+  "docs": "https://dissolve.rselmi.com/components/pull-to-refresh/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

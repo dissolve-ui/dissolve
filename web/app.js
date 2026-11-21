@@ -14,6 +14,7 @@ import { onWidth } from './cp/kit.js';
 import { historyHTML, mountHistory } from './history.js';
 import { markHTML, mountLogo } from './logo.js';
 import { footerHTML, mountFooter } from './footer.js';
+import { pathOf, idOf, titleOf, go } from './routes.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -21,7 +22,7 @@ const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, 
 /* ---------- Sidebar ---------- */
 
 function link(id, title, badge) {
-  return `<a class="side-link" href="#/${id}" data-id="${id}"><span>${title}</span>${badge ? `<span class="badge">${badge}</span>` : ''}</a>`;
+  return `<a class="side-link" href="${pathOf(id)}" data-id="${id}"><span>${title}</span>${badge ? `<span class="badge">${badge}</span>` : ''}</a>`;
 }
 
 /** GitHub stars of the repo, cached for an hour, shown in the sidebar. */
@@ -44,7 +45,7 @@ async function loadStars() {
 function renderSidebar() {
   $('#side').innerHTML = `
     <div class="side-head">
-      <a href="#/gallery" class="brand">${markHTML(26, 'side-mark')}<span class="brand-name">dissolve</span></a>
+      <a href="/" class="brand">${markHTML(26, 'side-mark')}<span class="brand-name">dissolve</span></a>
       <div class="side-actions">
         <button id="theme" class="icon-btn theme-btn" aria-label="Toggle light and dark theme">
             <svg class="i-sun" width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9" cy="9" r="3.2"/><path d="M9 1.8v1.6M9 14.6v1.6M1.8 9h1.6M14.6 9h1.6M3.9 3.9l1.1 1.1M13 13l1.1 1.1M3.9 14.1 5 13M13 5l1.1-1.1"/></svg>
@@ -88,20 +89,20 @@ const GH = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
 const SEARCH = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="m10.4 10.4 3.1 3.1"/></svg>';
 /** Top bar sections: each one lights up on its own pages. */
 const TOP = [
-  { href: '#/components', label: 'Components', on: (id) => id === 'components' || !!COMPONENTS[id] },
-  { href: '#/effects', label: 'Effects', on: (id) => id === 'effects' || !!VARIANTS[id] },
-  { href: '#/introduction', label: 'Docs', on: (id) => !!GETTING_STARTED.find((p) => p.id === id) && id !== 'agent-prompt' },
-  { href: '#/agent-prompt', label: 'Agents', on: (id) => id === 'agent-prompt' },
+  { href: pathOf('components'), label: 'Components', on: (id) => id === 'components' || !!COMPONENTS[id] },
+  { href: pathOf('effects'), label: 'Effects', on: (id) => id === 'effects' || !!VARIANTS[id] },
+  { href: pathOf('introduction'), label: 'Docs', on: (id) => !!GETTING_STARTED.find((p) => p.id === id) && id !== 'agent-prompt' },
+  { href: pathOf('agent-prompt'), label: 'Agents', on: (id) => id === 'agent-prompt' },
 ];
 
 function renderTop() {
   $('#top').innerHTML = `
-    <a href="#/gallery" class="top-brand" aria-label="dissolve home">${markHTML(30, 'top-mark')}<span>dissolve</span></a>
+    <a href="/" class="top-brand" aria-label="dissolve home">${markHTML(30, 'top-mark')}<span>dissolve</span></a>
     <nav class="top-nav">${TOP.map((t) => `<a class="top-link" href="${t.href}">${t.label}</a>`).join('')}</nav>
     <button class="top-search" data-palette aria-label="Search components">${SEARCH}<span class="ts-label">Search <span class="ts-roll" aria-hidden="true"></span></span><kbd>⌘K</kbd></button>
     <div class="top-right">
       <a class="top-gh" href="https://github.com/rs-4/dissolve" target="_blank" rel="noopener" aria-label="Star dissolve on GitHub">${GH}<span class="star-count" hidden></span></a>
-      <a class="bx-pill bx-pill-light top-cta" href="#/installation">Get started</a>
+      <a class="bx-pill bx-pill-light top-cta" href="/docs/installation/">Get started</a>
     </div>`;
   $('#top').querySelector('[data-palette]').addEventListener('click', openPalette);
   rollSearch($('#top .ts-roll'));
@@ -150,7 +151,7 @@ function openPalette() {
   let hits = all, sel = 0;
   const draw = () => {
     list.innerHTML = hits.length
-      ? hits.map((h, i) => `<a class="pal-item${i === sel ? ' on' : ''}" href="#/${h.id}" role="option" data-i="${i}"><span>${esc(h.title)}</span><span class="pal-kind">${h.kind}</span></a>`).join('')
+      ? hits.map((h, i) => `<a class="pal-item${i === sel ? ' on' : ''}" href="${pathOf(h.id)}" role="option" data-i="${i}"><span>${esc(h.title)}</span><span class="pal-kind">${h.kind}</span></a>`).join('')
       : '<p class="pal-empty">Nothing matches.</p>';
     list.querySelector('.on')?.scrollIntoView({ block: 'nearest' });
   };
@@ -158,7 +159,7 @@ function openPalette() {
   const key = (e) => {
     if (e.key === 'Escape') { e.preventDefault(); close(); }
     else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); sel = (sel + (e.key === 'ArrowDown' ? 1 : -1) + hits.length) % Math.max(1, hits.length); draw(); }
-    else if (e.key === 'Enter' && hits[sel]) { e.preventDefault(); location.hash = `#/${hits[sel].id}`; close(); }
+    else if (e.key === 'Enter' && hits[sel]) { e.preventDefault(); go(pathOf(hits[sel].id)); close(); }
   };
   input.addEventListener('input', () => {
     const q = input.value.trim().toLowerCase();
@@ -212,8 +213,8 @@ function pageHead(id, title, desc, glyph, nav = VARIANT_NAV) {
     <div class="head-top">
       ${glyph ? `<div class="head-icon">${glyph}</div>` : '<span></span>'}
       ${i >= 0 ? `<div class="head-nav">
-        <a class="round" ${prev ? `href="#/${prev}" title="${nav.title(prev)}"` : 'aria-disabled="true"'} aria-label="Previous ${nav.noun}">${arrow('l')}</a>
-        <a class="round" ${next ? `href="#/${next}" title="${nav.title(next)}"` : 'aria-disabled="true"'} aria-label="Next ${nav.noun}">${arrow('r')}</a>
+        <a class="round" ${prev ? `href="${pathOf(prev)}" title="${nav.title(prev)}"` : 'aria-disabled="true"'} aria-label="Previous ${nav.noun}">${arrow('l')}</a>
+        <a class="round" ${next ? `href="${pathOf(next)}" title="${nav.title(next)}"` : 'aria-disabled="true"'} aria-label="Next ${nav.noun}">${arrow('r')}</a>
       </div>` : ''}
     </div>
     <h1>${title}</h1>
@@ -468,7 +469,7 @@ function tiles() {
     const title = component ? COMPONENTS[id].title : VARIANTS[id].title;
     return `<div class="g-tile" data-group="${group}">
       <div class="g-thumb${component ? ' g-thumb-cp' : ''}" ${component ? 'data-cp-tile' : 'data-demo'}="${id}"><div class="stage-slot"></div></div>
-      <a class="g-meta" href="#/${id}"><span class="g-name">${title}</span>${arrow('r')}</a>
+      <a class="g-meta" href="${pathOf(id)}"><span class="g-name">${title}</span>${arrow('r')}</a>
     </div>`;
   }).join('');
 }
@@ -478,7 +479,17 @@ function tiles() {
 let teardown = [];
 let galleryDispose = null, lastCols = 0;
 
-const routeId = () => location.hash.replace(/^#\/?/, '') || 'gallery';
+const isComponent = (id) => !!COMPONENTS[id];
+
+/** The page id of the URL. An old #/<id> link is swapped for the path of its page first (routes.js). */
+function routeId() {
+  const legacy = location.hash.match(/^#\/([\w-]*)/);
+  if (legacy) {
+    const id = legacy[1];
+    history.replaceState(null, '', pathOf(VARIANTS[id] || PAGES[id] || COMPONENTS[id] ? id : 'gallery'));
+  }
+  return idOf(location.pathname, isComponent) ?? 'gallery';
+}
 const isGallery = (id) => !(VARIANTS[id] || PAGES[id] || COMPONENTS[id]) || id === 'gallery';
 
 function route(keepScroll) {
@@ -496,7 +507,7 @@ function route(keepScroll) {
   markTop(id);
   // The gallery takes the full width, without the sidebar.
   document.body.classList.toggle('bx-wide', isGallery(id));
-  document.title = `${VARIANTS[id]?.title ?? comp?.title ?? (GETTING_STARTED.find((p) => p.id === id)?.title || (id === 'gallery' ? 'Gallery' : id === 'components' ? 'Components' : id === 'effects' ? 'Effects' : 'Introduction'))} · dissolve`;
+  document.title = titleOf(id, comp && { title: comp.title, web: hasWeb(id) });
   document.body.classList.remove('side-open');
   if (keepScroll !== true) window.scrollTo(0, 0);
   wire(view);
@@ -630,7 +641,18 @@ $('#theme').addEventListener('click', () => {
 });
 $('#menu').addEventListener('click', () => document.body.classList.toggle('side-open'));
 $('#scrim').addEventListener('click', () => document.body.classList.remove('side-open'));
-addEventListener('hashchange', () => route());
+addEventListener('popstate', () => route());
+// An old #/<id> link followed on the page: routeId swaps it for the path.
+addEventListener('hashchange', () => { if (location.hash.startsWith('#/')) route(); });
+// Links to pages of the site render in place, without a reload. Files (/r/*.json, SKILL.md) load normally.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest?.('a[href]');
+  if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target || a.hasAttribute('download')) return;
+  const url = new URL(a.href, location.href);
+  if (url.origin !== location.origin || url.hash || idOf(url.pathname, isComponent) === null) return;
+  e.preventDefault();
+  go(url.pathname);
+});
 // Resize: the gallery panels refit themselves (onWidth), only a new column count rebuilds its grid.
 // The variant and effects pages lay their scenes out once, so a real width change renders them again.
 let lastW = innerWidth, rt = 0;
