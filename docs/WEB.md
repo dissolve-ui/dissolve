@@ -131,7 +131,7 @@ sc.onDispose(() => card.destroy());
 ## Build and verify
 
 ```sh
-npm run web:stamp                       # builds web/lib from registry/web, then cache busts the site
+npm run web:stamp                       # builds web/lib from registry/web, cache busts the site, writes the static pages
 npx tsc -p tsconfig.web.json --noEmit   # registry/web, DOM + react-jsx
 npx tsc --noEmit                        # the app and the native registry
 npm test                                # includes test/web-parity.test.mjs

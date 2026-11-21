@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "GooeyMenu",
   "description": "Floating button whose actions pour out as gooey drops.",
-  "docs": "https://dissolve.rselmi.com/#/gooey-menu",
+  "docs": "https://dissolve.rselmi.com/components/gooey-menu/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",

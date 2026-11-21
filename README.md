@@ -211,7 +211,7 @@ Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `mu
 
 ## For coding agents
 
-- Agent prompt: the website's "Agent prompt" page (`#/agent-prompt`) gives a ready to paste prompt.
+- Agent prompt: the website's [Agent prompt](https://dissolve.rselmi.com/docs/agent-prompt/) page gives a ready to paste prompt.
 - Claude skill: [web/skills/dissolve/SKILL.md](web/skills/dissolve/SKILL.md). Install it for every
   project with:
 

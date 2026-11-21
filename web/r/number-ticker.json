@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "NumberTicker",
   "description": "Rolling digit columns for prices and counters, locale aware.",
-  "docs": "https://dissolve.rselmi.com/#/number-ticker",
+  "docs": "https://dissolve.rselmi.com/components/number-ticker/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",

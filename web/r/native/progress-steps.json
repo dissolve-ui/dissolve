@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "ProgressSteps",
   "description": "Numbered steps on a line, or story style bars: the progress streams on to the next step in grains.",
-  "docs": "https://dissolve.rselmi.com/#/progress-steps. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/#/installation.",
+  "docs": "https://dissolve.rselmi.com/components/progress-steps/. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/docs/installation/.",
   "dependencies": [
     "dissolve-ui",
     "@shopify/react-native-skia",

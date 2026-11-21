@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "SlideToConfirm",
   "description": "Slide to pay or confirm, shimmer label, loader, done state.",
-  "docs": "https://dissolve.rselmi.com/#/slide-to-confirm. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/#/installation.",
+  "docs": "https://dissolve.rselmi.com/components/slide-to-confirm/. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/docs/installation/.",
   "dependencies": [
     "dissolve-ui",
     "@shopify/react-native-skia",

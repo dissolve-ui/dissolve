@@ -2,14 +2,15 @@
 // The dots flee the cursor and spring back; a click scatters them. Same look as the rest of the
 // site (grains), drawn on one canvas, only while it is on screen.
 import { PKG } from './variants-content.js';
+import { pathOf } from './routes.js';
 
 const WORDS = ['dissolve', 'native', 'web', 'grains'];
 const HOLD = 3200;
 
 const COLS = [
-  { title: 'Library', links: [['Components', '#/gallery'], ['Effects', '#/effects'], ['Playground', '#/dust']] },
-  { title: 'Docs', links: [['Introduction', '#/introduction'], ['Installation', '#/installation'], ['CLI', '#/cli'], ['Theming', '#/theming']] },
-  { title: 'Agents', links: [['Agent prompt', '#/agent-prompt'], ['MCP server', '#/agent-prompt'], ['Claude skill', '#/agent-prompt']] },
+  { title: 'Library', links: [['Components', pathOf('gallery')], ['Effects', pathOf('effects')], ['Playground', pathOf('dust')]] },
+  { title: 'Docs', links: [['Introduction', pathOf('introduction')], ['Installation', pathOf('installation')], ['CLI', pathOf('cli')], ['Theming', pathOf('theming')]] },
+  { title: 'Agents', links: [['Agent prompt', pathOf('agent-prompt')], ['MCP server', pathOf('agent-prompt')], ['Claude skill', pathOf('agent-prompt')]] },
   { title: 'Elsewhere', links: [['GitHub', 'https://github.com/rs-4/dissolve'], ['npm', `https://www.npmjs.com/package/${PKG}`], ['X', 'https://x.com/rsStats_']] },
 ];
 

@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "SegmentedControl",
   "description": "iOS segmented control whose pill breaks into grains, flows to the new segment and reassembles. Drag across to follow the finger.",
-  "docs": "https://dissolve.rselmi.com/#/segmented-control",
+  "docs": "https://dissolve.rselmi.com/components/segmented-control/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",

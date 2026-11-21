@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "QuantityStepper",
   "description": "Minus and plus with rolling digits and an accelerating long press; at 1 it turns into a trash.",
-  "docs": "https://dissolve.rselmi.com/#/quantity-stepper",
+  "docs": "https://dissolve.rselmi.com/components/quantity-stepper/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",

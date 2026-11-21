@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "ImageReveal",
   "description": "Image generation loader: a thinking mosaic that resolves coarse to fine, then settles in grains.",
-  "docs": "https://dissolve.rselmi.com/#/image-reveal. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/#/installation.",
+  "docs": "https://dissolve.rselmi.com/components/image-reveal/. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/docs/installation/.",
   "dependencies": [
     "dissolve-ui",
     "@shopify/react-native-skia",

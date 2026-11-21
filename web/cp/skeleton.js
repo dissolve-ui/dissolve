@@ -23,7 +23,7 @@ function mountSkeleton(body, { sc, mode }) {
   root.style.width = CW + 'px';
   const img = (name, cls) => {
     const i = el('img', cls);
-    i.src = `assets/paintings/${name}.jpg`;
+    i.src = `/assets/paintings/${name}.jpg`;
     i.alt = '';
     i.draggable = false;
     return i;
