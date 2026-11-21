@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "SignaturePad",
   "description": "Variable width Skia signature, undo, clear into dust, PNG export.",
-  "docs": "https://dissolve.rselmi.com/#/signature-pad",
+  "docs": "https://dissolve.rselmi.com/components/signature-pad/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "MiniPlayer",
   "description": "Now playing pill that opens into a full player as one object, then folds back.",
-  "docs": "https://dissolve.rselmi.com/#/mini-player",
+  "docs": "https://dissolve.rselmi.com/components/mini-player/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",

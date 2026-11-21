@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "ScratchCard",
   "description": "Glossy foil scratch card that tilts in 3D under the finger, sheds grains, then dissolves past the threshold.",
-  "docs": "https://dissolve.rselmi.com/#/scratch-card. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/#/installation.",
+  "docs": "https://dissolve.rselmi.com/components/scratch-card/. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/docs/installation/.",
   "dependencies": [
     "dissolve-ui",
     "@shopify/react-native-skia",

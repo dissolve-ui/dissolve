@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "Toggle",
   "description": "iOS switch whose thumb breaks into grains, flows to the other end of the track and reassembles while the track fills.",
-  "docs": "https://dissolve.rselmi.com/#/toggle. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/#/installation.",
+  "docs": "https://dissolve.rselmi.com/components/toggle/. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/docs/installation/.",
   "dependencies": [
     "dissolve-ui",
     "@shopify/react-native-skia",

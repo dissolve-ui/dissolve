@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "Toggle",
   "description": "iOS switch whose thumb breaks into grains, flows to the other end of the track and reassembles while the track fills.",
-  "docs": "https://dissolve.rselmi.com/#/toggle",
+  "docs": "https://dissolve.rselmi.com/components/toggle/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",

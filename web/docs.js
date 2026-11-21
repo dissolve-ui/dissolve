@@ -2,12 +2,13 @@
    Page builders take the helpers from app.js ({ pageHead, codeBlock, cmd, copyIcon, icon, GLYPH }). */
 
 import { PKG } from './variants-content.js';
+import { pathOf } from './routes.js';
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 const PEERS = ['@shopify/react-native-skia', 'react-native-reanimated', 'react-native-worklets', 'react-native-gesture-handler', 'expo-haptics'];
 const INSTALL = `npx expo install ${PKG} ${PEERS.join(' ')}`;
-const SKILL_PATH = 'skills/dissolve/SKILL.md';
+const SKILL_PATH = '/skills/dissolve/SKILL.md';
 const GITHUB = 'https://github.com/rs-4/dissolve';
 
 const skillURL = () => new URL(SKILL_PATH, location.href).href;
@@ -258,10 +259,10 @@ export function introductionPage({ pageHead, icon }) {
       <li><span class="dc-num">3</span><div><strong>React Native or React.</strong> <code>npx ${PKG} init</code> asks which one and saves it in <code>dissolve.json</code>. On the web, components take the same props, need only React 19 and <code>react-dom</code>, and draw on a canvas: no engine to install. Each component page has a switch for its React Native and React snippets.</div></li>
     </ol>
     <div class="dc-actions">
-      <a class="btn btn-accent" href="#/gallery">See the Gallery ${ICONS.arrow}</a>
-      <a class="btn" href="#/installation">Installation</a>
-      <a class="btn" href="#/cli">CLI</a>
-      <a class="btn" href="#/agent-prompt">Use it with your agent</a>
+      <a class="btn btn-accent" href="${pathOf('gallery')}">See the Gallery ${ICONS.arrow}</a>
+      <a class="btn" href="${pathOf('installation')}">Installation</a>
+      <a class="btn" href="${pathOf('cli')}">CLI</a>
+      <a class="btn" href="${pathOf('agent-prompt')}">Use it with your agent</a>
     </div>`;
 }
 
@@ -287,7 +288,7 @@ export function installationPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) 
   return `
     ${pageHead('installation', 'Installation', 'Paste one prompt into your coding agent and it sets up everything: engine, provider, NativeWind and components. Or follow the steps by hand.', `<span class="glyph-lg">${GLYPH.installation}</span>`)}
     <h2 class="section-title" id="dc-agent">With your agent <span class="badge">Fastest</span></h2>
-    <p class="dc-text">Works with Claude Code, Codex, Cursor or any chat. It installs the engine, wraps the root layout, sets up NativeWind v5, runs <code>init</code> and adds the components you ask for. More options, like the skill and the MCP server, are on the <a class="dc-link" href="#/agent-prompt">Agent prompt</a> page.</p>
+    <p class="dc-text">Works with Claude Code, Codex, Cursor or any chat. It installs the engine, wraps the root layout, sets up NativeWind v5, runs <code>init</code> and adds the components you ask for. More options, like the skill and the MCP server, are on the <a class="dc-link" href="${pathOf('agent-prompt')}">Agent prompt</a> page.</p>
     ${promptBlock(copyIcon)}
 
     <h2 class="section-title" id="dc-web">React on the web</h2>
@@ -296,7 +297,7 @@ export function installationPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) 
     ${cmd(`${CLI} add scratch-card`)}
     ${codeBlock(WEB_EXAMPLE, { title: 'app/page.tsx' })}
     <p class="dc-note">Same props as on React Native. <code>${CLI} list</code> shows which components run on the web, and every component page has a React Native / React switch.</p>
-    <p class="dc-note">Using shadcn? <code>npx shadcn@latest add ${SHADCN}/scratch-card.json</code> works too, see <a class="dc-link" href="#/cli">CLI</a>.</p>
+    <p class="dc-note">Using shadcn? <code>npx shadcn@latest add ${SHADCN}/scratch-card.json</code> works too, see <a class="dc-link" href="${pathOf('cli')}">CLI</a>.</p>
 
     <h2 class="section-title" id="dc-manual">React Native, by hand</h2>
     ${step(1, 'Install the engine', 'dc-install')}
@@ -347,16 +348,16 @@ export function installationPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) 
     ${cmd(`${CLI} add slide-to-confirm swipe-to-delete`)}
     ${cmd(`${CLI} list`)}
     ${codeBlock(ADD_EXAMPLE, { title: 'Checkout.tsx' })}
-    <p class="dc-note">Every option is on the <a class="dc-link" href="#/cli">CLI</a> page. Every component page shows its own <code>add</code> command and props.</p>
+    <p class="dc-note">Every option is on the <a class="dc-link" href="${pathOf('cli')}">CLI</a> page. Every component page shows its own <code>add</code> command and props.</p>
 
     ${step(7, 'Theme', 'dc-theme')}
     <p class="dc-text">Components read <code>--dissolve-*</code> tokens: <code>background</code>, <code>surface</code>, <code>surface-2</code>, <code>foreground</code>, <code>muted</code>, <code>primary</code>, <code>primary-foreground</code>, <code>success</code>, <code>danger</code>, <code>danger-foreground</code>, <code>accent</code>, <code>border</code>, <code>chart-1</code> to <code>chart-3</code>. Change a value in <code>global.css</code> and every component follows. Dark values sit in a <code>prefers-color-scheme: dark</code> block, so dark mode follows the system.</p>
     <p class="dc-text">For one instance, pass a className. Classes are merged with <code>tailwind-merge</code>, so yours replace the default of the same kind: <code>className="bg-amber-100"</code> replaces <code>bg-dissolve-surface</code>.</p>
     ${codeBlock(OVERRIDE_EXAMPLE, { title: 'Order.tsx' })}
     <div class="dc-actions">
-      <a class="btn btn-accent" href="#/gallery">Pick a variant ${ICONS.arrow}</a>
-      <a class="btn" href="#/theming">Theming</a>
-      <a class="btn" href="#/agent-prompt">Let your agent do it</a>
+      <a class="btn btn-accent" href="${pathOf('gallery')}">Pick a variant ${ICONS.arrow}</a>
+      <a class="btn" href="${pathOf('theming')}">Theming</a>
+      <a class="btn" href="${pathOf('agent-prompt')}">Let your agent do it</a>
     </div>`;
 }
 
@@ -391,7 +392,7 @@ added   components/dissolve/like-button.tsx
 export function cliPage({ pageHead, codeBlock, cmd, GLYPH }) {
   return `
     ${pageHead('cli', 'CLI', 'Copy components into your project, the shadcn way. The source is yours to read, edit and restyle.', `<span class="glyph-lg">${GLYPH.cli}</span>`)}
-    <p class="dc-lead">One CLI for React Native and React on the web, run it with <code>npx</code>. Native components need NativeWind v5 in the project, web components only React 19, see <a class="dc-link" href="#/installation">Installation</a>. <code>npx ${PKG}</code> runs the same CLI.</p>
+    <p class="dc-lead">One CLI for React Native and React on the web, run it with <code>npx</code>. Native components need NativeWind v5 in the project, web components only React 19, see <a class="dc-link" href="${pathOf('installation')}">Installation</a>. <code>npx ${PKG}</code> runs the same CLI.</p>
     ${cmd(`${CLI} init`)}
     ${cmd(`${CLI} add swipe-to-delete toast`)}
     ${cmd(`${CLI} list`)}
@@ -426,7 +427,7 @@ export function cliPage({ pageHead, codeBlock, cmd, GLYPH }) {
     ${cmd(`npx shadcn@latest add ${SHADCN}/scratch-card.json`)}
     ${cmd(`npx shadcn@latest add ${SHADCN}/native/scratch-card.json`)}
     <p class="dc-text">shadcn follows the dependencies for you: the component, its core, the shared files (engine, kit, the React hook, or <code>tw.tsx</code> on native) and the npm packages. Shared files are installed once, however many components you add. Files land in <code>components/dissolve</code>, the same place as with the dissolve CLI.</p>
-    <p class="dc-text">The theme tokens come as a <code>dissolve-theme</code> item: shadcn writes them in your CSS, light on <code>:root</code> and dark on <code>.dark</code>, the class shadcn projects already toggle. On React Native, you still install the engine and wrap the app in <code>&lt;DissolveProvider&gt;</code>, see <a class="dc-link" href="#/installation">Installation</a>.</p>
+    <p class="dc-text">The theme tokens come as a <code>dissolve-theme</code> item: shadcn writes them in your CSS, light on <code>:root</code> and dark on <code>.dark</code>, the class shadcn projects already toggle. On React Native, you still install the engine and wrap the app in <code>&lt;DissolveProvider&gt;</code>, see <a class="dc-link" href="${pathOf('installation')}">Installation</a>.</p>
     <p class="dc-note">The full list is in <a class="dc-link" href="${SHADCN}/registry.json" target="_blank" rel="noopener">registry.json</a> and <a class="dc-link" href="${SHADCN}/native/registry.json" target="_blank" rel="noopener">native/registry.json</a>.</p>
 
     <h2 class="section-title">What init writes</h2>
@@ -434,8 +435,8 @@ export function cliPage({ pageHead, codeBlock, cmd, GLYPH }) {
     <p class="dc-text">On React Native, <code>tw.tsx</code> holds <code>View</code>, <code>Text</code>, <code>Pressable</code>, <code>TextInput</code> and <code>Animated</code> with className support, <code>cn()</code> to merge classes and <code>useToken()</code> to read a token as a color. The tokens go at the end of the first <code>global.css</code> found (root, <code>src/</code>, <code>app/</code>, <code>styles/</code>, or any CSS file importing Tailwind). With none, it writes <code>dissolve.css</code> next to the components: import it from your Tailwind entry.</p>
     <p class="dc-note">Running it twice is safe: files and tokens that exist are left alone.</p>
     <div class="dc-actions">
-      <a class="btn btn-accent" href="#/theming">Theming ${ICONS.arrow}</a>
-      <a class="btn" href="#/installation">Installation</a>
+      <a class="btn btn-accent" href="${pathOf('theming')}">Theming ${ICONS.arrow}</a>
+      <a class="btn" href="${pathOf('installation')}">Installation</a>
     </div>`;
 }
 
@@ -467,8 +468,8 @@ export function themingPage({ pageHead, codeBlock, GLYPH }) {
     <p class="dc-note">Some colors are animated or drawn by Skia (OTP boxes, signature ink, waveform). They read the tokens through <code>useToken()</code>, so change the token, or edit the file: it is yours.</p>
     ${codeBlock(USE_TOKEN, { title: 'Your own Skia drawing' })}
     <div class="dc-actions">
-      <a class="btn btn-accent" href="#/swipe-to-delete">Browse components ${ICONS.arrow}</a>
-      <a class="btn" href="#/cli">CLI</a>
+      <a class="btn btn-accent" href="${pathOf('swipe-to-delete')}">Browse components ${ICONS.arrow}</a>
+      <a class="btn" href="${pathOf('cli')}">CLI</a>
     </div>`;
 }
 
@@ -563,9 +564,9 @@ export function agentsStripHTML() {
     <div class="dc-strip-marks">${mark(CLAUDE_PATH, 'Claude').replace('class="dc-mark"', 'class="dc-mark dc-claude"')}${mark(OPENAI_PATH, 'OpenAI')}</div>
     <p class="dc-strip-title">Works with your coding agent</p>
     <nav class="dc-strip-links">
-      <a href="#/agent-prompt">Claude skill</a>
-      <a href="#/agent-prompt">MCP</a>
-      <a href="#/agent-prompt">Prompt</a>
+      <a href="${pathOf('agent-prompt')}">Claude skill</a>
+      <a href="${pathOf('agent-prompt')}">MCP</a>
+      <a href="${pathOf('agent-prompt')}">Prompt</a>
     </nav>
   </aside>`;
 }

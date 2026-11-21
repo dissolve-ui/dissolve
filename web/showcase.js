@@ -5,6 +5,7 @@ import { ready } from './images.js';
 import { play, snapshot, IMG, FONT, cover, pal, rr, wrap, text, isLight, boxOf, hide, show, onTheme, redraw, scope } from './cp/kit.js';
 import { CLAUDE_PATH, OPENAI_PATH } from './docs.js';
 import { createGlossyButton } from './lib/glossy-button.js';
+import { pathOf, go } from './routes.js';
 
 const PAINTINGS = ['temple', 'lake', 'pines', 'arch', 'valley', 'pond', 'cypress', 'tuscany', 'aqueduct'];
 const IN_PRESETS = ['gather', 'rain', 'print'];
@@ -650,7 +651,7 @@ function mountInstall(root) {
  * Hero title in grains: the real Allo letters (round axis at 100) sampled on a 3 px grid.
  * Grains gather in from below on load, flee the pointer and spring back, and a click bursts them.
  */
-const TITLE_FACE = new FontFace('Allo Display', 'url(fonts/allo/AlloVariable.woff2)', { weight: '100 900', variationSettings: "'ROND' 100" });
+const TITLE_FACE = new FontFace('Allo Display', 'url(/fonts/allo/AlloVariable.woff2)', { weight: '100 900', variationSettings: "'ROND' 100" });
 
 /** Title ink from the theme token: the computed color lags behind while the theme cross-fades. */
 const readInk = () => getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#fff';
@@ -771,8 +772,8 @@ function mountTitle(root, sc) {
  * card pill, solid so the glossy ring matches the fill.
  */
 const CTA = [
-  { label: 'Get started', href: '#/installation', colors: () => (isLight() ? ['#12151A', '#FFFFFF'] : ['#FBFBFB', '#0A0A0A']) },
-  { label: 'Use with your agent', href: '#/agent-prompt', colors: () => (isLight() ? ['#EEEFF1', '#12151A'] : ['#1A1A1A', '#FBFBFB']) },
+  { label: 'Get started', href: pathOf('installation'), colors: () => (isLight() ? ['#12151A', '#FFFFFF'] : ['#FBFBFB', '#0A0A0A']) },
+  { label: 'Use with your agent', href: pathOf('agent-prompt'), colors: () => (isLight() ? ['#EEEFF1', '#12151A'] : ['#1A1A1A', '#FBFBFB']) },
 ];
 
 function mountCta(root, sc) {
@@ -783,7 +784,7 @@ function mountCta(root, sc) {
     host.type = 'button';
     box.append(host);
     const [color, labelColor] = c.colors();
-    const b = createGlossyButton(host, { label: c.label, size: 'sm', color, labelColor, onPress: () => { location.hash = c.href; } });
+    const b = createGlossyButton(host, { label: c.label, size: 'sm', color, labelColor, onPress: () => { go(c.href); } });
     sc.onDispose(() => { b.destroy(); host.remove(); });
     return { b, c };
   });

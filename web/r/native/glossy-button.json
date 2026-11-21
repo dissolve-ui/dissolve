@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "GlossyButton",
   "description": "Tactile pill lit from the inside: gradient stroke, inner light and ring, presses down on a crisp spring.",
-  "docs": "https://dissolve.rselmi.com/#/glossy-button. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/#/installation.",
+  "docs": "https://dissolve.rselmi.com/components/glossy-button/. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/docs/installation/.",
   "dependencies": [
     "dissolve-ui",
     "@shopify/react-native-skia",

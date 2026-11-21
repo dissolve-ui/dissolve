@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "RulerPicker",
   "description": "Horizontal ruler with momentum, rolling value and a haptic tick per graduation.",
-  "docs": "https://dissolve.rselmi.com/#/ruler-picker",
+  "docs": "https://dissolve.rselmi.com/components/ruler-picker/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",

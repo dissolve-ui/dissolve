@@ -4,7 +4,7 @@ export const IMG = {};
 export const ready = Promise.all(NAMES.map((n) => new Promise((res) => {
   const im = new Image();
   im.onload = im.onerror = () => res();
-  im.src = `assets/paintings/${n}.jpg`;
+  im.src = `/assets/paintings/${n}.jpg`;
   IMG[n] = im;
 })));
 

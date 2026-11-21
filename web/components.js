@@ -4,6 +4,7 @@
 import { scope, onTheme, onWidth, PKG, DIR } from './cp/kit.js';
 import { WEB_COMPONENTS } from './lib/available.js';
 import { autoplay } from './autoplay.js';
+import { pathOf } from './routes.js';
 import { ENTRIES as CORE } from './cp/core.js';
 import { ENTRIES as INPUTS } from './cp/inputs.js';
 import { ENTRIES as MESSAGES } from './cp/messages.js';
@@ -61,7 +62,7 @@ export function mountComponent(id, body, { mode = 'panel' } = {}) {
 const arrowR = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
 
 /** A few engine effects sit among the components, so the gallery shows why dissolve from the first row. */
-const FX = { 3: { id: 'dust', title: 'Dust', href: '#/dust' }, 7: { id: 'stream', title: 'Stream', href: '#/stream' }, 11: { id: 'scrub', title: 'Scrub', href: '#/effects' } };
+const FX = { 3: { id: 'dust', title: 'Dust', href: pathOf('dust') }, 7: { id: 'stream', title: 'Stream', href: pathOf('stream') }, 11: { id: 'scrub', title: 'Scrub', href: pathOf('effects') } };
 
 /** Masonry columns of the gallery section for the current width. */
 // Under 861 px the CSS stacks the columns (components.css): build one, so the reading order holds.
@@ -110,7 +111,7 @@ export function componentsSectionHTML({ cols = galleryCols(), fx = true } = {}) 
   items.forEach((it) => { it.num = it.fx ? 'fx' : String(++n).padStart(2, '0'); });
   const item = (it, i) => {
     const fx = !!it.fx;
-    const title = fx ? it.fx.title : COMPONENTS[it.id].title, href = fx ? it.fx.href : `#/${it.id}`;
+    const title = fx ? it.fx.title : COMPONENTS[it.id].title, href = fx ? it.fx.href : pathOf(it.id);
     const num = it.num;
     const body = fx
       ? `<div class="cp-panel-body cp-fx-body" data-fx="${it.fx.id}" data-rank="${i}"><div class="stage-slot"></div></div>`

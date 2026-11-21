@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "ReactionPicker",
   "description": "iMessage style reactions: long press, dock magnifier, emoji flies to a badge.",
-  "docs": "https://dissolve.rselmi.com/#/reaction-picker",
+  "docs": "https://dissolve.rselmi.com/components/reaction-picker/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

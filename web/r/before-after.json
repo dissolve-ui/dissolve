@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "BeforeAfter",
   "description": "Before / after image comparison with a draggable divider and haptic ticks.",
-  "docs": "https://dissolve.rselmi.com/#/before-after",
+  "docs": "https://dissolve.rselmi.com/components/before-after/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",
