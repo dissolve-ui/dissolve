@@ -18,8 +18,9 @@ import { ENTRIES as SKELETON } from './cp/skeleton.js';
 import { ENTRIES as SEGMENTED } from './cp/segmented.js';
 import { ENTRIES as TOGGLE } from './cp/toggle.js';
 import { ENTRIES as STEPS } from './cp/steps.js';
+import { ENTRIES as SLIDER } from './cp/slider.js';
 
-export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED, ...TOGGLE, ...STEPS };
+export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED, ...TOGGLE, ...STEPS, ...SLIDER };
 
 // Sidebar and gallery order: registry order, with the glossy button brought up front.
 export const COMPONENT_ORDER = (() => {
@@ -70,7 +71,7 @@ export const TAGS = ['Press', 'Drag', 'Swipe', 'Type', 'Select', 'Loading'];
 const TAG_OF = {
   'glossy-button': 'Press', 'like-button': 'Press', 'morph-button': 'Press', 'split-button': 'Press', 'gooey-menu': 'Press',
   'reaction-picker': 'Press', 'quantity-stepper': 'Press', 'task-check': 'Press', toast: 'Press',
-  'slide-to-confirm': 'Drag', 'reorder-list': 'Drag', 'before-after': 'Drag', 'signature-pad': 'Drag', 'scratch-card': 'Drag',
+  'slide-to-confirm': 'Drag', 'elastic-slider': 'Drag', 'reorder-list': 'Drag', 'before-after': 'Drag', 'signature-pad': 'Drag', 'scratch-card': 'Drag',
   'ruler-picker': 'Drag', 'pull-to-refresh': 'Drag',
   'swipe-to-delete': 'Swipe', 'card-stack': 'Swipe',
   'otp-input': 'Type', 'number-ticker': 'Type',
@@ -85,7 +86,7 @@ const playIcon = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentC
 /** The demos that open the gallery: the biggest ones, side by side on the first row. */
 const LEAD = ['bar-chart', 'scratch-card', 'card-stack'];
 /** The newest components, right after the lead row. */
-const NEW = ['toggle', 'progress-steps'];
+const NEW = ['elastic-slider', 'toggle', 'progress-steps'];
 
 export function componentsSectionHTML() {
   // Columns filled in reading order. The page re-renders when the count changes (app.js).
