@@ -185,6 +185,12 @@
       "file": "progress-steps.tsx",
       "export": "ProgressSteps",
       "description": "Numbered steps on a line, or story style bars: the progress streams on to the next step in grains."
+    },
+    {
+      "name": "elastic-slider",
+      "file": "elastic-slider.tsx",
+      "export": "ElasticSlider",
+      "description": "Thick rounded slider whose texts invert over the fill; pulled past an end, the track stretches like a rubber band and snaps back."
     }
   ],
   "helpers": [

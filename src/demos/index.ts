@@ -31,6 +31,7 @@ import SegmentedControlDemo from './SegmentedControl.demo';
 import SkeletonDemo from './Skeleton.demo';
 import ToggleDemo from './Toggle.demo';
 import ProgressStepsDemo from './ProgressSteps.demo';
+import ElasticSliderDemo from './ElasticSlider.demo';
 
 /**
  * One demo per registry component, in registry/index.json order. The slug is the registry
@@ -71,4 +72,5 @@ export const DEMOS: DemoEntry[] = [
   { slug: 'segmented-control', title: 'Segmented control', note: 'Tap or drag across: the pill flows over in grains.', icon: 'switch.2', Component: SegmentedControlDemo, scroll: true },
   { slug: 'toggle', title: 'Toggle', note: 'Flip a switch: the thumb crosses over in grains.', icon: 'switch.2', Component: ToggleDemo, scroll: true },
   { slug: 'progress-steps', title: 'Progress steps', note: 'Numbered steps or story bars: the progress streams on in grains.', icon: 'point.3.connected.trianglepath.dotted', Component: ProgressStepsDemo, scroll: true },
+  { slug: 'elastic-slider', title: 'Elastic slider', note: 'Drag, then pull past the end: the track stretches and snaps back.', icon: 'slider.horizontal.3', Component: ElasticSliderDemo, scroll: true },
 ];
