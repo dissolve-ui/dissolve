@@ -546,7 +546,8 @@ function heroHTML() {
   return `
   <header class="sc-hero2">
     <h1 class="hx-title"><canvas class="hx-title-cv" aria-hidden="true"></canvas><span class="hx-sr">dissolve</span></h1>
-    <p>Animation library built for <strong>React Native</strong> and <strong>React</strong></p>
+    <p>Animated components for <strong>React Native</strong> and <strong>React</strong>, ready to copy into any project.</p>
+    <div class="bx-cta"><a class="bx-pill bx-pill-light" href="#/installation">Get started</a><a class="bx-pill" href="#/agent-prompt">Use with your agent</a></div>
   </header>
   <div class="hx" data-hx>
     <div class="hx-src" role="tablist" aria-label="Install with">
@@ -556,7 +557,7 @@ function heroHTML() {
     <code class="hx-cmd" data-hx-cmd>${HX[0].cmd}</code>
     <button class="hx-copy" aria-label="Copy command" data-hx-copy><svg class="i-copy" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><svg class="i-ok" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
   </div>
-  <a class="hx-more" href="#/agent-prompt">Or paste one prompt into your agent <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>`;
+`;
 }
 
 /** Effects page: the engine on its own, scene by scene, then every variant. */
