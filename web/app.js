@@ -12,6 +12,7 @@ import { autoplay, sequence } from './autoplay.js';
 import { clearToasts } from './cp/core.js';
 import { onWidth } from './cp/kit.js';
 import { historyHTML, mountHistory } from './history.js';
+import { markHTML, mountLogo } from './logo.js';
 import { footerHTML, mountFooter } from './footer.js';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -43,7 +44,7 @@ async function loadStars() {
 function renderSidebar() {
   $('#side').innerHTML = `
     <div class="side-head">
-      <a href="#/gallery" class="brand"><span class="brand-name">dissolve</span></a>
+      <a href="#/gallery" class="brand">${markHTML(26, 'side-mark')}<span class="brand-name">dissolve</span></a>
       <div class="side-actions">
         <button id="theme" class="icon-btn theme-btn" aria-label="Toggle light and dark theme">
             <svg class="i-sun" width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9" cy="9" r="3.2"/><path d="M9 1.8v1.6M9 14.6v1.6M1.8 9h1.6M14.6 9h1.6M3.9 3.9l1.1 1.1M13 13l1.1 1.1M3.9 14.1 5 13M13 5l1.1-1.1"/></svg>
@@ -83,11 +84,6 @@ function renderSidebar() {
 /* ---------- Top bar ---------- */
 
 const GH = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
-/** The mark: a white disc whose dots come loose on the right, like a view turning to grains. */
-const MARK = `<svg class="top-mark" width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="15" fill="currentColor"/>${
-  [[9, 9], [13, 9], [9, 13], [13, 13], [9, 17], [13, 17], [9, 21], [13, 21], [17.2, 10], [17, 14.2], [17.4, 18.6], [21, 12.4], [20.6, 17.4], [23.4, 15.2]]
-    .map(([cx, cy], i) => `<circle cx="${cx}" cy="${cy}" r="${i < 8 ? 1.45 : i < 11 ? 1.2 : 0.85}" fill="var(--bg)"${i >= 11 ? ' opacity=".7"' : ''}/>`).join('')
-}</svg>`;
 const SEARCH = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="m10.4 10.4 3.1 3.1"/></svg>';
 /** Top bar sections: each one lights up on its own pages. */
 const TOP = [
@@ -99,14 +95,15 @@ const TOP = [
 
 function renderTop() {
   $('#top').innerHTML = `
-    <a href="#/gallery" class="top-brand" aria-label="dissolve home">${MARK}<span>dissolve</span></a>
+    <a href="#/gallery" class="top-brand" aria-label="dissolve home">${markHTML(30, 'top-mark')}<span>dissolve</span></a>
     <nav class="top-nav">${TOP.map((t) => `<a class="top-link" href="${t.href}">${t.label}</a>`).join('')}</nav>
-    <button class="top-search" data-palette aria-label="Search components">${SEARCH}<span>Search</span><kbd>⌘K</kbd></button>
+    <button class="top-search" data-palette aria-label="Search components">${SEARCH}<span class="ts-label">Search <span class="ts-roll" aria-hidden="true"></span></span><kbd>⌘K</kbd></button>
     <div class="top-right">
       <a class="top-gh" href="https://github.com/rs-4/dissolve" target="_blank" rel="noopener" aria-label="Star dissolve on GitHub">${GH}<span class="star-count" hidden></span></a>
       <a class="bx-pill bx-pill-light top-cta" href="#/installation">Get started</a>
     </div>`;
   $('#top').querySelector('[data-palette]').addEventListener('click', openPalette);
+  rollSearch($('#top .ts-roll'));
 }
 
 function markTop(id) {
@@ -114,6 +111,23 @@ function markTop(id) {
 }
 
 /* ---------- Search (⌘K) ---------- */
+
+/** The search bar's placeholder rolls through the component names: each one rises in out of a blur. */
+function rollSearch(el) {
+  if (!el) return;
+  const names = COMPONENT_ORDER.map((id) => COMPONENTS[id].title);
+  let i = 0;
+  const show = () => {
+    const word = document.createElement('i');
+    word.textContent = names[i++ % names.length];
+    el.querySelector('i:not(.out)')?.classList.add('out');
+    el.appendChild(word);
+    setTimeout(() => el.querySelectorAll('i.out').forEach((w) => w.remove()), 700);
+  };
+  show();
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  setInterval(() => { if (!document.hidden && !$('.pal')) show(); }, 2400);
+}
 
 const ENTRIES_ALL = () => [
   ...COMPONENT_ORDER.map((id) => ({ id, title: COMPONENTS[id].title, kind: tagOf(id) })),
@@ -587,6 +601,7 @@ renderTop();
 renderSidebar();
 $('#foot').innerHTML = footerHTML();
 mountFooter($('#foot'));
+mountLogo();
 loadStars();
 const applyTheme = (t) => {
   document.documentElement.dataset.theme = t;

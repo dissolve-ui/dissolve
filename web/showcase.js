@@ -544,7 +544,6 @@ export function showcaseHTML({ components } = {}) {
 
 function heroHTML() {
   return `
-  <div class="bx-dots" aria-hidden="true"></div>
   <header class="sc-hero2">
     <h1 class="hx-title"><canvas class="hx-title-cv" aria-hidden="true"></canvas><span class="hx-sr">dissolve</span></h1>
     <p>Animated components for <strong>React Native</strong> and <strong>React</strong>, ready to copy into any project.</p>
