@@ -173,6 +173,24 @@
       "file": "segmented-control.tsx",
       "export": "SegmentedControl",
       "description": "iOS segmented control whose pill breaks into grains, flows to the new segment and reassembles. Drag across to follow the finger."
+    },
+    {
+      "name": "toggle",
+      "file": "toggle.tsx",
+      "export": "Toggle",
+      "description": "iOS switch whose thumb breaks into grains, flows to the other end of the track and reassembles while the track fills."
+    },
+    {
+      "name": "progress-steps",
+      "file": "progress-steps.tsx",
+      "export": "ProgressSteps",
+      "description": "Numbered steps on a line, or story style bars: the progress streams on to the next step in grains."
+    },
+    {
+      "name": "elastic-slider",
+      "file": "elastic-slider.tsx",
+      "export": "ElasticSlider",
+      "description": "Thick rounded slider whose texts invert over the fill; pulled past an end, the track stretches like a rubber band and snaps back."
     }
   ],
   "helpers": [

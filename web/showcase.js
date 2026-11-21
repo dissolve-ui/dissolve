@@ -4,6 +4,7 @@ import { morph } from './lib/engine.js';
 import { ready } from './images.js';
 import { play, snapshot, IMG, FONT, cover, pal, rr, wrap, text, isLight, boxOf, hide, show, onTheme, redraw, scope } from './cp/kit.js';
 import { CLAUDE_PATH, OPENAI_PATH } from './docs.js';
+import { createGlossyButton } from './lib/glossy-button.js';
 
 const PAINTINGS = ['temple', 'lake', 'pines', 'arch', 'valley', 'pond', 'cypress', 'tuscany', 'aqueduct'];
 const IN_PRESETS = ['gather', 'rain', 'print'];
@@ -547,7 +548,7 @@ function heroHTML() {
   <header class="sc-hero2">
     <h1 class="hx-title"><canvas class="hx-title-cv" aria-hidden="true"></canvas><span class="hx-sr">dissolve</span></h1>
     <p>Animated components for <strong>React Native</strong> and <strong>React</strong>, ready to copy into any project.</p>
-    <div class="bx-cta"><a class="bx-pill bx-pill-light" href="#/installation">Get started</a><a class="bx-pill" href="#/agent-prompt">Use with your agent</a></div>
+    <div class="bx-cta" data-hero-cta></div>
   </header>
   <div class="hx" data-hx>
     <div class="hx-src" role="tablist" aria-label="Install with">
@@ -765,12 +766,37 @@ function mountTitle(root, sc) {
 }
 
 /** Mounts the hero (gallery) or the scenes (effects page). Returns a dispose function. */
+/**
+ * The hero's two calls to action, as glossy buttons in the site's colors: the light pill and the
+ * card pill, solid so the glossy ring matches the fill.
+ */
+const CTA = [
+  { label: 'Get started', href: '#/installation', colors: () => (isLight() ? ['#12151A', '#FFFFFF'] : ['#FBFBFB', '#0A0A0A']) },
+  { label: 'Use with your agent', href: '#/agent-prompt', colors: () => (isLight() ? ['#EEEFF1', '#12151A'] : ['#1A1A1A', '#FBFBFB']) },
+];
+
+function mountCta(root, sc) {
+  const box = root.querySelector('[data-hero-cta]');
+  if (!box) return;
+  const buttons = CTA.map((c) => {
+    const host = document.createElement('button');
+    host.type = 'button';
+    box.append(host);
+    const [color, labelColor] = c.colors();
+    const b = createGlossyButton(host, { label: c.label, size: 'sm', color, labelColor, onPress: () => { location.hash = c.href; } });
+    sc.onDispose(() => { b.destroy(); host.remove(); });
+    return { b, c };
+  });
+  onTheme(sc, () => buttons.forEach(({ b, c }) => { const [color, labelColor] = c.colors(); b.update({ color, labelColor }); }));
+}
+
 export function mountShowcase(root) {
   const sc = scope();
   if (root.querySelector('.hx-title')) {
     mountTitle(root, sc);
     mountInstall(root);
   }
+  mountCta(root, sc);
   if (!root.querySelector('.sc-bento')) return sc.dispose;
   ready.then(() => {
     if (!sc.alive) return;

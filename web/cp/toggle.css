@@ -1,0 +1,7 @@
+/* Toggle demo (cp/toggle.js). The switch brings its own styles (web/lib). */
+.tg-demo { display: flex; flex-direction: column; align-items: stretch; gap: 28px; }
+.tg-group { padding: 0 16px; border-radius: 20px; background: var(--surface-2); }
+.tg-row { display: flex; align-items: center; justify-content: space-between; min-height: 52px; }
+.tg-row + .tg-row { box-shadow: inset 0 1px 0 var(--line); }
+.tg-label { font-size: 15px; font-weight: 500; color: var(--text); }
+.tg-sizes { display: flex; align-items: center; justify-content: center; gap: 24px; }
