@@ -38,6 +38,11 @@ var CSS = `
 :where(.dissolve-es-text) > * { will-change: transform; }
 :where(.dissolve-es-clip) { position: absolute; top: 0; bottom: 0; overflow: hidden; pointer-events: none; will-change: transform; }
 :where(.dissolve-es-clip) > .dissolve-es-text { inset: 0 auto 0 auto; will-change: transform; }
+:where(.dissolve-es-left) { display: inline-flex; align-items: center; min-width: 0; }
+:where(.dissolve-es-left) > span { overflow: hidden; text-overflow: ellipsis; }
+:where(.dissolve-es-icon) { display: block; flex: none; }
+:where(.dissolve-es-icon:empty) { display: none; }
+:where(.dissolve-es-icon) svg { display: block; width: 100%; height: 100%; }
 :where(.dissolve-es-value) { display: inline-flex; overflow: hidden; font-variant-numeric: tabular-nums; }
 :where(.dissolve-es-digit) { display: inline-block; overflow: hidden; }
 :where(.dissolve-es-digit) > span { display: flex; flex-direction: column; transition: transform .26s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -56,9 +61,12 @@ function createElasticSlider(host, initial = {}) {
   const fill = el("div", "dissolve-es-fill");
   track.append(fill);
   const mkText = () => {
-    const t = el("div", "dissolve-es-text"), label = el("span"), val = el("span", "dissolve-es-value");
-    t.append(label, val);
-    return { t, label, val };
+    const t = el("div", "dissolve-es-text"), left = el("span", "dissolve-es-left"), icon = el("i", "dissolve-es-icon"), label = el("span");
+    const val = el("span", "dissolve-es-value");
+    icon.setAttribute("aria-hidden", "true");
+    left.append(icon, label);
+    t.append(left, val);
+    return { t, left, icon, label, val };
   };
   const base = mkText();
   const clip = el("div", "dissolve-es-clip");
@@ -79,10 +87,10 @@ function createElasticSlider(host, initial = {}) {
     track.style.transform = `translateX(${o / 2}px) scale(${1 + Math.abs(o) / Math.max(1, W) + 0.012 * pr}, ${(1 - THIN * k) * (1 + PRESS * pr)})`;
     fill.style.transform = `translateX(${-(1 - q) * W}px)`;
     for (const x of [base, inked]) {
-      x.label.style.transform = `translateX(${Math.min(0, o)}px)`;
+      x.left.style.transform = `translateX(${Math.min(0, o)}px)`;
       x.val.style.transform = `translateX(${Math.max(0, o)}px)`;
     }
-    const shift = q * W + Math.max(0, o) - W - REACH;
+    const shift = q * W + (q > 0.5 ? Math.max(0, o) : Math.min(0, o)) - W - REACH;
     clip.style.left = -REACH + "px";
     clip.style.width = W + REACH * 2 + "px";
     clip.style.transform = `translateX(${shift}px)`;
@@ -152,6 +160,8 @@ function createElasticSlider(host, initial = {}) {
       x.t.style.padding = `0 ${s.pad}px`;
       x.t.style.fontSize = s.font + "px";
       x.label.textContent = o.label ?? "";
+      x.left.style.gap = Math.round(s.font * 0.55) + "px";
+      x.icon.style.width = x.icon.style.height = Math.round(s.font * 1.2) + "px";
     }
     host.setAttribute("aria-valuemin", String(o.min));
     host.setAttribute("aria-valuemax", String(o.max));
@@ -258,6 +268,7 @@ function createElasticSlider(host, initial = {}) {
   disable();
   layout();
   return {
+    icon: (on) => (on ? inked : base).icon,
     update(next) {
       const changed = props.update(next);
       if (["size", "label", "min", "max", "step", "showValue", "formatValue"].some((k) => changed.has(k))) layout();
