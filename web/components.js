@@ -16,8 +16,10 @@ import { ENTRIES as BUTTON } from './cp/button.js';
 import { ENTRIES as SCRATCH } from './cp/scratch.js';
 import { ENTRIES as SKELETON } from './cp/skeleton.js';
 import { ENTRIES as SEGMENTED } from './cp/segmented.js';
+import { ENTRIES as TOGGLE } from './cp/toggle.js';
+import { ENTRIES as STEPS } from './cp/steps.js';
 
-export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED };
+export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED, ...TOGGLE, ...STEPS };
 
 // Sidebar and gallery order: registry order, with the glossy button brought up front.
 export const COMPONENT_ORDER = (() => {
@@ -72,7 +74,7 @@ const TAG_OF = {
   'ruler-picker': 'Drag', 'pull-to-refresh': 'Drag',
   'swipe-to-delete': 'Swipe', 'card-stack': 'Swipe',
   'otp-input': 'Type', 'number-ticker': 'Type',
-  'segmented-control': 'Select', 'bar-chart': 'Select', 'mini-player': 'Select', 'voice-note': 'Select',
+  'segmented-control': 'Select', toggle: 'Press', 'progress-steps': 'Select', 'bar-chart': 'Select', 'mini-player': 'Select', 'voice-note': 'Select',
   'thinking-orb': 'Loading', skeleton: 'Loading', 'upload-tile': 'Loading', 'image-reveal': 'Loading', 'sweep-transition': 'Loading',
 };
 export const tagOf = (id) => TAG_OF[id] ?? 'Press';
