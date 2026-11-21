@@ -340,7 +340,7 @@ export function Toggle({
         onAccessibilityTap={() => {
           if (!disabled) flip();
         }}
-        className={cn('self-start', className)}
+        className={cn(className)}
         style={{ width: s.width, height: s.height, borderRadius: radius, borderCurve: 'continuous', backgroundColor: colors.off, opacity: disabled ? 0.5 : 1 }}
       >
         <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: radius, backgroundColor: colors.on }, onStyle]} />
