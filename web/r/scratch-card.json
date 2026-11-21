@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "ScratchCard",
   "description": "Glossy foil scratch card that tilts in 3D under the finger, sheds grains, then dissolves past the threshold.",
-  "docs": "https://dissolve.rselmi.com/#/scratch-card",
+  "docs": "https://dissolve.rselmi.com/components/scratch-card/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

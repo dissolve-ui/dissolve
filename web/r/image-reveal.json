@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "ImageReveal",
   "description": "Image generation loader: a thinking mosaic that resolves coarse to fine, then settles in grains.",
-  "docs": "https://dissolve.rselmi.com/#/image-reveal",
+  "docs": "https://dissolve.rselmi.com/components/image-reveal/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

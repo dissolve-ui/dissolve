@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "SlideToConfirm",
   "description": "Slide to pay or confirm, shimmer label, loader, done state.",
-  "docs": "https://dissolve.rselmi.com/#/slide-to-confirm",
+  "docs": "https://dissolve.rselmi.com/components/slide-to-confirm/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",

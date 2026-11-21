@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "ThinkingOrb",
   "description": "A sphere of dots that shows what an AI agent is doing: thinking, searching, listening, done.",
-  "docs": "https://dissolve.rselmi.com/#/thinking-orb",
+  "docs": "https://dissolve.rselmi.com/components/thinking-orb/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

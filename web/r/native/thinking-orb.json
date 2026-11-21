@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "ThinkingOrb",
   "description": "A sphere of dots that shows what an AI agent is doing: thinking, searching, listening, done.",
-  "docs": "https://dissolve.rselmi.com/#/thinking-orb. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/#/installation.",
+  "docs": "https://dissolve.rselmi.com/components/thinking-orb/. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/docs/installation/.",
   "dependencies": [
     "dissolve-ui",
     "@shopify/react-native-skia",

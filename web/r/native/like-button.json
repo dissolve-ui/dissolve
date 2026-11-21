@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "LikeButton",
   "description": "Heart that pops with sparks on like and snaps into grains on unlike.",
-  "docs": "https://dissolve.rselmi.com/#/like-button. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/#/installation.",
+  "docs": "https://dissolve.rselmi.com/components/like-button/. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/docs/installation/.",
   "dependencies": [
     "dissolve-ui",
     "@shopify/react-native-skia",

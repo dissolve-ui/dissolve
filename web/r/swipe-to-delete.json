@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "SwipeToDelete",
   "description": "Swipe a row left to delete it: it dissolves, then the list closes up.",
-  "docs": "https://dissolve.rselmi.com/#/swipe-to-delete",
+  "docs": "https://dissolve.rselmi.com/components/swipe-to-delete/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

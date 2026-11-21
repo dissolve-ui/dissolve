@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "TaskCheck",
   "description": "Checkbox that draws its check and strikes the label, then the task moves away or dissolves.",
-  "docs": "https://dissolve.rselmi.com/#/task-check",
+  "docs": "https://dissolve.rselmi.com/components/task-check/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "SplitButton",
   "description": "Splits in two like a drop of liquid metal, Cancel and Confirm halves.",
-  "docs": "https://dissolve.rselmi.com/#/split-button",
+  "docs": "https://dissolve.rselmi.com/components/split-button/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",

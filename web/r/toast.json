@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "ToastProvider, useToast",
   "description": "Toasts that arrive in grains and leave as dust, with an optional Undo action.",
-  "docs": "https://dissolve.rselmi.com/#/toast",
+  "docs": "https://dissolve.rselmi.com/components/toast/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-engine.json",

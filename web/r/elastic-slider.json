@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "ElasticSlider",
   "description": "Thick rounded slider whose texts invert over the fill; pulled past an end, the track stretches like a rubber band and snaps back.",
-  "docs": "https://dissolve.rselmi.com/#/elastic-slider",
+  "docs": "https://dissolve.rselmi.com/components/elastic-slider/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",

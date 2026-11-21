@@ -128,6 +128,14 @@ python3 -m http.server 8000
 
 Then open http://localhost:8000.
 
+Every page has its own URL (`/components/<name>/`, `/effects/<name>/`, `/docs/<page>/`). `npm run web:stamp`
+ends with `scripts/build-seo.mjs`, which writes a static `index.html` per URL from the site data (title,
+description, JSON-LD and the page content for crawlers, then the app takes over), a markdown copy of
+each page, `llms.txt`, `llms-full.txt`, `sitemap.xml` and `robots.txt`. They are committed, and
+`test/seo.test.mjs` fails when they are stale. Links inside the site use these paths (`pathOf(id)` in
+`web/routes.js`), and asset URLs start with `/`, since pages live in sub folders. Old `#/<id>` links
+still open the right page.
+
 ## Reporting bugs and security issues
 
 Open an issue with the bug report form (or the component request form for a new component). For security issues, follow [SECURITY.md](SECURITY.md)

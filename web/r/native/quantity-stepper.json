@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "QuantityStepper",
   "description": "Minus and plus with rolling digits and an accelerating long press; at 1 it turns into a trash.",
-  "docs": "https://dissolve.rselmi.com/#/quantity-stepper. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/#/installation.",
+  "docs": "https://dissolve.rselmi.com/components/quantity-stepper/. Wrap the app once in <DissolveProvider> from dissolve-ui, see https://dissolve.rselmi.com/docs/installation/.",
   "dependencies": [
     "dissolve-ui",
     "@shopify/react-native-skia",

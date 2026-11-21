@@ -100,6 +100,14 @@
 }
 
 * { box-sizing: border-box; }
+/* The static content of each page (scripts/build-seo.mjs), for crawlers and readers without
+   JavaScript. With JavaScript on (the head script sets data-theme) the app renders the live page
+   in its place, so it never shows. */
+[data-theme] [data-prerender] { display: none; }
+.dc-static figure { margin: 0 0 12px; }
+.dc-static pre { overflow-x: auto; }
+.dc-crumbs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.dc-crumbs li + li::before { content: "/"; margin-right: 8px; color: var(--muted); }
 html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--top-h) + 16px); }
 body {
   margin: 0;

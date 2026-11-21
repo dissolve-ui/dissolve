@@ -4,7 +4,7 @@
   "type": "registry:component",
   "title": "GlossyButton",
   "description": "Tactile pill lit from the inside: gradient stroke, inner light and ring, presses down on a crisp spring.",
-  "docs": "https://dissolve.rselmi.com/#/glossy-button",
+  "docs": "https://dissolve.rselmi.com/components/glossy-button/",
   "registryDependencies": [
     "https://dissolve.rselmi.com/r/dissolve-theme.json",
     "https://dissolve.rselmi.com/r/dissolve-kit.json",
