@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.7] - 2026-11-21
+
 ### Added
 - `toggle`: iOS style switch whose thumb breaks into grains, flows to the other end of the track on a slight arc and reassembles there while the track fills with the on color. Tap or swipe the thumb, a selection tick per flip. React Native and React.
 - `progress-steps`: steps for multi step flows in two looks. `variant="numbers"`: numbered discs on a hairline, the current disc streams along the line in grains to the next step, filling it, and back. `variant="bars"`: story style segments with no numbers, the fill runs on with its head gathering from grains, and sheds them as dust going back. React Native and React.
@@ -124,7 +126,8 @@ First public release.
 - Claude skill (`web/skills/dissolve/SKILL.md`) and an agent prompt page.
 - Dependency free MCP server (`mcp/server.mjs`) exposing the docs as tools.
 
-[Unreleased]: https://github.com/rs-4/dissolve/compare/v0.0.6...HEAD
+[Unreleased]: https://github.com/rs-4/dissolve/compare/v0.0.7...HEAD
+[0.0.7]: https://github.com/rs-4/dissolve/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/rs-4/dissolve/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/rs-4/dissolve/compare/v0.0.4...v0.0.5
 [0.0.1]: https://github.com/rs-4/dissolve/releases/tag/v0.0.1
