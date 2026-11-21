@@ -1,0 +1,8 @@
+/* ProgressSteps demo (cp/steps.js). The steps bring their own styles (web/lib). */
+.ps-demo { display: flex; flex-direction: column; align-items: stretch; gap: 28px; }
+.ps-buttons { display: flex; justify-content: center; gap: 10px; }
+.ps-btn { height: 38px; min-width: 96px; padding: 0 18px; border: 0; border-radius: 999px; background: var(--surface-2); color: var(--text); font: 600 14px/1 var(--sans); cursor: pointer; transition: opacity .2s, transform .2s; }
+.ps-btn:active { transform: scale(.96); }
+.ps-btn:disabled { opacity: .4; cursor: default; }
+.ps-next { background: var(--text); color: var(--bg); }
+.ps-bars { margin-bottom: -4px; }

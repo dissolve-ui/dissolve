@@ -16,8 +16,11 @@ import { ENTRIES as BUTTON } from './cp/button.js';
 import { ENTRIES as SCRATCH } from './cp/scratch.js';
 import { ENTRIES as SKELETON } from './cp/skeleton.js';
 import { ENTRIES as SEGMENTED } from './cp/segmented.js';
+import { ENTRIES as TOGGLE } from './cp/toggle.js';
+import { ENTRIES as STEPS } from './cp/steps.js';
+import { ENTRIES as SLIDER } from './cp/slider.js';
 
-export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED };
+export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED, ...TOGGLE, ...STEPS, ...SLIDER };
 
 // Sidebar and gallery order: registry order, with the glossy button brought up front.
 export const COMPONENT_ORDER = (() => {
@@ -61,18 +64,19 @@ const arrowR = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stro
 const FX = { 3: { id: 'dust', title: 'Dust', href: '#/dust' }, 7: { id: 'stream', title: 'Stream', href: '#/stream' }, 11: { id: 'scrub', title: 'Scrub', href: '#/effects' } };
 
 /** Masonry columns of the gallery section for the current width. */
-export const galleryCols = () => (innerWidth >= 1000 ? 3 : 2);
+// Under 861 px the CSS stacks the columns (components.css): build one, so the reading order holds.
+export const galleryCols = () => (innerWidth >= 1000 ? 3 : innerWidth > 860 ? 2 : 1);
 
 /** How you interact with each component: the gallery filters. */
 export const TAGS = ['Press', 'Drag', 'Swipe', 'Type', 'Select', 'Loading'];
 const TAG_OF = {
   'glossy-button': 'Press', 'like-button': 'Press', 'morph-button': 'Press', 'split-button': 'Press', 'gooey-menu': 'Press',
   'reaction-picker': 'Press', 'quantity-stepper': 'Press', 'task-check': 'Press', toast: 'Press',
-  'slide-to-confirm': 'Drag', 'reorder-list': 'Drag', 'before-after': 'Drag', 'signature-pad': 'Drag', 'scratch-card': 'Drag',
+  'slide-to-confirm': 'Drag', 'elastic-slider': 'Drag', 'reorder-list': 'Drag', 'before-after': 'Drag', 'signature-pad': 'Drag', 'scratch-card': 'Drag',
   'ruler-picker': 'Drag', 'pull-to-refresh': 'Drag',
   'swipe-to-delete': 'Swipe', 'card-stack': 'Swipe',
   'otp-input': 'Type', 'number-ticker': 'Type',
-  'segmented-control': 'Select', 'bar-chart': 'Select', 'mini-player': 'Select', 'voice-note': 'Select',
+  'segmented-control': 'Select', toggle: 'Press', 'progress-steps': 'Select', 'bar-chart': 'Select', 'mini-player': 'Select', 'voice-note': 'Select',
   'thinking-orb': 'Loading', skeleton: 'Loading', 'upload-tile': 'Loading', 'image-reveal': 'Loading', 'sweep-transition': 'Loading',
 };
 export const tagOf = (id) => TAG_OF[id] ?? 'Press';
@@ -82,17 +86,22 @@ const playIcon = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentC
 
 /** The demos that open the gallery: the biggest ones, side by side on the first row. */
 const LEAD = ['bar-chart', 'scratch-card', 'card-stack'];
+/** The newest components, right after the lead row. */
+const NEW = ['elastic-slider', 'toggle', 'progress-steps'];
 
-export function componentsSectionHTML() {
+/**
+ * The grid of component demos. cols: column count (the gallery's by default). fx: false leaves out
+ * the engine effects that sit among the components on the gallery.
+ */
+export function componentsSectionHTML({ cols = galleryCols(), fx = true } = {}) {
   // Columns filled in reading order. The page re-renders when the count changes (app.js).
-  const cols = galleryCols();
   const items = [];
   // Gallery order: the sidebar order, with a few swaps for the layout.
-  // The three biggest demos open the gallery, the rest follow the sidebar order.
-  const order = [...LEAD, ...COMPONENT_ORDER.filter((id) => !LEAD.includes(id))].filter((id) => COMPONENTS[id]);
+  // The three biggest demos open the gallery, the newest follow, the rest in the sidebar order.
+  const order = [...LEAD, ...NEW, ...COMPONENT_ORDER.filter((id) => !LEAD.includes(id) && !NEW.includes(id))].filter((id) => COMPONENTS[id]);
   order.forEach((id) => {
     // A few engine effects sit among the components.
-    while (FX[items.length]) items.push({ fx: FX[items.length] });
+    while (fx && FX[items.length]) items.push({ fx: FX[items.length] });
     items.push({ id });
   });
   // The demo sits alone on a dot grid; its name, number and interaction are a caption under it.

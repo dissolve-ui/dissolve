@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="preload" href="fonts/allo/AlloVariable.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=acaa93d6f2" />
+    <link rel="stylesheet" href="styles.css?v=ec648e7c4c" />
     <link rel="stylesheet" href="docs.css?v=741d78c34c" />
     <link rel="stylesheet" href="playground.css?v=af552c378b" />
     <link rel="stylesheet" href="components.css?v=dad90181f1" />
@@ -25,6 +25,9 @@
     <link rel="stylesheet" href="cp/scratch.css?v=6c8033eb37" />
     <link rel="stylesheet" href="cp/skeleton.css?v=25cf9deed0" />
     <link rel="stylesheet" href="cp/segmented.css?v=5d4246d48f" />
+    <link rel="stylesheet" href="cp/toggle.css?v=b9bb10c055" />
+    <link rel="stylesheet" href="cp/steps.css?v=17258a3bbe" />
+    <link rel="stylesheet" href="cp/slider.css?v=afb8da4193" />
     <link rel="stylesheet" href="bench.css?v=77e03383e6" />
     <script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
   </head>
@@ -43,9 +46,9 @@
 
     <script type="importmap" data-stamp>{
   "imports": {
-    "/app.js": "/app.js?v=c9955b975e",
+    "/app.js": "/app.js?v=4d795d29b1",
     "/autoplay.js": "/autoplay.js?v=7fe52696f0",
-    "/components.js": "/components.js?v=372f0283f1",
+    "/components.js": "/components.js?v=54b82c5536",
     "/cp/ai.js": "/cp/ai.js?v=e0ead96208",
     "/cp/button.js": "/cp/button.js?v=3853907472",
     "/cp/controls.js": "/cp/controls.js?v=01431659a3",
@@ -58,7 +61,10 @@
     "/cp/scratch.js": "/cp/scratch.js?v=36cfaf610c",
     "/cp/segmented.js": "/cp/segmented.js?v=e92fd01bcf",
     "/cp/skeleton.js": "/cp/skeleton.js?v=3a4c11bd55",
+    "/cp/slider.js": "/cp/slider.js?v=b48a2fbeea",
+    "/cp/steps.js": "/cp/steps.js?v=cabe26243a",
     "/cp/surfaces.js": "/cp/surfaces.js?v=959ef296f4",
+    "/cp/toggle.js": "/cp/toggle.js?v=d1a81ed2f1",
     "/data.js": "/data.js?v=4d0c7dcdaa",
     "/demo.js": "/demo.js?v=58c91af6f4",
     "/docs.js": "/docs.js?v=470e46d92a",
@@ -66,7 +72,7 @@
     "/history.js": "/history.js?v=4ada9cdbb7",
     "/icons.js": "/icons.js?v=f80b8839ec",
     "/images.js": "/images.js?v=5dc636774e",
-    "/lib/available.js": "/lib/available.js?v=0992cfc54e",
+    "/lib/available.js": "/lib/available.js?v=a603945d18",
     "/lib/bar-chart.js": "/lib/bar-chart.js?v=fbbbe628f2",
     "/lib/before-after.js": "/lib/before-after.js?v=2b8f2edc64",
     "/lib/card-stack.js": "/lib/card-stack.js?v=0a0368affd",
@@ -74,6 +80,7 @@
     "/lib/chunks/chunk-BCIF2ROM.js": "/lib/chunks/chunk-BCIF2ROM.js?v=d72c02e665",
     "/lib/chunks/chunk-OQW5JTMC.js": "/lib/chunks/chunk-OQW5JTMC.js?v=9925729270",
     "/lib/chunks/chunk-R2UPSOGD.js": "/lib/chunks/chunk-R2UPSOGD.js?v=d890a92e43",
+    "/lib/elastic-slider.js": "/lib/elastic-slider.js?v=86c303a629",
     "/lib/engine.js": "/lib/engine.js?v=f83603ad4e",
     "/lib/glossy-button.js": "/lib/glossy-button.js?v=2b68d8f624",
     "/lib/gooey-menu.js": "/lib/gooey-menu.js?v=d4315105f0",
@@ -84,6 +91,7 @@
     "/lib/morph-button.js": "/lib/morph-button.js?v=bbeb9490d3",
     "/lib/number-ticker.js": "/lib/number-ticker.js?v=bf687bb8d9",
     "/lib/otp-input.js": "/lib/otp-input.js?v=6365780b17",
+    "/lib/progress-steps.js": "/lib/progress-steps.js?v=559c344e36",
     "/lib/pull-to-refresh.js": "/lib/pull-to-refresh.js?v=24d44c950c",
     "/lib/quantity-stepper.js": "/lib/quantity-stepper.js?v=a1ab5a8759",
     "/lib/reaction-picker.js": "/lib/reaction-picker.js?v=41514ed352",
@@ -100,15 +108,16 @@
     "/lib/task-check.js": "/lib/task-check.js?v=8d759c26e8",
     "/lib/thinking-orb.js": "/lib/thinking-orb.js?v=fe61a12100",
     "/lib/toast.js": "/lib/toast.js?v=427adb016f",
+    "/lib/toggle.js": "/lib/toggle.js?v=6533b68b3c",
     "/lib/upload-tile.js": "/lib/upload-tile.js?v=10fad8e11a",
     "/lib/voice-note.js": "/lib/voice-note.js?v=cf071b2a22",
     "/logo.js": "/logo.js?v=53a154bd5b",
     "/playground.js": "/playground.js?v=58e0f28c5a",
-    "/showcase.js": "/showcase.js?v=0e31ff82da",
+    "/showcase.js": "/showcase.js?v=44cfe7ab7a",
     "/variants-content.js": "/variants-content.js?v=7e5bad6150"
   }
 }</script>
 
-    <script type="module" src="/app.js?v=c9955b975e"></script>
+    <script type="module" src="/app.js?v=4d795d29b1"></script>
   </body>
 </html>
