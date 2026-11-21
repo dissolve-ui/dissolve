@@ -208,33 +208,35 @@ export function ElasticSlider({
     });
 
   // The track stretches toward the pull, anchored at the other end, and thins as it does.
+  // Only the end being pulled moves (the right one when full, the left one when empty), the other
+  // stays anchored, through the bounce too: e > 0 stretches, e < 0 is the bounce squeezing back in.
   const trackStyle = useAnimatedStyle(() => {
     const w = Math.max(1, W.value);
     const o = over.value;
-    const k = Math.abs(o) / REACH;
+    const e = (p.value > 0.5 ? 1 : -1) * o;
+    const k = Math.max(-0.5, Math.min(1, e / REACH));
     return {
       transform: [
         { translateX: o / 2 },
-        { scaleX: 1 + Math.abs(o) / w + 0.012 * pressed.value },
+        { scaleX: 1 + e / w + 0.012 * pressed.value },
         { scaleY: (1 - THIN * k) * (1 + PRESS * pressed.value) },
       ],
     };
   });
   // The fill is a full width layer slid in from the left.
   const fillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: -(1 - p.value) * W.value }] }));
-  // The texts in the fill's ink are clipped to where the fill ends on screen: at full, the stretched
-  // right end; empty, the stretched left end (so nothing shows). The clip slides, its content slides
+  // The texts in the fill's ink are clipped to where the fill ends on screen: the moving right end
+  // when full, the moving left end when empty (so nothing shows). The clip slides, its content slides
   // back so it stays put.
   const clipShift = () => {
     'worklet';
-    const o = over.value;
-    return p.value * W.value + (p.value > 0.5 ? Math.max(0, o) : Math.min(0, o)) - W.value - REACH;
+    return p.value * W.value + over.value - W.value - REACH;
   };
   const clipStyle = useAnimatedStyle(() => ({ transform: [{ translateX: clipShift() }] }));
   const clipInner = useAnimatedStyle(() => ({ transform: [{ translateX: -clipShift() }] }));
-  // The texts ride with the end that stretches, without being stretched.
-  const leftText = useAnimatedStyle(() => ({ transform: [{ translateX: Math.min(0, over.value) }] }));
-  const rightText = useAnimatedStyle(() => ({ transform: [{ translateX: Math.max(0, over.value) }] }));
+  // The texts ride with the end that moves, without being stretched.
+  const leftText = useAnimatedStyle(() => ({ transform: [{ translateX: p.value > 0.5 ? 0 : over.value }] }));
+  const rightText = useAnimatedStyle(() => ({ transform: [{ translateX: p.value > 0.5 ? over.value : 0 }] }));
 
   const text = formatValue ? formatValue(shown) : String(shown);
   const radius = s.height * 0.42;
