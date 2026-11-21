@@ -194,6 +194,18 @@
       "type": "registry:component",
       "title": "SegmentedControl",
       "description": "iOS segmented control whose pill breaks into grains, flows to the new segment and reassembles. Drag across to follow the finger."
+    },
+    {
+      "name": "native/toggle",
+      "type": "registry:component",
+      "title": "Toggle",
+      "description": "iOS switch whose thumb breaks into grains, flows to the other end of the track and reassembles while the track fills."
+    },
+    {
+      "name": "native/progress-steps",
+      "type": "registry:component",
+      "title": "ProgressSteps",
+      "description": "Numbered steps joined by a line: the current disc streams along it in grains, filling the line, and gathers on the next step."
     }
   ]
 }

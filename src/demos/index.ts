@@ -29,6 +29,8 @@ import GlossyButtonDemo from './GlossyButton.demo';
 import ScratchCardDemo from './ScratchCard.demo';
 import SegmentedControlDemo from './SegmentedControl.demo';
 import SkeletonDemo from './Skeleton.demo';
+import ToggleDemo from './Toggle.demo';
+import ProgressStepsDemo from './ProgressSteps.demo';
 
 /**
  * One demo per registry component, in registry/index.json order. The slug is the registry
@@ -67,4 +69,6 @@ export const DEMOS: DemoEntry[] = [
   { slug: 'scratch-card', title: 'Scratch card', note: 'Scratch the foil. Past half, the rest turns to dust.', icon: 'giftcard', Component: ScratchCardDemo, scroll: true },
   { slug: 'skeleton', title: 'Skeleton', note: 'Tap Reload: the placeholders turn into the content, grain by grain.', icon: 'rectangle.dashed', Component: SkeletonDemo, scroll: true },
   { slug: 'segmented-control', title: 'Segmented control', note: 'Tap or drag across: the pill flows over in grains.', icon: 'switch.2', Component: SegmentedControlDemo, scroll: true },
+  { slug: 'toggle', title: 'Toggle', note: 'Flip a switch: the thumb crosses over in grains.', icon: 'switch.2', Component: ToggleDemo, scroll: true },
+  { slug: 'progress-steps', title: 'Progress steps', note: 'Next and Back: the disc streams along the line in grains.', icon: 'point.3.connected.trianglepath.dotted', Component: ProgressStepsDemo, scroll: true },
 ];
