@@ -3,13 +3,20 @@
  * grid, the sizes, anything. Colors come from the dissolve theme tokens (global.css), so it follows
  * light and dark mode out of the box.
  *
- * A row of numbered steps joined by a line, for onboarding, checkout or any multi step form. Done
- * steps are filled with a check, the current one is filled with a soft ring around it, the next ones
- * are hollow. Move forward and the current disc sheds a copy of itself in grains: the cloud flattens
+ * Steps for onboarding, checkout or any multi step form, in two looks.
+ *
+ * variant="numbers" (default): small numbered discs joined by a hairline. Done steps are filled with
+ * a check, the current one is filled with a thin ring around it, the next ones are soft and muted.
+ * Move forward and the current disc sheds a copy of itself in grains: the cloud flattens
  * onto the line and streams along it, filling the line behind its front, then gathers back into a
  * disc on the new step (about 450 ms, a little longer when it skips steps). Move back and the disc
- * breaks up and streams home the other way, emptying the line. Selection tick on every change.
- * Reduced motion: the line fills and the discs cross fade.
+ * breaks up and streams home the other way, emptying the line.
+ *
+ * variant="bars": story style segments, one per step, no numbers. Move forward and the fill runs on
+ * into the next segment, its head gathering out of grains that drift in and settle; move back and the
+ * head recedes, shedding its grains as dust.
+ *
+ * Selection tick on every change. Reduced motion: the fills slide and the discs cross fade.
  *
  * Built for scroll views: discs, line fills and every grain are plain Animated views moved by
  * transform and opacity only, so it keeps animating while a scroll view is being dragged on iOS.
@@ -17,6 +24,8 @@
  * <ProgressSteps steps={['Account', 'Profile', 'Payment', 'Done']} current={step} />
  *
  * <ProgressSteps steps={5} current={step} size="sm" onStepPress={(i) => i < step && setStep(i)} />
+ *
+ * <ProgressSteps variant="bars" steps={4} current={story} />
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View as RNView, type LayoutChangeEvent } from 'react-native';
@@ -27,27 +36,31 @@ import { clamp01, hash } from './motion';
 import { toRGBA } from './dots';
 
 const SIZES = {
-  sm: { disc: 20, line: 2, font: 11, label: 12, ring: 3 },
-  md: { disc: 26, line: 3, font: 12, label: 13, ring: 4 },
-  lg: { disc: 32, line: 3, font: 14, label: 14, ring: 5 },
+  sm: { disc: 18, line: 1.5, font: 10, label: 12, ring: 3, bar: 3, barGap: 4 },
+  md: { disc: 22, line: 2, font: 11, label: 13, ring: 3.5, bar: 4, barGap: 5 },
+  lg: { disc: 28, line: 2, font: 13, label: 14, ring: 4, bar: 6, barGap: 6 },
 } as const;
 
 export type ProgressStepsSize = keyof typeof SIZES;
 
+export type ProgressStepsVariant = 'numbers' | 'bars';
+
 export type ProgressStepsProps = {
+  /** 'numbers': numbered discs on a line. 'bars': story style segments, no numbers. Default 'numbers'. */
+  variant?: ProgressStepsVariant;
   /** The steps: their labels, or how many there are (no labels then). Two or more. */
   steps: string[] | number;
   /** The current step, from 0. steps.length marks them all done. */
   current: number;
   /** Called with the index of a pressed step. Steps are not pressable without it. */
   onStepPress?: (index: number) => void;
-  /** Disc, line and type size: 20, 26 or 32 pt discs. Default 'md'. */
+  /** Disc, line and type size (18, 22 or 28 pt discs), or bar thickness (3, 4 or 6 pt). Default 'md'. */
   size?: ProgressStepsSize;
   /** Selection tick on every change of current. Default true. */
   haptics?: boolean;
   /** Fill of the done and current discs, the line and the grains. Default: the primary token. */
   activeColor?: string;
-  /** Hollow discs and the empty line. Default: the foreground token at a low alpha. */
+  /** The next steps' discs, the empty line and the empty bars. Default: the foreground token at a low alpha. */
   trackColor?: string;
   /** Outer classes (width, margins...). It stretches to its parent by default. */
   className?: string;
@@ -74,7 +87,9 @@ const MAX_GRAINS = 90;
 const PITCH = 0.14;
 const OVERLAP = 1.25;
 /** Gap between a disc and the line, in points. */
-const GAP = 4;
+const GAP = 6;
+/** Width of the ring around the current disc, in points. */
+const RING_W = 1.5;
 /** Per grain grid: x y (from the disc's center), seed, seed. Live draw: x y alpha scale. */
 const GF = 4;
 const DF = 4;
@@ -115,7 +130,11 @@ function levelsFor(n: number, cur: number) {
   return out;
 }
 
-export function ProgressSteps({
+export function ProgressSteps({ variant = 'numbers', ...props }: ProgressStepsProps) {
+  return variant === 'bars' ? <BarSteps {...props} /> : <NumberSteps {...props} />;
+}
+
+function NumberSteps({
   steps,
   current,
   onStepPress,
@@ -125,7 +144,7 @@ export function ProgressSteps({
   trackColor,
   className,
   labelClassName,
-}: ProgressStepsProps) {
+}: Omit<ProgressStepsProps, 'variant'>) {
   const reduced = useReducedMotion();
   const s = SIZES[size] ?? SIZES.md;
   const labels = typeof steps === 'number' ? null : steps;
@@ -145,8 +164,8 @@ export function ProgressSteps({
     return {
       active: a,
       ink,
-      track: trackColor ?? `rgba(${Math.round(fr * 255)}, ${Math.round(fgG * 255)}, ${Math.round(fb * 255)}, ${dark ? 0.22 : 0.13})`,
-      ring: `rgba(${Math.round(ar * 255)}, ${Math.round(ag * 255)}, ${Math.round(ab * 255)}, 0.2)`,
+      track: trackColor ?? `rgba(${Math.round(fr * 255)}, ${Math.round(fgG * 255)}, ${Math.round(fb * 255)}, ${dark ? 0.14 : 0.09})`,
+      ring: `rgba(${Math.round(ar * 255)}, ${Math.round(ag * 255)}, ${Math.round(ab * 255)}, 0.35)`,
     };
   }, [fg, bg, primary, ink, activeColor, trackColor]);
 
@@ -323,7 +342,7 @@ export function ProgressSteps({
   }, true);
 
   const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
-  const rowH = s.disc + s.ring * 2;
+  const rowH = s.disc + (s.ring + RING_W) * 2;
   const col = width / n;
 
   return (
@@ -383,7 +402,7 @@ export function ProgressSteps({
                 <Text
                   numberOfLines={1}
                   className={cn(i <= cur ? 'text-dissolve-foreground' : 'text-dissolve-muted', labelClassName)}
-                  style={{ fontSize: s.label, fontWeight: i === cur ? '600' : '500', letterSpacing: -0.1 }}
+                  style={{ fontSize: s.label, fontWeight: i === cur ? '600' : '400', letterSpacing: -0.1 }}
                 >
                   {labels[i]}
                 </Text>
@@ -415,7 +434,7 @@ function Line({ k, n, x, w, top, h, levels, painted, track, active }: { k: numbe
   );
 }
 
-/** One step: hollow ring and number under the filled disc, its number or check, and the soft ring. */
+/** One step: the soft disc and muted number under the filled disc, its number or check, and the thin ring. */
 function Step({ i, x, cy, size, levels, painted, colors, done, now }: { i: number; x: number; cy: number; size: SizeSpec; levels: SharedValue<number[]>; painted: SharedValue<number>; colors: Colors; done: boolean; now: boolean }) {
   const read = (f: number) => {
     'worklet';
@@ -439,17 +458,17 @@ function Step({ i, x, cy, size, levels, painted, colors, done, now }: { i: numbe
   const ringStyle = useAnimatedStyle(() => {
     painted.value;
     const v = read(2);
-    return { opacity: v, transform: [{ scale: 0.7 + 0.3 * v }] };
+    return { opacity: v, transform: [{ scale: 0.85 + 0.15 * v }] };
   });
   const d = size.disc;
-  const outer = d + size.ring * 2;
+  const outer = d + (size.ring + RING_W) * 2;
   const center = { position: 'absolute' as const, left: x - d / 2, top: cy - d / 2, width: d, height: d, borderRadius: d / 2, alignItems: 'center' as const, justifyContent: 'center' as const };
   const label = String(i + 1);
-  const ck = { w: d * 0.2, h: d * 0.38, t: Math.max(1.5, d * 0.08) };
+  const ck = { w: d * 0.2, h: d * 0.38, t: Math.max(1.5, d * 0.075) };
   return (
     <>
-      <Animated.View style={[{ position: 'absolute', left: x - outer / 2, top: cy - outer / 2, width: outer, height: outer, borderRadius: outer / 2, backgroundColor: colors.ring }, ringStyle]} />
-      <RNView style={[center, { borderWidth: Math.max(1.5, d * 0.07), borderColor: colors.track }]}>
+      <Animated.View style={[{ position: 'absolute', left: x - outer / 2, top: cy - outer / 2, width: outer, height: outer, borderRadius: outer / 2, borderWidth: RING_W, borderColor: colors.ring }, ringStyle]} />
+      <RNView style={[center, { backgroundColor: colors.track }]}>
         <Text className="text-dissolve-muted" style={{ fontSize: size.font, fontWeight: '600', fontVariant: ['tabular-nums'] }}>
           {label}
         </Text>
@@ -461,6 +480,172 @@ function Step({ i, x, cy, size, levels, painted, colors, done, now }: { i: numbe
         />
       </Animated.View>
     </>
+  );
+}
+
+/** Bars: each move runs for BAR_RUN, plus BAR_HOP per extra segment. Dust lives for LIFE. */
+const BAR_RUN = 380;
+const BAR_HOP = 140;
+const LIFE = 360;
+const MAX_DUST = 48;
+
+/** Where the head of the fill sits for a fill of p segments (p = 2.5: half way through the third). */
+function headX(p: number, seg: number, gap: number, n: number) {
+  'worklet';
+  if (p <= 0) return 0;
+  const k = Math.min(n - 1, Math.floor(p - 1e-6));
+  return k * (seg + gap) + clamp01(p - k) * seg;
+}
+
+/** Story style segments: the fill runs on through the steps, its head gathering from (or shedding) grains. */
+function BarSteps({ steps, current, onStepPress, size = 'md', haptics = true, activeColor, trackColor, className }: Omit<ProgressStepsProps, 'variant'>) {
+  const reduced = useReducedMotion();
+  const s = SIZES[size] ?? SIZES.md;
+  const labels = typeof steps === 'number' ? null : steps;
+  const n = Math.max(2, typeof steps === 'number' ? Math.floor(steps) : steps.length);
+  const cur = Math.max(0, Math.min(n, Math.round(current)));
+  /** Segments are filled through the current step. */
+  const fillOf = (c: number) => Math.min(n, c + 1);
+
+  const fg = useToken('foreground');
+  const bg = useToken('background');
+  const primary = useToken('primary');
+  const colors = useMemo(() => {
+    const [fr, fgG, fb] = toRGBA(fg);
+    const [br, bgG, bb] = toRGBA(bg);
+    const dark = 0.2126 * br + 0.7152 * bgG + 0.0722 * bb < 0.5;
+    return {
+      active: activeColor ?? primary,
+      track: trackColor ?? `rgba(${Math.round(fr * 255)}, ${Math.round(fgG * 255)}, ${Math.round(fb * 255)}, ${dark ? 0.2 : 0.12})`,
+    };
+  }, [fg, bg, primary, activeColor, trackColor]);
+
+  const [width, setWidth] = useState(0);
+  const seg = width > 0 ? (width - s.barGap * (n - 1)) / n : 0;
+  const dot = Math.max(2, s.bar * 0.85);
+  const dust = useMemo(() => makeMutable<number[]>(new Array(MAX_DUST * DF).fill(0)), []);
+  const geo = useSharedValue({ seg: 0, gap: s.barGap as number, n, spread: 3 + s.bar * 1.5 });
+  const pos = useSharedValue(fillOf(cur));
+  const from = useSharedValue(0);
+  const to = useSharedValue(fillOf(cur));
+  const req = useSharedValue(0);
+  const flying = useSharedValue(0);
+  const startAt = useSharedValue(0);
+  const painted = useSharedValue(0);
+
+  useEffect(() => {
+    geo.value = { seg, gap: s.barGap, n, spread: 3 + s.bar * 1.5 };
+    flying.value = 0;
+    req.value = 0;
+    pos.value = to.value;
+  }, [seg, s.barGap, s.bar, n, geo, flying, req, pos, to]);
+
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    const t = Math.min(n, cur + 1);
+    if (to.value === t) return;
+    if (haptics) Haptics.selectionAsync();
+    to.value = t;
+    req.value = 1;
+  }, [cur, n, haptics, to, req]);
+
+  useFrameCallback((info) => {
+    'worklet';
+    if (!req.value && !flying.value) return;
+    const now = info.timestamp;
+    const g = geo.value;
+    if (g.seg <= 0) return;
+    if (req.value) {
+      req.value = 0;
+      from.value = pos.value;
+      startAt.value = now;
+      flying.value = 1;
+    }
+    const a = from.value;
+    const b = to.value;
+    const dur = reduced ? PLAIN : BAR_RUN + BAR_HOP * (Math.max(1, Math.ceil(Math.abs(b - a))) - 1);
+    const since = now - startAt.value;
+    pos.value = a + (b - a) * FLOW(clamp01(since / dur));
+    const D = dust.value;
+    const fwd = b >= a;
+    // Grains are born at the head all along the move: forward they drift in from ahead and settle
+    // into it, backward they come off the receding head and float away.
+    for (let i = 0; i < MAX_DUST; i++) {
+      const o = i * DF;
+      const born = (i / MAX_DUST) * dur;
+      const e = (since - born) / LIFE;
+      if (reduced || e < 0 || e > 1) {
+        D[o + 2] = 0;
+        continue;
+      }
+      const hx = headX(a + (b - a) * FLOW(clamp01(born / dur)), g.seg, g.gap, g.n);
+      const h1 = hash(i, 3);
+      const h2 = hash(i, 5) - 0.5;
+      if (fwd) {
+        const k = 1 - FLOW(e);
+        D[o] = hx + (3 + h1 * 16) * k;
+        D[o + 1] = h2 * 2 * g.spread * k;
+        D[o + 2] = Math.min(1, e * 5) * (1 - e * e);
+        D[o + 3] = 0.55 + 0.45 * (1 - k);
+      } else {
+        D[o] = hx + (1 + h1 * 12) * e;
+        D[o + 1] = h2 * 2 * g.spread * 1.4 * e - 3 * e * e;
+        D[o + 2] = (1 - e) * Math.min(1, e * 8 + 0.4);
+        D[o + 3] = 1 - 0.5 * e;
+      }
+    }
+    if (since >= dur + LIFE) {
+      flying.value = 0;
+      pos.value = b;
+      for (let i = 0; i < MAX_DUST; i++) D[i * DF + 2] = 0;
+    }
+    painted.value = now;
+  }, true);
+
+  const hit = Math.max(24, s.bar + 20);
+  return (
+    <View
+      onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
+      className={cn('self-stretch', className)}
+      accessibilityRole="progressbar"
+      accessibilityValue={{ min: 0, max: n, now: cur, text: labels?.[Math.min(cur, n - 1)] }}
+      style={{ height: hit, justifyContent: 'center' }}
+    >
+      {seg > 0 ? (
+        <RNView style={{ height: s.bar }}>
+          {Array.from({ length: n }, (_, k) => (
+            <Bar key={k} k={k} x={k * (seg + s.barGap)} w={seg} h={s.bar} pos={pos} track={colors.track} active={colors.active} />
+          ))}
+          <RNView pointerEvents="none" style={[StyleSheet.absoluteFill, { top: s.bar / 2 }]}>
+            {Array.from({ length: MAX_DUST }, (_, i) => (
+              <Grain key={i} i={i} dot={dot} draw={dust} painted={painted} color={colors.active} />
+            ))}
+          </RNView>
+        </RNView>
+      ) : null}
+      {onStepPress ? (
+        <RNView style={[StyleSheet.absoluteFill, { flexDirection: 'row', gap: s.barGap }]}>
+          {Array.from({ length: n }, (_, i) => (
+            <Pressable key={i} onPress={() => onStepPress(i)} accessibilityRole="button" accessibilityLabel={labels?.[i] ?? `Step ${i + 1}`} style={{ flex: 1 }} />
+          ))}
+        </RNView>
+      ) : null}
+    </View>
+  );
+}
+
+/** One segment: the empty track and the fill over it, scaled from its left end. */
+function Bar({ k, x, w, h, pos, track, active }: { k: number; x: number; w: number; h: number; pos: SharedValue<number>; track: string; active: string }) {
+  const fill = useAnimatedStyle(() => ({ transform: [{ scaleX: Math.max(0.0001, clamp01(pos.value - k)) }] }));
+  const box = { position: 'absolute' as const, left: x, top: 0, width: w, height: h, borderRadius: h / 2, overflow: 'hidden' as const };
+  return (
+    <RNView style={[box, { backgroundColor: track }]}>
+      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: active, transformOrigin: 'left' }, fill]} />
+    </RNView>
   );
 }
 

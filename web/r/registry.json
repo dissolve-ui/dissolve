@@ -217,7 +217,7 @@
       "name": "progress-steps",
       "type": "registry:component",
       "title": "ProgressSteps",
-      "description": "Numbered steps joined by a line: the current disc streams along it in grains, filling the line, and gathers on the next step."
+      "description": "Numbered steps on a line, or story style bars: the progress streams on to the next step in grains."
     }
   ]
 }

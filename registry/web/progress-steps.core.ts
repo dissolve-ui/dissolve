@@ -5,39 +5,50 @@
  *   const s = createProgressSteps(el, { steps: ['Account', 'Profile', 'Payment'], current: 0 });
  *   s.update({ current: 1 });
  *
- * A row of numbered steps joined by a line, for onboarding, checkout or any multi step form. Done
- * steps are filled with a check, the current one is filled with a soft ring around it, the next ones
- * are hollow. Move forward and the current disc sheds a copy of itself in grains: the cloud flattens
+ * Steps for onboarding, checkout or any multi step form, in two looks.
+ *
+ * variant 'numbers' (default): small numbered discs joined by a hairline. Done steps are filled with
+ * a check, the current one is filled with a thin ring around it, the next ones are soft and muted.
+ * Move forward and the current disc sheds a copy of itself in grains: the cloud flattens
  * onto the line and streams along it, filling the line behind its front, then gathers back into a
  * disc on the new step (about 450 ms, a little longer when it skips steps). Move back and the disc
- * breaks up and streams home the other way, emptying the line. Reduced motion: the line fills and
- * the discs cross fade. Colors follow --dissolve-primary, --dissolve-primary-foreground,
+ * breaks up and streams home the other way, emptying the line.
+ *
+ * variant 'bars': story style segments, one per step, no numbers. Move forward and the fill runs on
+ * into the next segment, its head gathering out of grains that drift in and settle; move back and the
+ * head recedes, shedding its grains as dust.
+ *
+ * Reduced motion: the fills slide and the discs cross fade. Colors follow --dissolve-primary, --dissolve-primary-foreground,
  * --dissolve-foreground and --dissolve-muted.
  */
 import { bezier, clamp, el, hash, injectStyle, loop, onThemeChange, propsOf, reducedMotion, rgbOf, scope, token, vibrate } from './kit';
 
 export const PROGRESS_STEPS_SIZES = {
-  sm: { disc: 20, line: 2, font: 11, label: 12, ring: 3 },
-  md: { disc: 26, line: 3, font: 12, label: 13, ring: 4 },
-  lg: { disc: 32, line: 3, font: 14, label: 14, ring: 5 },
+  sm: { disc: 18, line: 1.5, font: 10, label: 12, ring: 3, bar: 3, barGap: 4 },
+  md: { disc: 22, line: 2, font: 11, label: 13, ring: 3.5, bar: 4, barGap: 5 },
+  lg: { disc: 28, line: 2, font: 13, label: 14, ring: 4, bar: 6, barGap: 6 },
 } as const;
 
 export type ProgressStepsSize = keyof typeof PROGRESS_STEPS_SIZES;
 
+export type ProgressStepsVariant = 'numbers' | 'bars';
+
 export type ProgressStepsProps = {
+  /** 'numbers': numbered discs on a line. 'bars': story style segments, no numbers. Default 'numbers'. */
+  variant?: ProgressStepsVariant;
   /** The steps: their labels, or how many there are (no labels then). Two or more. */
   steps?: string[] | number;
   /** The current step, from 0. steps.length marks them all done. */
   current?: number;
   /** Called with the index of a pressed step. Steps are not pressable without it. */
   onStepPress?: (index: number) => void;
-  /** Disc, line and type size: 20, 26 or 32 px discs. Default 'md'. */
+  /** Disc, line and type size (18, 22 or 28 px discs), or bar thickness (3, 4 or 6 px). Default 'md'. */
   size?: ProgressStepsSize;
   /** A short vibration on every change of current, where the browser has it. Default true. */
   haptics?: boolean;
   /** Fill of the done and current discs, the line and the grains. Default: the primary token. */
   activeColor?: string;
-  /** Hollow discs and the empty line. Default: the foreground token at a low alpha. */
+  /** The next steps' discs, the empty line and the empty bars. Default: the foreground token at a low alpha. */
   trackColor?: string;
   /** Label classes (font, tracking...). The colors come from the theme tokens. */
   labelClassName?: string;
@@ -69,7 +80,9 @@ const MAX_GRAINS = 90;
 const PITCH = 0.14;
 const OVERLAP = 1.25;
 /** Gap between a disc and the line, in px. */
-const GAP = 4;
+const GAP = 6;
+/** Width of the ring around the current disc, in px. */
+const RING_W = 1.5;
 /** Room above and below the row for the grains. */
 const PAD = 8;
 /** Per step levels: fill, check, ring. */
@@ -116,12 +129,12 @@ const CSS = `
 :where(.dissolve-steps-solid) > * { position: absolute; }
 :where(.dissolve-steps-check) { width: 58%; height: 58%; }
 :where(.dissolve-steps-check) svg { display: block; width: 100%; height: 100%; }
-:where(.dissolve-steps-ring) { border-radius: 50%; will-change: transform, opacity; }
+:where(.dissolve-steps-ring) { border-radius: 50%; border-style: solid; box-sizing: border-box; will-change: transform, opacity; }
 :where(.dissolve-steps-grains) { pointer-events: none; }
 :where(.dissolve-steps-labels) { display: flex; margin-top: 8px; }
 :where(.dissolve-steps-label) {
   flex: 1; min-width: 0; padding: 0 2px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  letter-spacing: -0.006em; color: var(--dissolve-muted, rgb(142 142 147)); font-weight: 500;
+  letter-spacing: -0.006em; color: var(--dissolve-muted, rgb(142 142 147)); font-weight: 400;
 }
 :where(.dissolve-steps-label.is-reached) { color: var(--dissolve-foreground, rgb(28 28 30)); }
 :where(.dissolve-steps-label.is-current) { font-weight: 600; }
@@ -134,7 +147,7 @@ const BUTTON: Partial<CSSStyleDeclaration> = { border: '0', padding: '0', margin
 
 type StepNodes = { ring: HTMLElement; hollow: HTMLElement; solid: HTMLElement; num: HTMLElement; check: HTMLElement };
 
-export function createProgressSteps(host: HTMLElement, initial: ProgressStepsProps = {}): ProgressStepsInstance {
+function createNumbers(host: HTMLElement, initial: ProgressStepsProps): ProgressStepsInstance {
   injectStyle('dissolve-progress-steps', CSS);
   const props = propsOf(DEFAULTS, initial);
   const p = () => props.current;
@@ -169,13 +182,13 @@ export function createProgressSteps(host: HTMLElement, initial: ProgressStepsPro
     const dark = (0.2126 * bg[0] + 0.7152 * bg[1] + 0.0722 * bg[2]) / 255 < 0.5;
     active = o.activeColor ?? token(host, 'primary', 'rgb(28 28 30)');
     ink = token(host, 'primary-foreground', 'rgb(255 255 255)');
-    const track = o.trackColor ?? `rgba(${fg[0]}, ${fg[1]}, ${fg[2]}, ${dark ? 0.22 : 0.13})`;
+    const track = o.trackColor ?? `rgba(${fg[0]}, ${fg[1]}, ${fg[2]}, ${dark ? 0.14 : 0.09})`;
     const a = rgbOf(active);
     for (const t of nodes) {
-      t.hollow.style.borderColor = track;
+      t.hollow.style.background = track;
       t.solid.style.background = active;
       t.solid.style.color = ink;
-      t.ring.style.background = `rgba(${a[0]}, ${a[1]}, ${a[2]}, 0.2)`;
+      t.ring.style.borderColor = `rgba(${a[0]}, ${a[1]}, ${a[2]}, 0.35)`;
     }
     row.querySelectorAll<HTMLElement>('.dissolve-steps-track').forEach((x) => { x.style.background = track; });
     for (const f of fills) f.style.background = active;
@@ -187,7 +200,7 @@ export function createProgressSteps(host: HTMLElement, initial: ProgressStepsPro
     s = PROGRESS_STEPS_SIZES[o.size] ?? PROGRESS_STEPS_SIZES.md;
     labels = typeof o.steps === 'number' ? null : o.steps;
     n = Math.max(2, typeof o.steps === 'number' ? Math.floor(o.steps) : o.steps.length);
-    rowH = s.disc + s.ring * 2;
+    rowH = s.disc + (s.ring + RING_W) * 2;
     row.replaceChildren();
     nodes = [];
     fills = [];
@@ -246,15 +259,14 @@ export function createProgressSteps(host: HTMLElement, initial: ProgressStepsPro
   function layout() {
     W = host.clientWidth;
     if (W <= 0) return;
-    const col = W / n, d = s.disc, outer = d + s.ring * 2, cy = rowH / 2;
+    const col = W / n, d = s.disc, outer = d + (s.ring + RING_W) * 2, cy = rowH / 2;
     X = Array.from({ length: n }, (_, i) => (i + 0.5) * col);
     const box = (node: HTMLElement, x: number, size: number) => Object.assign(node.style, { left: x - size / 2 + 'px', top: cy - size / 2 + 'px', width: size + 'px', height: size + 'px' });
     nodes.forEach((t, i) => {
       box(t.ring, X[i], outer);
       box(t.hollow, X[i], d);
       box(t.solid, X[i], d);
-      t.hollow.style.borderWidth = Math.max(1.5, d * 0.07) + 'px';
-      t.hollow.style.borderStyle = 'solid';
+      t.ring.style.borderWidth = RING_W + 'px';
       t.hollow.style.fontSize = t.solid.style.fontSize = s.font + 'px';
     });
     const lines = row.querySelectorAll<HTMLElement>('.dissolve-steps-line');
@@ -283,7 +295,7 @@ export function createProgressSteps(host: HTMLElement, initial: ProgressStepsPro
       t.check.style.opacity = String(check);
       t.check.style.transform = `scale(${0.5 + 0.5 * check})`;
       t.ring.style.opacity = String(ring);
-      t.ring.style.transform = `scale(${0.7 + 0.3 * ring})`;
+      t.ring.style.transform = `scale(${0.85 + 0.15 * ring})`;
     });
     fills.forEach((f, k) => { f.style.transform = `scaleX(${Math.max(0.0001, L[n * SF + k] ?? 0)})`; });
   }
@@ -435,5 +447,226 @@ export function createProgressSteps(host: HTMLElement, initial: ProgressStepsPro
       hits.remove();
       for (const a of ['role', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow', 'aria-valuetext', 'data-dissolve']) host.removeAttribute(a);
     },
+  };
+}
+
+/** Bars: each move runs for BAR_RUN, plus BAR_HOP per extra segment. Dust lives for LIFE. */
+const BAR_RUN = 380;
+const BAR_HOP = 140;
+const LIFE = 360;
+const MAX_DUST = 48;
+/** Room above and below the bars for the dust. */
+const BAR_PAD = 14;
+
+const BAR_CSS = `
+:where([data-dissolve="progress-steps"][data-variant="bars"]) { display: flex; align-items: center; min-height: 24px; }
+:where(.dissolve-bars) { position: relative; flex: 1; display: flex; }
+:where(.dissolve-bar) { position: relative; flex: 1; overflow: hidden; border-radius: 999px; }
+:where(.dissolve-bar-fill) { position: absolute; inset: 0; transform-origin: left center; will-change: transform; }
+:where(.dissolve-bars-dust) { position: absolute; left: 0; pointer-events: none; }
+:where(.dissolve-bars-hits) { position: absolute; inset: 0; display: flex; }
+:where(.dissolve-bars-hits) > button { flex: 1; }
+:where(.dissolve-bars-hits) > button:focus-visible { outline: 2px solid var(--dissolve-accent, rgb(10 132 255)); outline-offset: -2px; border-radius: 6px; }
+`;
+
+/** Story style segments: the fill runs on through the steps, its head gathering from (or shedding) grains. */
+function createBars(host: HTMLElement, initial: ProgressStepsProps): ProgressStepsInstance {
+  injectStyle('dissolve-progress-bars', BAR_CSS);
+  const props = propsOf(DEFAULTS, initial);
+  const p = () => props.current;
+  const sc = scope();
+
+  host.dataset.dissolve = 'progress-steps';
+  host.dataset.variant = 'bars';
+  host.setAttribute('role', 'progressbar');
+  const wrap = el('div', 'dissolve-bars');
+  const cv = el('canvas', 'dissolve-bars-dust');
+  const ctx = cv.getContext('2d')!;
+  const hits = el('div', 'dissolve-bars-hits');
+  host.append(wrap, hits);
+
+  let n = 2, labels: string[] | null = null, s: (typeof PROGRESS_STEPS_SIZES)[ProgressStepsSize] = PROGRESS_STEPS_SIZES.md;
+  let fills: HTMLElement[] = [], tracks: HTMLElement[] = [];
+  let W = 0, seg = 0, dpr = 1, active = '#000';
+  let pos = 0, from = 0, to = 0, req = false, flying = false, startAt = 0;
+
+  const fillOf = (c: number | undefined) => Math.min(n, Math.max(0, Math.round(c ?? 0)) + 1);
+  const headX = (q: number) => {
+    if (q <= 0) return 0;
+    const k = Math.min(n - 1, Math.floor(q - 1e-6));
+    return k * (seg + s.barGap) + clamp(q - k) * seg;
+  };
+
+  function paint() {
+    const o = p();
+    const bg = rgbOf(token(host, 'background', 'rgb(255 255 255)')), fg = rgbOf(token(host, 'foreground', 'rgb(28 28 30)'));
+    const dark = (0.2126 * bg[0] + 0.7152 * bg[1] + 0.0722 * bg[2]) / 255 < 0.5;
+    active = o.activeColor ?? token(host, 'primary', 'rgb(28 28 30)');
+    const track = o.trackColor ?? `rgba(${fg[0]}, ${fg[1]}, ${fg[2]}, ${dark ? 0.2 : 0.12})`;
+    for (const t of tracks) t.style.background = track;
+    for (const f of fills) f.style.background = active;
+  }
+
+  function build() {
+    const o = p();
+    s = PROGRESS_STEPS_SIZES[o.size] ?? PROGRESS_STEPS_SIZES.md;
+    labels = typeof o.steps === 'number' ? null : o.steps;
+    n = Math.max(2, typeof o.steps === 'number' ? Math.floor(o.steps) : o.steps.length);
+    wrap.replaceChildren();
+    wrap.style.gap = s.barGap + 'px';
+    wrap.style.height = s.bar + 'px';
+    tracks = [];
+    fills = [];
+    for (let k = 0; k < n; k++) {
+      const t = el('div', 'dissolve-bar'), f = el('div', 'dissolve-bar-fill');
+      t.append(f);
+      wrap.append(t);
+      tracks.push(t);
+      fills.push(f);
+    }
+    wrap.append(cv);
+    hits.replaceChildren();
+    hits.style.gap = s.barGap + 'px';
+    if (o.onStepPress) {
+      for (let i = 0; i < n; i++) {
+        const b = el('button');
+        b.type = 'button';
+        Object.assign(b.style, BUTTON);
+        b.setAttribute('aria-label', labels?.[i] ?? `Step ${i + 1}`);
+        b.addEventListener('click', () => p().onStepPress?.(i));
+        hits.append(b);
+      }
+    }
+    host.setAttribute('aria-valuemin', '0');
+    host.setAttribute('aria-valuemax', String(n));
+  }
+
+  function layout() {
+    W = wrap.clientWidth;
+    if (W <= 0) return;
+    seg = (W - s.barGap * (n - 1)) / n;
+    dpr = Math.min(3, devicePixelRatio || 1);
+    const H = s.bar + BAR_PAD * 2;
+    cv.width = Math.round((W + BAR_PAD * 2) * dpr);
+    cv.height = Math.round(H * dpr);
+    cv.style.cssText = `left:${-BAR_PAD}px;top:${-BAR_PAD}px;width:${W + BAR_PAD * 2}px;height:${H}px`;
+    flying = req = false;
+    pos = to;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    apply();
+  }
+
+  const apply = () => fills.forEach((f, k) => { f.style.transform = `scaleX(${Math.max(0.0001, clamp(pos - k))})`; });
+
+  function frame(now: number) {
+    if (!req && !flying) return;
+    if (seg <= 0) { req = flying = false; return; }
+    const reduced = reducedMotion();
+    if (req) { req = false; from = pos; startAt = now; flying = true; }
+    const a = from, b = to;
+    const dur = reduced ? PLAIN : BAR_RUN + BAR_HOP * (Math.max(1, Math.ceil(Math.abs(b - a))) - 1);
+    const since = now - startAt;
+    pos = a + (b - a) * FLOW(clamp(since / dur));
+    const spread = 3 + s.bar * 1.5, fwd = b >= a, cy = BAR_PAD + s.bar / 2, dot = Math.max(2, s.bar * 0.85);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W + BAR_PAD * 2, s.bar + BAR_PAD * 2);
+    ctx.fillStyle = active;
+    // Grains are born at the head all along the move: forward they drift in from ahead and settle
+    // into it, backward they come off the receding head and float away.
+    if (!reduced) for (let i = 0; i < MAX_DUST; i++) {
+      const born = (i / MAX_DUST) * dur, e = (since - born) / LIFE;
+      if (e < 0 || e > 1) continue;
+      const hx = headX(a + (b - a) * FLOW(clamp(born / dur)));
+      const h1 = hash(i, 3), h2 = hash(i, 5) - 0.5;
+      let x: number, y: number, alpha: number, sz: number;
+      if (fwd) {
+        const k = 1 - FLOW(e);
+        x = hx + (3 + h1 * 16) * k;
+        y = h2 * 2 * spread * k;
+        alpha = Math.min(1, e * 5) * (1 - e * e);
+        sz = 0.55 + 0.45 * (1 - k);
+      } else {
+        x = hx + (1 + h1 * 12) * e;
+        y = h2 * 2 * spread * 1.4 * e - 3 * e * e;
+        alpha = (1 - e) * Math.min(1, e * 8 + 0.4);
+        sz = 1 - 0.5 * e;
+      }
+      if (alpha <= 0.003) continue;
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(x + BAR_PAD, y + cy, (dot * sz) / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if (since >= dur + LIFE) {
+      flying = false;
+      pos = b;
+      ctx.clearRect(0, 0, W + BAR_PAD * 2, s.bar + BAR_PAD * 2);
+    }
+    apply();
+  }
+  const { kick } = loop(sc, host, frame, () => req || flying);
+
+  const syncAria = (c: number) => {
+    host.setAttribute('aria-valuenow', String(c));
+    const t = labels?.[Math.min(c, n - 1)];
+    if (t) host.setAttribute('aria-valuetext', t);
+    else host.removeAttribute('aria-valuetext');
+  };
+
+  const ro = new ResizeObserver(() => { if (wrap.clientWidth !== W) layout(); });
+  ro.observe(wrap);
+  onThemeChange(sc, () => { paint(); kick(); });
+
+  build();
+  pos = from = to = fillOf(p().current);
+  syncAria(Math.round(p().current));
+  paint();
+  layout();
+
+  return {
+    update(next) {
+      const changed = props.update(next);
+      if (changed.has('steps') || changed.has('size') || (changed.has('onStepPress') && !!p().onStepPress !== hits.childElementCount > 0)) {
+        const same = !changed.has('size') && !changed.has('onStepPress') && JSON.stringify(p().steps) === JSON.stringify(labels ?? n);
+        if (!same) { build(); to = fillOf(p().current); paint(); layout(); }
+      }
+      if (changed.has('current')) {
+        const t = fillOf(p().current);
+        syncAria(Math.round(p().current));
+        if (t !== to) {
+          to = t;
+          req = true;
+          kick();
+          if (p().haptics) vibrate(4);
+        }
+      }
+      if (changed.has('activeColor') || changed.has('trackColor')) { paint(); kick(); }
+    },
+    destroy() {
+      sc.dispose();
+      ro.disconnect();
+      wrap.remove();
+      hits.remove();
+      for (const a of ['role', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow', 'aria-valuetext', 'data-dissolve', 'data-variant']) host.removeAttribute(a);
+    },
+  };
+}
+
+/** The steps, in the look of the variant prop. A new variant swaps the look in place. */
+export function createProgressSteps(host: HTMLElement, initial: ProgressStepsProps = {}): ProgressStepsInstance {
+  let all: ProgressStepsProps = { ...initial };
+  const make = () => (all.variant === 'bars' ? createBars : createNumbers)(host, all);
+  let inner = make();
+  return {
+    update(next) {
+      const was = all.variant ?? 'numbers';
+      all = { ...all, ...next };
+      if ((all.variant ?? 'numbers') !== was) {
+        inner.destroy();
+        inner = make();
+      } else inner.update(next);
+    },
+    destroy: () => inner.destroy(),
   };
 }
