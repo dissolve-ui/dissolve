@@ -53,6 +53,11 @@ export type ElasticSliderProps = {
 };
 
 export type ElasticSliderInstance = {
+  /**
+   * The icon box before the label, in the plain (inked false) or the fill's inverted (inked true)
+   * copy, hidden while empty. Draw the icon in currentColor: each copy sets its own color.
+   */
+  icon: (inked: boolean) => HTMLElement;
   update: (props: Partial<ElasticSliderProps>) => void;
   destroy: () => void;
 };
@@ -86,6 +91,11 @@ const CSS = `
 :where(.dissolve-es-text) > * { will-change: transform; }
 :where(.dissolve-es-clip) { position: absolute; top: 0; bottom: 0; overflow: hidden; pointer-events: none; will-change: transform; }
 :where(.dissolve-es-clip) > .dissolve-es-text { inset: 0 auto 0 auto; will-change: transform; }
+:where(.dissolve-es-left) { display: inline-flex; align-items: center; min-width: 0; }
+:where(.dissolve-es-left) > span { overflow: hidden; text-overflow: ellipsis; }
+:where(.dissolve-es-icon) { display: block; flex: none; }
+:where(.dissolve-es-icon:empty) { display: none; }
+:where(.dissolve-es-icon) svg { display: block; width: 100%; height: 100%; }
 :where(.dissolve-es-value) { display: inline-flex; overflow: hidden; font-variant-numeric: tabular-nums; }
 :where(.dissolve-es-digit) { display: inline-block; overflow: hidden; }
 :where(.dissolve-es-digit) > span { display: flex; flex-direction: column; transition: transform .26s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -108,9 +118,12 @@ export function createElasticSlider(host: HTMLElement, initial: ElasticSliderPro
   const fill = el('div', 'dissolve-es-fill');
   track.append(fill);
   const mkText = () => {
-    const t = el('div', 'dissolve-es-text'), label = el('span'), val = el('span', 'dissolve-es-value');
-    t.append(label, val);
-    return { t, label, val };
+    const t = el('div', 'dissolve-es-text'), left = el('span', 'dissolve-es-left'), icon = el('i', 'dissolve-es-icon'), label = el('span');
+    const val = el('span', 'dissolve-es-value');
+    icon.setAttribute('aria-hidden', 'true');
+    left.append(icon, label);
+    t.append(left, val);
+    return { t, left, icon, label, val };
   };
   const base = mkText();
   const clip = el('div', 'dissolve-es-clip');
@@ -134,11 +147,12 @@ export function createElasticSlider(host: HTMLElement, initial: ElasticSliderPro
     fill.style.transform = `translateX(${-(1 - q) * W}px)`;
     // The texts ride with the end that stretches, without being stretched.
     for (const x of [base, inked]) {
-      x.label.style.transform = `translateX(${Math.min(0, o)}px)`;
+      x.left.style.transform = `translateX(${Math.min(0, o)}px)`;
       x.val.style.transform = `translateX(${Math.max(0, o)}px)`;
     }
-    // The inked copy is clipped to where the fill ends on screen, stretch included.
-    const shift = q * W + Math.max(0, o) - W - REACH;
+    // The inked copy is clipped to where the fill ends on screen: at full, the stretched right end;
+    // empty, the stretched left end, so nothing shows.
+    const shift = q * W + (q > 0.5 ? Math.max(0, o) : Math.min(0, o)) - W - REACH;
     clip.style.left = -REACH + 'px';
     clip.style.width = W + REACH * 2 + 'px';
     clip.style.transform = `translateX(${shift}px)`;
@@ -211,6 +225,8 @@ export function createElasticSlider(host: HTMLElement, initial: ElasticSliderPro
       x.t.style.padding = `0 ${s.pad}px`;
       x.t.style.fontSize = s.font + 'px';
       x.label.textContent = o.label ?? '';
+      x.left.style.gap = Math.round(s.font * 0.55) + 'px';
+      x.icon.style.width = x.icon.style.height = Math.round(s.font * 1.2) + 'px';
     }
     host.setAttribute('aria-valuemin', String(o.min));
     host.setAttribute('aria-valuemax', String(o.max));
@@ -312,6 +328,7 @@ export function createElasticSlider(host: HTMLElement, initial: ElasticSliderPro
   layout();
 
   return {
+    icon: (on) => (on ? inked : base).icon,
     update(next) {
       const changed = props.update(next);
       if ((['size', 'label', 'min', 'max', 'step', 'showValue', 'formatValue'] as const).some((k) => changed.has(k))) layout();

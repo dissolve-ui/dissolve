@@ -15,9 +15,11 @@
  *
  * <ElasticSlider label="Volume" value={volume} onValueChange={setVolume} formatValue={(v) => `${v}%`} />
  *
+ * <ElasticSlider label="Brightness" icon={({ color, size }) => <SunIcon color={color} size={size} />} defaultValue={70} />
+ *
  * <ElasticSlider min={0} max={10} step={1} defaultValue={4} size="sm" showValue={false} />
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { StyleSheet, View as RNView, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
@@ -49,6 +51,8 @@ export type ElasticSliderProps = {
   step?: number;
   /** Text on the left of the track. */
   label?: string;
+  /** Icon before the label: a node, or a function of { color, size } (color follows the fill's inversion). */
+  icon?: ReactNode | ((p: { color: string; size: number }) => ReactNode);
   /** Shows the value on the right of the track. Default true. */
   showValue?: boolean;
   /** Turns the value into the shown text. Default: the number. */
@@ -95,6 +99,7 @@ export function ElasticSlider({
   max = 100,
   step = 1,
   label,
+  icon,
   showValue = true,
   formatValue,
   size = 'md',
@@ -217,11 +222,13 @@ export function ElasticSlider({
   });
   // The fill is a full width layer slid in from the left.
   const fillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: -(1 - p.value) * W.value }] }));
-  // The texts in the fill's ink are clipped to where the fill ends on screen, stretch included;
-  // the clip slides, its content slides back so it stays put.
+  // The texts in the fill's ink are clipped to where the fill ends on screen: at full, the stretched
+  // right end; empty, the stretched left end (so nothing shows). The clip slides, its content slides
+  // back so it stays put.
   const clipShift = () => {
     'worklet';
-    return p.value * W.value + Math.max(0, over.value) - W.value - REACH;
+    const o = over.value;
+    return p.value * W.value + (p.value > 0.5 ? Math.max(0, o) : Math.min(0, o)) - W.value - REACH;
   };
   const clipStyle = useAnimatedStyle(() => ({ transform: [{ translateX: clipShift() }] }));
   const clipInner = useAnimatedStyle(() => ({ transform: [{ translateX: -clipShift() }] }));
@@ -233,7 +240,8 @@ export function ElasticSlider({
   const radius = s.height * 0.42;
   const content = (color: string) => (
     <RNView style={[StyleSheet.absoluteFill, st.row, { paddingHorizontal: s.pad }]}>
-      <Animated.View style={leftText}>
+      <Animated.View style={[st.left, { gap: Math.round(s.font * 0.55) }, leftText]}>
+        {typeof icon === 'function' ? icon({ color, size: Math.round(s.font * 1.2) }) : icon}
         {label ? (
           <Text numberOfLines={1} style={{ color, fontSize: s.font, fontWeight: '600', letterSpacing: -0.2 }}>
             {label}
@@ -328,4 +336,5 @@ function Digit({ d, color, font, line }: { d: number; color: string; font: numbe
 
 const st = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  left: { flexDirection: 'row', alignItems: 'center', flexShrink: 1 },
 });
