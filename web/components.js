@@ -88,16 +88,19 @@ const LEAD = ['bar-chart', 'scratch-card', 'card-stack'];
 /** The newest components, right after the lead row. */
 const NEW = ['elastic-slider', 'toggle', 'progress-steps'];
 
-export function componentsSectionHTML() {
+/**
+ * The grid of component demos. cols: column count (the gallery's by default). fx: false leaves out
+ * the engine effects that sit among the components on the gallery.
+ */
+export function componentsSectionHTML({ cols = galleryCols(), fx = true } = {}) {
   // Columns filled in reading order. The page re-renders when the count changes (app.js).
-  const cols = galleryCols();
   const items = [];
   // Gallery order: the sidebar order, with a few swaps for the layout.
   // The three biggest demos open the gallery, the newest follow, the rest in the sidebar order.
   const order = [...LEAD, ...NEW, ...COMPONENT_ORDER.filter((id) => !LEAD.includes(id) && !NEW.includes(id))].filter((id) => COMPONENTS[id]);
   order.forEach((id) => {
     // A few engine effects sit among the components.
-    while (FX[items.length]) items.push({ fx: FX[items.length] });
+    while (fx && FX[items.length]) items.push({ fx: FX[items.length] });
     items.push({ id });
   });
   // The demo sits alone on a dot grid; its name, number and interaction are a caption under it.

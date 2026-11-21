@@ -64,6 +64,7 @@ function renderSidebar() {
     </div>
     <div class="side-group">
       <p class="side-label">Components</p>
+      ${link('components', 'All components')}
       ${COMPONENT_ORDER.map((id) => link(id, COMPONENTS[id].title)).join('')}
     </div>
     ${GROUPS.map((g) => `
@@ -87,7 +88,7 @@ const GH = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
 const SEARCH = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="m10.4 10.4 3.1 3.1"/></svg>';
 /** Top bar sections: each one lights up on its own pages. */
 const TOP = [
-  { href: '#/gallery', label: 'Components', on: (id) => isGallery(id) || !!COMPONENTS[id] },
+  { href: '#/components', label: 'Components', on: (id) => id === 'components' || !!COMPONENTS[id] },
   { href: '#/effects', label: 'Effects', on: (id) => id === 'effects' || !!VARIANTS[id] },
   { href: '#/introduction', label: 'Docs', on: (id) => !!GETTING_STARTED.find((p) => p.id === id) && id !== 'agent-prompt' },
   { href: '#/agent-prompt', label: 'Agents', on: (id) => id === 'agent-prompt' },
@@ -437,7 +438,16 @@ Hide the original view while it dissolves and update state after the promise res
 /* ---------- Getting started + gallery ---------- */
 
 const DOC = { pageHead, codeBlock, cmd, copyIcon, icon, GLYPH };
+/** Every component, its demo live, on a two column grid next to the sidebar. */
+const componentsPage = () => `
+  <header class="head">
+    <h1>Components</h1>
+    <p class="sub">${COMPONENT_ORDER.length} animated components for React Native and React. Each one is a file you copy into your app and own: <code>npx ${PKG} add &lt;name&gt;</code>.</p>
+  </header>
+  ${componentsSectionHTML({ cols: innerWidth >= 860 ? 2 : 1, fx: false })}`;
+
 const PAGES = {
+  components: componentsPage,
   introduction: () => introductionPage(DOC),
   installation: () => installationPage(DOC),
   cli: () => cliPage(DOC),
@@ -486,7 +496,7 @@ function route(keepScroll) {
   markTop(id);
   // The gallery takes the full width, without the sidebar.
   document.body.classList.toggle('bx-wide', isGallery(id));
-  document.title = `${VARIANTS[id]?.title ?? comp?.title ?? (GETTING_STARTED.find((p) => p.id === id)?.title || (id === 'gallery' ? 'Gallery' : id === 'effects' ? 'Effects' : 'Introduction'))} · dissolve`;
+  document.title = `${VARIANTS[id]?.title ?? comp?.title ?? (GETTING_STARTED.find((p) => p.id === id)?.title || (id === 'gallery' ? 'Gallery' : id === 'components' ? 'Components' : id === 'effects' ? 'Effects' : 'Introduction'))} · dissolve`;
   document.body.classList.remove('side-open');
   if (keepScroll !== true) window.scrollTo(0, 0);
   wire(view);
@@ -500,6 +510,10 @@ function route(keepScroll) {
     });
   }
   if (comp) teardown.push(mountComponentPage(view, id));
+  if (id === 'components') {
+    galleryDispose = mountGallery(view);
+    teardown.push(() => galleryDispose?.());
+  }
   if (isGallery(id) || id === 'effects') {
     document.body.classList.add('is-showcase');
     teardown.push(mountShowcase(view));
