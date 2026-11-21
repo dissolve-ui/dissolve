@@ -96,7 +96,8 @@ const CSS = `
 :where(.dissolve-es-icon) { display: block; flex: none; }
 :where(.dissolve-es-icon:empty) { display: none; }
 :where(.dissolve-es-icon) svg { display: block; width: 100%; height: 100%; }
-:where(.dissolve-es-value) { display: inline-flex; overflow: hidden; font-variant-numeric: tabular-nums; }
+:where(.dissolve-es-value) { display: inline-flex; align-items: flex-start; overflow: hidden; font-variant-numeric: tabular-nums; }
+:where(.dissolve-es-value) > span { display: block; }
 :where(.dissolve-es-digit) { display: inline-block; overflow: hidden; }
 :where(.dissolve-es-digit) > span { display: flex; flex-direction: column; transition: transform .26s cubic-bezier(0.22, 1, 0.36, 1); }
 `;
@@ -204,7 +205,9 @@ export function createElasticSlider(host: HTMLElement, initial: ElasticSliderPro
           } else n.textContent = c;
         });
       }
-      for (const span of Array.from(x.val.querySelectorAll<HTMLElement>('.dissolve-es-digit > span > span'))) span.style.height = span.style.lineHeight = line + 'px';
+      // Every glyph on the same line box as the digit columns, so % and units share their baseline.
+      x.val.style.lineHeight = line + 'px';
+      for (const span of Array.from(x.val.querySelectorAll<HTMLElement>('.dissolve-es-digit > span > span, .dissolve-es-value > span:not(.dissolve-es-digit)'))) span.style.height = span.style.lineHeight = line + 'px';
     }
     host.setAttribute('aria-valuenow', String(v));
     host.setAttribute('aria-valuetext', text);
