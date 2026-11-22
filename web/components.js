@@ -82,8 +82,8 @@ const TAG_OF = {
 };
 export const tagOf = (id) => TAG_OF[id] ?? 'Press';
 
-const sliders = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5H3M12 19H3M14 3v4M16 17v4M21 12h-9M21 19h-5M21 5h-7M8 10v4M8 12H3"/></svg>';
-const playIcon = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.4v9.2a.6.6 0 0 0 .9.5l7.4-4.6a.6.6 0 0 0 0-1L5.9 2.9a.6.6 0 0 0-.9.5Z"/></svg>';
+/** On hover, the one card action: an arrow that opens the component's page. */
+const openIcon = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11 11 5M6 5h5v5"/></svg>';
 
 /** The demos that open the gallery: the biggest ones, side by side on the first row. */
 const LEAD = ['bar-chart', 'scratch-card', 'card-stack'];
@@ -119,7 +119,7 @@ export function componentsSectionHTML({ cols = galleryCols(), fx = true } = {}) 
     return `<figure class="bx-item">
       <section class="cp-panel bx-card${fx ? ' cp-panel-fx' : ''}" aria-label="${title}">
         ${body}
-        <span class="bx-acts">${fx ? '' : `<button class="bx-act" data-bx-play aria-label="Play ${title}">${playIcon}</button>`}<a class="bx-act" href="${href}" aria-label="Open ${title}">${sliders}</a></span>
+        <span class="bx-acts"><a class="bx-act" href="${href}" aria-label="Open ${title}">${openIcon}</a></span>
       </section>
       <figcaption class="bx-cap"><span class="bx-num">${num}</span><a class="bx-name" href="${href}">${title}</a><span class="bx-kind">${fx ? 'Effect' : tagOf(it.id)}</span></figcaption>
     </figure>`;
@@ -135,10 +135,8 @@ const NO_AUTOPLAY = new Set(['toast']);
 export function mountComponentsSection(root) {
   const mounted = [...root.querySelectorAll('[data-cp]')].map((b) => {
     const m = mountComponent(b.dataset.cp, b, { mode: 'panel' });
-    // The toast fires over the whole page: in the gallery it only plays when asked.
+    // The toast fires over the whole page: in the gallery it only plays from its own buttons.
     const stop = NO_AUTOPLAY.has(b.dataset.cp) ? () => {} : autoplay(b, m, { threshold: 0.35, rank: Number(b.dataset.rank) });
-    const play = b.parentElement.querySelector('[data-bx-play]');
-    play?.addEventListener('click', () => m.run());
     return { dispose: () => { stop(); m.dispose(); } };
   });
   return () => mounted.forEach((m) => m.dispose());
