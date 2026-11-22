@@ -296,4 +296,4 @@ body { padding-top: var(--top-h); }
 .bx-cap-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .bx-cap .bx-name { font-size: 15px; font-weight: 600; letter-spacing: -0.012em; color: var(--text); }
 .bx-cap .bx-kind { font-size: 12px; color: var(--faint); white-space: nowrap; }
-.bx-wide .hz .hz-title { margin: 0; font-family: 'Geist', var(--sans); font-size: clamp(56px, 8vw, 104px); line-height: 0.95; font-weight: 700; letter-spacing: -0.055em; color: var(--text); font-variation-settings: normal; }
+.bx-wide .hz .hz-title { margin: 0; font-size: clamp(48px, 6vw, 72px); line-height: 1; font-weight: 760; letter-spacing: -0.045em; color: var(--text); font-variation-settings: 'ROND' 30; }
