@@ -7,7 +7,7 @@ import { OPTIONS, PRACTICES, PEERS, INSTALL, PROVIDER, PKG } from './variants-co
 import { showcaseHTML, effectsHTML, mountShowcase, mountScrub } from './showcase.js';
 import { ready } from './images.js';
 import { introductionPage, installationPage, cliPage, themingPage, agentPromptPage, SHADCN } from './docs.js';
-import { COMPONENTS, COMPONENT_ORDER, mountComponent, componentsSectionHTML, tagOf, galleryCols, mountComponentsSection, propsTable, componentPrompt, hasWeb, platformOf, choosePlatform, usage, webCode } from './components.js';
+import { COMPONENTS, COMPONENT_ORDER, mountComponent, componentsSectionHTML, categoryOf, CATEGORIES, galleryCols, mountComponentsSection, propsTable, componentPrompt, hasWeb, platformOf, choosePlatform, usage, webCode } from './components.js';
 import { autoplay, sequence } from './autoplay.js';
 import { clearToasts } from './cp/core.js';
 import { onWidth } from './cp/kit.js';
@@ -66,8 +66,12 @@ function renderSidebar() {
     <div class="side-group">
       <p class="side-label">Components</p>
       ${link('components', 'All components')}
-      ${COMPONENT_ORDER.map((id) => link(id, COMPONENTS[id].title)).join('')}
     </div>
+    ${CATEGORIES.map((c) => `
+      <div class="side-group">
+        <p class="side-label">${c.name}</p>
+        ${c.ids.filter((id) => COMPONENTS[id]).map((id) => link(id, COMPONENTS[id].title)).join('')}
+      </div>`).join('')}
     ${GROUPS.map((g) => `
       <div class="side-group">
         <p class="side-label">${g.label}</p>
@@ -99,8 +103,8 @@ function renderTop() {
   $('#top').innerHTML = `
     <a href="/" class="top-brand" aria-label="dissolve home">${markHTML(30, 'top-mark')}<span>dissolve</span></a>
     <nav class="top-nav">${TOP.map((t) => `<a class="top-link" href="${t.href}">${t.label}</a>`).join('')}</nav>
-    <button class="top-search" data-palette aria-label="Search components">${SEARCH}<span class="ts-label">Search <span class="ts-roll" aria-hidden="true"></span></span><kbd>⌘K</kbd></button>
     <div class="top-right">
+      <button class="top-search" data-palette aria-label="Search components">${SEARCH}<span class="ts-label">Search <span class="ts-roll" aria-hidden="true"></span></span><kbd>⌘K</kbd></button>
       <a class="top-gh" href="https://github.com/rs-4/dissolve" target="_blank" rel="noopener" aria-label="Star dissolve on GitHub">${GH}<span class="star-count" hidden></span></a>
       <a class="bx-pill bx-pill-light top-cta" href="/docs/installation/">Get started</a>
     </div>`;
@@ -132,7 +136,7 @@ function rollSearch(el) {
 }
 
 const ENTRIES_ALL = () => [
-  ...COMPONENT_ORDER.map((id) => ({ id, title: COMPONENTS[id].title, kind: tagOf(id) })),
+  ...COMPONENT_ORDER.map((id) => ({ id, title: COMPONENTS[id].title, kind: categoryOf(id) })),
   ...ORDER.map((id) => ({ id, title: VARIANTS[id].title, kind: 'Effect' })),
   ...GETTING_STARTED.map((p) => ({ id: p.id, title: p.title, kind: 'Docs' })),
 ];
@@ -447,6 +451,9 @@ const componentsPage = () => `
   </header>
   ${componentsSectionHTML({ cols: innerWidth > 860 ? 2 : 1, fx: false })}`;
 
+/** The home page: every component, the lead demos and the newest first, a few effects among them. */
+const homeGrid = () => componentsSectionHTML();
+
 const PAGES = {
   components: componentsPage,
   introduction: () => introductionPage(DOC),
@@ -454,7 +461,7 @@ const PAGES = {
   cli: () => cliPage(DOC),
   theming: () => themingPage(DOC),
   'agent-prompt': () => agentPromptPage(DOC),
-  gallery: () => showcaseHTML({ components: () => componentsSectionHTML() }) + historyHTML(),
+  gallery: () => showcaseHTML({ components: () => homeGrid() }) + historyHTML(),
   effects: () => effectsHTML(),
 };
 
@@ -666,7 +673,7 @@ addEventListener('resize', () => {
       if (cols === lastCols || !galleryDispose) return;
       lastCols = cols;
       galleryDispose();
-      $('#view .cp-grid').outerHTML = componentsSectionHTML();
+      $('#view .cp-grid').outerHTML = homeGrid();
       galleryDispose = mountGallery($('#view'));
     } else if (wide && (VARIANTS[id] || id === 'effects')) route(true);
   }, 250);
