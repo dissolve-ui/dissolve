@@ -68,22 +68,19 @@ const FX = { 3: { id: 'dust', title: 'Dust', href: pathOf('dust') }, 7: { id: 's
 // Under 861 px the CSS stacks the columns (components.css): build one, so the reading order holds.
 export const galleryCols = () => (innerWidth >= 1000 ? 3 : innerWidth > 860 ? 2 : 1);
 
-/** How you interact with each component: the gallery filters. */
-export const TAGS = ['Press', 'Drag', 'Swipe', 'Type', 'Select', 'Loading'];
-const TAG_OF = {
-  'glossy-button': 'Press', 'like-button': 'Press', 'morph-button': 'Press', 'split-button': 'Press', 'gooey-menu': 'Press',
-  'reaction-picker': 'Press', 'quantity-stepper': 'Press', 'task-check': 'Press', toast: 'Press',
-  'slide-to-confirm': 'Drag', 'elastic-slider': 'Drag', 'reorder-list': 'Drag', 'before-after': 'Drag', 'signature-pad': 'Drag', 'scratch-card': 'Drag',
-  'ruler-picker': 'Drag', 'pull-to-refresh': 'Drag',
-  'swipe-to-delete': 'Swipe', 'card-stack': 'Swipe',
-  'otp-input': 'Type', 'number-ticker': 'Type',
-  'segmented-control': 'Select', toggle: 'Press', 'progress-steps': 'Select', 'bar-chart': 'Select', 'mini-player': 'Select', 'voice-note': 'Select',
-  'thinking-orb': 'Loading', skeleton: 'Loading', 'upload-tile': 'Loading', 'image-reveal': 'Loading', 'sweep-transition': 'Loading',
-};
-export const tagOf = (id) => TAG_OF[id] ?? 'Press';
+/** What each component is for: the sidebar groups and the label on each card. */
+export const CATEGORIES = [
+  { name: 'Buttons', ids: ['glossy-button', 'like-button', 'morph-button', 'split-button', 'gooey-menu', 'task-check'] },
+  { name: 'Inputs', ids: ['toggle', 'elastic-slider', 'segmented-control', 'slide-to-confirm', 'otp-input', 'quantity-stepper', 'ruler-picker', 'signature-pad', 'reaction-picker'] },
+  { name: 'Feedback', ids: ['toast', 'skeleton', 'progress-steps', 'thinking-orb', 'upload-tile', 'pull-to-refresh', 'number-ticker', 'image-reveal'] },
+  { name: 'Lists and cards', ids: ['swipe-to-delete', 'reorder-list', 'card-stack', 'scratch-card', 'before-after'] },
+  { name: 'Media and data', ids: ['bar-chart', 'mini-player', 'voice-note', 'sweep-transition'] },
+];
+const CATEGORY_OF = Object.fromEntries(CATEGORIES.flatMap((c) => c.ids.map((id) => [id, c.name])));
+export const categoryOf = (id) => CATEGORY_OF[id] ?? 'Components';
 
-const sliders = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5H3M12 19H3M14 3v4M16 17v4M21 12h-9M21 19h-5M21 5h-7M8 10v4M8 12H3"/></svg>';
-const playIcon = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.4v9.2a.6.6 0 0 0 .9.5l7.4-4.6a.6.6 0 0 0 0-1L5.9 2.9a.6.6 0 0 0-.9.5Z"/></svg>';
+/** On hover, the one card action: an arrow that opens the component's page. */
+const openIcon = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11 11 5M6 5h5v5"/></svg>';
 
 /** The demos that open the gallery: the biggest ones, side by side on the first row. */
 const LEAD = ['bar-chart', 'scratch-card', 'card-stack'];
@@ -94,12 +91,12 @@ const NEW = ['elastic-slider', 'toggle', 'progress-steps'];
  * The grid of component demos. cols: column count (the gallery's by default). fx: false leaves out
  * the engine effects that sit among the components on the gallery.
  */
-export function componentsSectionHTML({ cols = galleryCols(), fx = true } = {}) {
+export function componentsSectionHTML({ cols = galleryCols(), fx = true, ids } = {}) {
   // Columns filled in reading order. The page re-renders when the count changes (app.js).
   const items = [];
   // Gallery order: the sidebar order, with a few swaps for the layout.
   // The three biggest demos open the gallery, the newest follow, the rest in the sidebar order.
-  const order = [...LEAD, ...NEW, ...COMPONENT_ORDER.filter((id) => !LEAD.includes(id) && !NEW.includes(id))].filter((id) => COMPONENTS[id]);
+  const order = (ids ?? [...LEAD, ...NEW, ...COMPONENT_ORDER.filter((id) => !LEAD.includes(id) && !NEW.includes(id))]).filter((id) => COMPONENTS[id]);
   order.forEach((id) => {
     // A few engine effects sit among the components.
     while (fx && FX[items.length]) items.push({ fx: FX[items.length] });
@@ -119,9 +116,11 @@ export function componentsSectionHTML({ cols = galleryCols(), fx = true } = {}) 
     return `<figure class="bx-item">
       <section class="cp-panel bx-card${fx ? ' cp-panel-fx' : ''}" aria-label="${title}">
         ${body}
-        <span class="bx-acts">${fx ? '' : `<button class="bx-act" data-bx-play aria-label="Play ${title}">${playIcon}</button>`}<a class="bx-act" href="${href}" aria-label="Open ${title}">${sliders}</a></span>
+        <span class="bx-acts"><a class="bx-act" href="${href}" aria-label="Open ${title}">${openIcon}</a></span>
       </section>
-      <figcaption class="bx-cap"><span class="bx-num">${num}</span><a class="bx-name" href="${href}">${title}</a><span class="bx-kind">${fx ? 'Effect' : tagOf(it.id)}</span></figcaption>
+      <figcaption class="bx-cap">
+        <span class="bx-cap-row"><a class="bx-name" href="${href}">${title}</a><span class="bx-kind">${fx ? 'Effect' : categoryOf(it.id)}</span></span>
+      </figcaption>
     </figure>`;
   };
   return `<div class="cp-grid cp-grid-home">${Array.from({ length: cols }, (_, col) => `<div class="cp-col">
@@ -135,10 +134,8 @@ const NO_AUTOPLAY = new Set(['toast']);
 export function mountComponentsSection(root) {
   const mounted = [...root.querySelectorAll('[data-cp]')].map((b) => {
     const m = mountComponent(b.dataset.cp, b, { mode: 'panel' });
-    // The toast fires over the whole page: in the gallery it only plays when asked.
+    // The toast fires over the whole page: in the gallery it only plays from its own buttons.
     const stop = NO_AUTOPLAY.has(b.dataset.cp) ? () => {} : autoplay(b, m, { threshold: 0.35, rank: Number(b.dataset.rank) });
-    const play = b.parentElement.querySelector('[data-bx-play]');
-    play?.addEventListener('click', () => m.run());
     return { dispose: () => { stop(); m.dispose(); } };
   });
   return () => mounted.forEach((m) => m.dispose());
