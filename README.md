@@ -182,6 +182,27 @@ Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `mu
 `primary-foreground`, `success`, `danger`, `danger-foreground`, `accent`, `border`, `chart-1` to `chart-3`) live in your
 `global.css` after `init`: change them once and every component follows.
 
+### dissolve pro
+
+Full screen blocks (paywall, onboarding, sign in...) and pro components install with the same
+command, and show up in `list` marked `pro`:
+
+```sh
+npx dissolve-ui add paywall
+```
+
+The first time, the CLI prints a link and a code and opens your browser to connect your account,
+then carries on. Without dissolve pro it prints the checkout link instead. Free components never
+need an account and work offline.
+
+```sh
+npx dissolve-ui login    # or let add do it
+npx dissolve-ui whoami
+npx dissolve-ui logout
+```
+
+The token is saved in `~/.config/dissolve/auth.json`. In CI, set `DISSOLVE_TOKEN` instead.
+
 ## Hooks
 
 | Hook | Purpose |

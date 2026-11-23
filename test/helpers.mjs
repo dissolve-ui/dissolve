@@ -46,6 +46,17 @@ export function walk(dir, filter = () => true) {
 }
 
 /**
+ * Env for CLI and MCP runs: a throwaway HOME (no real token is read or written) and an API that
+ * refuses connections, so nothing reaches the network unless a test passes a mock server url.
+ */
+export function offlineEnv(home, extra = {}) {
+  const { DISSOLVE_TOKEN: _, ...base } = process.env;
+  const env = { ...base, HOME: home, USERPROFILE: home, DISSOLVE_API_URL: 'http://127.0.0.1:9', DISSOLVE_NO_BROWSER: '1', ...extra };
+  for (const [k, v] of Object.entries(extra)) if (v === undefined) delete env[k];
+  return env;
+}
+
+/**
  * A throwaway copy of the CLI laid out like the published package: bin/dissolve.mjs next to a
  * registry/ that links to the repo registry, so tests run without building the package.
  */
@@ -53,7 +64,7 @@ export function cliSandbox() {
   const { dir, cleanup } = tempDir('dissolve-cli-');
   const pkg = join(dir, 'pkg');
   mkdirSync(join(pkg, 'bin'), { recursive: true });
-  copyFileSync(join(PKG_DIR, 'bin', 'dissolve.mjs'), join(pkg, 'bin', 'dissolve.mjs'));
+  for (const f of readdirSync(join(PKG_DIR, 'bin'))) copyFileSync(join(PKG_DIR, 'bin', f), join(pkg, 'bin', f));
   symlinkSync(REGISTRY_DIR, join(pkg, 'registry'), 'dir');
   return { dir, bin: join(pkg, 'bin', 'dissolve.mjs'), cleanup };
 }
