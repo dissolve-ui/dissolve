@@ -797,10 +797,8 @@ function mountCta(root, sc) {
 
 export function mountShowcase(root) {
   const sc = scope();
-  if (root.querySelector('.hx-title')) {
-    mountTitle(root, sc);
-    mountInstall(root);
-  }
+  if (root.querySelector('.hx-title')) mountTitle(root, sc);
+  mountInstall(root);
   mountCta(root, sc);
   mountHeroBg(root.querySelector('.hz-bg'), sc);
   if (!root.querySelector('.sc-bento')) return sc.dispose;
