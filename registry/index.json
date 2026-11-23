@@ -239,6 +239,12 @@
       "file": "confetti-burst.tsx",
       "export": "ConfettiBurst",
       "description": "A short, quiet burst of paper from a button or a point: the pieces flutter, turn and fall, gone in under two seconds."
+    },
+    {
+      "name": "magnify-dock",
+      "file": "magnify-dock.tsx",
+      "export": "MagnifyDock, dockIcon",
+      "description": "The macOS dock: icons swell on springs around the pointer, the shelf widens, a launch hops the icon and lights its dot."
     }
   ],
   "helpers": [
