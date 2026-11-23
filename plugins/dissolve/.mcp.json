@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dissolve": {
+      "command": "npx",
+      "args": ["-y", "dissolve-ui-mcp"]
+    }
+  }
+}
