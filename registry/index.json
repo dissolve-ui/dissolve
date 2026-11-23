@@ -233,6 +233,12 @@
       "file": "text-scramble.tsx",
       "export": "TextScramble",
       "description": "Text that decodes into place: every letter scrambles through random glyphs, then they land one by one into the final text."
+    },
+    {
+      "name": "confetti-burst",
+      "file": "confetti-burst.tsx",
+      "export": "ConfettiBurst",
+      "description": "A short, quiet burst of paper from a button or a point: the pieces flutter, turn and fall, gone in under two seconds."
     }
   ],
   "helpers": [

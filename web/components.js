@@ -27,8 +27,9 @@ import { ENTRIES as TOOLTIP } from './cp/tooltip.js';
 import { ENTRIES as TYPING } from './cp/typing.js';
 import { ENTRIES as MARQUEE } from './cp/marquee.js';
 import { ENTRIES as SCRAMBLE } from './cp/scramble.js';
+import { ENTRIES as CONFETTI } from './cp/confetti.js';
 
-export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED, ...TOGGLE, ...STEPS, ...SLIDER, ...ACCORDION, ...COPY, ...AVATARS, ...TOOLTIP, ...TYPING, ...MARQUEE, ...SCRAMBLE };
+export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED, ...TOGGLE, ...STEPS, ...SLIDER, ...ACCORDION, ...COPY, ...AVATARS, ...TOOLTIP, ...TYPING, ...MARQUEE, ...SCRAMBLE, ...CONFETTI };
 
 // Sidebar and gallery order: registry order, with the glossy button brought up front.
 export const COMPONENT_ORDER = (() => {
@@ -79,7 +80,7 @@ export const galleryCols = () => (innerWidth >= 1000 ? 3 : innerWidth > 860 ? 2 
 export const CATEGORIES = [
   { name: 'Buttons', ids: ['glossy-button', 'copy-button', 'like-button', 'morph-button', 'split-button', 'gooey-menu', 'task-check'] },
   { name: 'Inputs', ids: ['toggle', 'elastic-slider', 'segmented-control', 'slide-to-confirm', 'otp-input', 'quantity-stepper', 'ruler-picker', 'signature-pad', 'reaction-picker'] },
-  { name: 'Feedback', ids: ['text-scramble', 'typing-indicator', 'tooltip', 'toast', 'skeleton', 'progress-steps', 'thinking-orb', 'upload-tile', 'pull-to-refresh', 'number-ticker', 'image-reveal'] },
+  { name: 'Feedback', ids: ['confetti-burst', 'text-scramble', 'typing-indicator', 'tooltip', 'toast', 'skeleton', 'progress-steps', 'thinking-orb', 'upload-tile', 'pull-to-refresh', 'number-ticker', 'image-reveal'] },
   { name: 'Lists and cards', ids: ['marquee', 'accordion', 'swipe-to-delete', 'reorder-list', 'card-stack', 'scratch-card', 'before-after'] },
   { name: 'Media and data', ids: ['avatar-stack', 'bar-chart', 'mini-player', 'voice-note', 'sweep-transition'] },
 ];
@@ -92,7 +93,7 @@ const openIcon = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" st
 /** The demos that open the gallery: the biggest ones, side by side on the first row. */
 const LEAD = ['bar-chart', 'scratch-card', 'card-stack'];
 /** The newest components, right after the lead row. */
-const NEW = ['text-scramble', 'marquee', 'typing-indicator', 'tooltip', 'avatar-stack', 'copy-button', 'accordion', 'elastic-slider', 'toggle', 'progress-steps'];
+const NEW = ['confetti-burst', 'text-scramble', 'marquee', 'typing-indicator', 'tooltip', 'avatar-stack', 'copy-button', 'accordion', 'elastic-slider', 'toggle', 'progress-steps'];
 
 /**
  * The grid of component demos. cols: column count (the gallery's by default). fx: false leaves out
