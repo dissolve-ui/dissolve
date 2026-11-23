@@ -130,11 +130,15 @@ function createNumberTicker(host, initial) {
       host.insertBefore(col.node, suffix);
       const delay = delays[it.key];
       const shown = it.present && it.kind === "digit" ? +it.char : 0;
-      let c = col.pos.v % 10;
-      if (dir < 0) c += 10;
-      col.pos.set(c);
-      const to = dir >= 0 ? shown >= c - 0.5 ? shown : shown + 10 : shown + 10 <= c + 0.5 ? shown + 10 : shown;
-      col.pos.to(to, duration, CALM, delay);
+      if (it.kind === "digit") {
+        let c = col.pos.v % 10;
+        if (dir < 0) c += 10;
+        col.pos.set(c);
+        const to = dir >= 0 ? shown >= c - 0.5 ? shown : shown + 10 : shown + 10 <= c + 0.5 ? shown + 10 : shown;
+        col.pos.to(to, duration, CALM, delay);
+      } else {
+        col.pos.set(0);
+      }
       col.w.to(it.present ? col.cw : 0, duration, CALM, it.present ? 0 : delay);
       col.o.to(it.present ? 1 : 0, duration * 0.6, CALM, it.present ? delay : 0);
       if (!it.present && !col.leaving) {
