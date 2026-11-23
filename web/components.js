@@ -22,8 +22,9 @@ import { ENTRIES as STEPS } from './cp/steps.js';
 import { ENTRIES as SLIDER } from './cp/slider.js';
 import { ENTRIES as ACCORDION } from './cp/accordion.js';
 import { ENTRIES as COPY } from './cp/copy.js';
+import { ENTRIES as AVATARS } from './cp/avatars.js';
 
-export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED, ...TOGGLE, ...STEPS, ...SLIDER, ...ACCORDION, ...COPY };
+export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED, ...TOGGLE, ...STEPS, ...SLIDER, ...ACCORDION, ...COPY, ...AVATARS };
 
 // Sidebar and gallery order: registry order, with the glossy button brought up front.
 export const COMPONENT_ORDER = (() => {
@@ -76,7 +77,7 @@ export const CATEGORIES = [
   { name: 'Inputs', ids: ['toggle', 'elastic-slider', 'segmented-control', 'slide-to-confirm', 'otp-input', 'quantity-stepper', 'ruler-picker', 'signature-pad', 'reaction-picker'] },
   { name: 'Feedback', ids: ['toast', 'skeleton', 'progress-steps', 'thinking-orb', 'upload-tile', 'pull-to-refresh', 'number-ticker', 'image-reveal'] },
   { name: 'Lists and cards', ids: ['accordion', 'swipe-to-delete', 'reorder-list', 'card-stack', 'scratch-card', 'before-after'] },
-  { name: 'Media and data', ids: ['bar-chart', 'mini-player', 'voice-note', 'sweep-transition'] },
+  { name: 'Media and data', ids: ['avatar-stack', 'bar-chart', 'mini-player', 'voice-note', 'sweep-transition'] },
 ];
 const CATEGORY_OF = Object.fromEntries(CATEGORIES.flatMap((c) => c.ids.map((id) => [id, c.name])));
 export const categoryOf = (id) => CATEGORY_OF[id] ?? 'Components';
@@ -87,7 +88,7 @@ const openIcon = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" st
 /** The demos that open the gallery: the biggest ones, side by side on the first row. */
 const LEAD = ['bar-chart', 'scratch-card', 'card-stack'];
 /** The newest components, right after the lead row. */
-const NEW = ['copy-button', 'accordion', 'elastic-slider', 'toggle', 'progress-steps'];
+const NEW = ['avatar-stack', 'copy-button', 'accordion', 'elastic-slider', 'toggle', 'progress-steps'];
 
 /**
  * The grid of component demos. cols: column count (the gallery's by default). fx: false leaves out

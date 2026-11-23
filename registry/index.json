@@ -203,6 +203,12 @@
       "file": "copy-button.tsx",
       "export": "CopyButton",
       "description": "Icon button that copies text: the copy icon breaks into grains that reform as a check, a Copied tooltip rises."
+    },
+    {
+      "name": "avatar-stack",
+      "file": "avatar-stack.tsx",
+      "export": "AvatarStack",
+      "description": "Overlapping avatars with a +N chip: hover or hold to spread them with names, adding or removing one animates the stack."
     }
   ],
   "helpers": [

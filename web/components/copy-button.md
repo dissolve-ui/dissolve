@@ -78,6 +78,6 @@ import { CopyButton } from '@/components/dissolve/copy-button';
 - React Native: [registry/copy-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/copy-button.tsx)
 - React: [registry/web/copy-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/copy-button.tsx) and [registry/web/copy-button.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/copy-button.core.ts)
 
-Previous: [Accordion](https://dissolve.rselmi.com/components/accordion/) · [All components](https://dissolve.rselmi.com/components/)
+Previous: [Accordion](https://dissolve.rselmi.com/components/accordion/) · Next: [AvatarStack](https://dissolve.rselmi.com/components/avatar-stack/) · [All components](https://dissolve.rselmi.com/components/)
 
 Source: https://dissolve.rselmi.com/components/copy-button/

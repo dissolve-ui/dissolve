@@ -236,6 +236,12 @@
       "type": "registry:component",
       "title": "CopyButton",
       "description": "Icon button that copies text: the copy icon breaks into grains that reform as a check, a Copied tooltip rises."
+    },
+    {
+      "name": "avatar-stack",
+      "type": "registry:component",
+      "title": "AvatarStack",
+      "description": "Overlapping avatars with a +N chip: hover or hold to spread them with names, adding or removing one animates the stack."
     }
   ]
 }
