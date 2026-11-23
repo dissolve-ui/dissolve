@@ -242,6 +242,12 @@
       "type": "registry:component",
       "title": "AvatarStack",
       "description": "Overlapping avatars with a +N chip: hover or hold to spread them with names, adding or removing one animates the stack."
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:component",
+      "title": "Tooltip",
+      "description": "A label with an arrow on hover, focus or long press: it grows in, flips and slides to stay on screen."
     }
   ]
 }

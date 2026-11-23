@@ -209,6 +209,12 @@
       "file": "avatar-stack.tsx",
       "export": "AvatarStack",
       "description": "Overlapping avatars with a +N chip: hover or hold to spread them with names, adding or removing one animates the stack."
+    },
+    {
+      "name": "tooltip",
+      "file": "tooltip.tsx",
+      "export": "Tooltip",
+      "description": "A label with an arrow on hover, focus or long press: it grows in, flips and slides to stay on screen."
     }
   ],
   "helpers": [
