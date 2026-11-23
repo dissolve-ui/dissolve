@@ -40,6 +40,7 @@ import TypingIndicatorDemo from './TypingIndicator.demo';
 import MarqueeDemo from './Marquee.demo';
 import TextScrambleDemo from './TextScramble.demo';
 import ConfettiBurstDemo from './ConfettiBurst.demo';
+import MagnifyDockDemo from './MagnifyDock.demo';
 
 /**
  * One demo per registry component, in registry/index.json order. The slug is the registry
@@ -89,4 +90,5 @@ export const DEMOS: DemoEntry[] = [
   { slug: 'marquee', title: 'Marquee', note: 'Press a row to stop it, drag and flick to scrub.', icon: 'text.line.first.and.arrowtriangle.forward', Component: MarqueeDemo, scroll: true },
   { slug: 'text-scramble', title: 'Text scramble', note: 'Press Refresh: the status decodes into the next update.', icon: 'character.cursor.ibeam', Component: TextScrambleDemo, scroll: true },
   { slug: 'confetti-burst', title: 'Confetti burst', note: "Log today's run: a small burst of paper leaves the button.", icon: 'party.popper', Component: ConfettiBurstDemo, scroll: false },
+  { slug: 'magnify-dock', title: 'Magnify dock', note: 'Slide along the dock: icons swell under the finger, lift to launch.', icon: 'dock.rectangle', Component: MagnifyDockDemo, scroll: false },
 ];

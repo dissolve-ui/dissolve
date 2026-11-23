@@ -62,7 +62,7 @@ function documented(name) {
 /** Keys declared in the `export type ...Props = ...` (or ...Options) object types of a source file. */
 function propKeys(src) {
   const keys = new Set();
-  for (const m of src.matchAll(/export\s+type\s+\w*(?:Props|Options)(?:<[^=]*>)?\s*=/g)) {
+  for (const m of src.matchAll(/export\s+type\s+\w*(?:Props|Options)(?:<[^>]*>)?\s*=/g)) {
     let i = src.indexOf('{', m.index), depth = 0;
     const end = src.indexOf(';\n', m.index);
     if (i === -1 || (end !== -1 && i > end)) continue;
