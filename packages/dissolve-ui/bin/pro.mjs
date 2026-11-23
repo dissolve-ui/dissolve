@@ -136,9 +136,12 @@ export function pendingLogin() {
 
 export const clearPendingLogin = () => rmSync(deviceFile(), { force: true });
 
-/** POST /api/device/start, saved so a later run can keep polling the same code. */
-export async function startLogin() {
-  const { status, body } = await request('/api/device/start', { method: 'POST', body: {} });
+/**
+ * POST /api/device/start, saved so a later run can keep polling the same code.
+ * client_name becomes the token's name in the account (e.g. "dissolve-ui CLI on my-mac").
+ */
+export async function startLogin(clientName) {
+  const { status, body } = await request('/api/device/start', { method: 'POST', body: clientName ? { client_name: clientName } : {} });
   if (status !== 200 || !body?.device_code || !body.user_code || !body.verify_url) {
     throw new Error(`Could not start the dissolve login (HTTP ${status}). Try again in a moment.`);
   }
@@ -154,11 +157,11 @@ export async function startLogin() {
 }
 
 /** The login in progress, or a new one. */
-export const ensureLogin = async () => pendingLogin() ?? startLogin();
+export const ensureLogin = async (clientName) => pendingLogin() ?? startLogin(clientName);
 
 /**
  * One poll. Resolves 'pending', 'expired', or the token (already saved).
- * 202 pending, 200 { token }, 410 expired.
+ * 202 pending, 200 { token }, 410 expired or already delivered, 404 unknown code, 400 no code.
  */
 export async function pollLogin(pending) {
   if (!(pending.expires_at > Date.now())) {
@@ -171,7 +174,7 @@ export async function pollLogin(pending) {
     clearPendingLogin();
     return { token: body.token };
   }
-  if (status === 410 || status === 404) {
+  if (status === 410 || status === 404 || status === 400) {
     clearPendingLogin();
     return 'expired';
   }

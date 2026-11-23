@@ -19,6 +19,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { createInterface } from 'node:readline/promises';
+import { hostname } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { clearPendingLogin, clearToken, ensureLogin, isItemName, me, OfflineError, openBrowser, proIndex, proItem, readToken, waitForLogin } from './pro.mjs';
 
@@ -348,6 +349,7 @@ const depName = (dep) => String(dep).split('?')[0].replace(/\.json$/, '').split(
  */
 function proFilePath(file) {
   const raw = String(file?.target || file?.path || '').split('\\').join('/');
+  if (raw.split('/').includes('..')) return null;
   let rel = raw.replace(/^(\.\/)?(src\/)?components\/dissolve\//, '');
   if (rel === raw) rel = raw.split('/').pop();
   if (!rel || rel.startsWith('/') || rel.split('/').some((s) => s === '' || s === '.' || s === '..')) return null;
@@ -364,7 +366,7 @@ const NON_TTY_WAIT = 90_000;
 async function deviceLogin() {
   let pending;
   try {
-    pending = await ensureLogin();
+    pending = await ensureLogin(`dissolve-ui CLI on ${hostname()}`);
   } catch (e) {
     console.log(c.red('error   ') + e.message);
     return null;
@@ -437,7 +439,7 @@ async function resolvePro(names, opts, platform, isFree) {
         else queue.push(d);
       }
     } else if (r.status === 'pay') checkout.push({ name, url: r.checkout_url });
-    else if (r.status === 'missing') console.log(c.red('unknown ') + `${name}. Run npx ${CLI} list`);
+    else if (r.status === 'missing') console.log(c.red('unknown ') + `${name}: not found. Run npx ${CLI} list`);
     else if (r.status === 'login' && opts.noLogin) {
       console.log(`login required: ${name} is part of dissolve pro. Run npx ${CLI} login`);
       process.exit(3);
