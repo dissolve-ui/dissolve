@@ -215,6 +215,12 @@
       "file": "tooltip.tsx",
       "export": "Tooltip",
       "description": "A label with an arrow on hover, focus or long press: it grows in, flips and slides to stay on screen."
+    },
+    {
+      "name": "typing-indicator",
+      "file": "typing-indicator.tsx",
+      "export": "TypingIndicator",
+      "description": "Chat typing indicator: avatars of who is typing pop into a stack beside three waving dots, with a +N past the limit."
     }
   ],
   "helpers": [
