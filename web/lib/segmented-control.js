@@ -103,6 +103,10 @@ function createSegmentedControl(host, initial = {}) {
   const cv = el("canvas", "dissolve-segmented-grains");
   const ctx = cv.getContext("2d");
   const row = el("div", "dissolve-segmented-row");
+  for (const box of [ghost, pill]) {
+    box.style.setProperty("transition", "none", "important");
+    box.style.visibility = "hidden";
+  }
   host.append(ghost, pill, cv, row);
   const pool = [];
   const tabAt = (i) => {
@@ -192,7 +196,7 @@ function createSegmentedControl(host, initial = {}) {
     N = grid.length;
     D = new Float32Array(N * 4);
     F = new Float32Array(N * 4);
-    for (const box of [ghost, pill]) Object.assign(box.style, { width: seg + "px", height: ph + "px", top: inset + "px", borderRadius: ph / 2 + "px" });
+    for (const box of [ghost, pill]) Object.assign(box.style, { width: seg + "px", height: ph + "px", top: inset + "px", borderRadius: ph / 2 + "px", visibility: "" });
     dpr = Math.min(3, devicePixelRatio || 1);
     cv.width = Math.round((W + PAD * 2) * dpr);
     cv.height = Math.round((H + PAD * 2) * dpr);
@@ -341,7 +345,7 @@ function createSegmentedControl(host, initial = {}) {
   host.addEventListener("pointercancel", onEnd);
   host.addEventListener("keydown", onKey);
   const ro = new ResizeObserver(() => {
-    if (host.clientWidth !== W) layout();
+    if (host.clientWidth !== W || seg <= 0) layout();
   });
   ro.observe(host);
   onThemeChange(sc, () => {
