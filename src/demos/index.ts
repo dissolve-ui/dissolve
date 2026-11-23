@@ -37,6 +37,7 @@ import CopyButtonDemo from './CopyButton.demo';
 import AvatarStackDemo from './AvatarStack.demo';
 import TooltipDemo from './Tooltip.demo';
 import TypingIndicatorDemo from './TypingIndicator.demo';
+import MarqueeDemo from './Marquee.demo';
 
 /**
  * One demo per registry component, in registry/index.json order. The slug is the registry
@@ -83,4 +84,5 @@ export const DEMOS: DemoEntry[] = [
   { slug: 'avatar-stack', title: 'Avatar stack', note: 'Hold the stack to spread it and read the names.', icon: 'person.3', Component: AvatarStackDemo, scroll: true },
   { slug: 'tooltip', title: 'Tooltip', note: 'Hold a tool: its label grows in, flips and stays on screen.', icon: 'text.bubble', Component: TooltipDemo, scroll: true },
   { slug: 'typing-indicator', title: 'Typing indicator', note: 'Tap people to make them type: avatars pop into the stack.', icon: 'ellipsis.bubble', Component: TypingIndicatorDemo, scroll: false },
+  { slug: 'marquee', title: 'Marquee', note: 'Press a row to stop it, drag and flick to scrub.', icon: 'text.line.first.and.arrowtriangle.forward', Component: MarqueeDemo, scroll: true },
 ];
