@@ -47,7 +47,7 @@ var PILL = {
   gap: "var(--glossy-gap)",
   border: "0",
   borderRadius: "var(--glossy-r)",
-  background: "var(--glossy-fill)",
+  background: "var(--glossy-bg, var(--glossy-fill))",
   color: "var(--glossy-label)",
   fontFamily: "inherit",
   fontSize: "var(--glossy-font)",
@@ -55,7 +55,7 @@ var PILL = {
   lineHeight: "1",
   letterSpacing: "-0.013em",
   whiteSpace: "nowrap",
-  boxShadow: "0 var(--glossy-sh-y) var(--glossy-sh-b) rgba(0, 0, 0, var(--glossy-sh-o)), 0 0 0 var(--glossy-ring) var(--glossy-fill)",
+  boxShadow: "0 var(--glossy-sh-y) var(--glossy-sh-b) rgba(0, 0, 0, var(--glossy-sh-o)), 0 0 0 var(--glossy-ring) var(--glossy-fill), var(--glossy-glow, 0 0 #0000)",
   transform: "scale(var(--glossy-scale, 1))",
   willChange: "transform",
   touchAction: "manipulation"
@@ -71,11 +71,33 @@ var CSS = `
   -webkit-mask-composite: xor; mask-composite: exclude;
 }
 :where([data-dissolve="glossy-button"])::after { box-shadow: inset 0 0 var(--glossy-in-b) var(--glossy-in-s) rgba(255, 255, 255, var(--glossy-in-o)); opacity: var(--glossy-light, 1); }
+/* A light fill (a white button on a dark page): white light would vanish into it and a black shadow into the
+   page, so the gloss turns around: a soft grey gradient, a dark rim lit from below, a bright top edge and a
+   faint white halo that reads on dark backgrounds. */
+:where([data-dissolve="glossy-button"][data-light])::before { background: linear-gradient(to top, rgba(0, 0, 0, calc(var(--glossy-stroke) * 0.45)), rgba(0, 0, 0, 0) 70%); }
+:where([data-dissolve="glossy-button"][data-light])::after { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -2px 5px rgba(0, 0, 0, calc(var(--glossy-in-o) * 0.5)); }
 :where(.dissolve-glossy-icon, .dissolve-glossy-label) { position: relative; }
 :where(.dissolve-glossy-icon) { display: inline-flex; }
 :where(.dissolve-glossy-icon:empty, .dissolve-glossy-label:empty) { display: none; }
 :where(.dissolve-glossy-icon) svg { flex: none; }
 `;
+function luminance(c) {
+  let r = 0, g = 0, b = 0;
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(c.trim());
+  if (hex) {
+    const h = hex[1].length === 3 ? hex[1].split("").map((x) => x + x).join("") : hex[1];
+    [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+  } else {
+    const m = c.match(/[\d.]+/g);
+    if (!m || !/^rgb/i.test(c.trim())) return 0;
+    [r, g, b] = m.slice(0, 3).map(Number);
+  }
+  const lin = (v) => {
+    v /= 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
 function createGlossyButton(host, initial = {}) {
   injectStyle("dissolve-glossy-button", CSS);
   const props = propsOf(DEFAULTS, initial);
@@ -120,6 +142,10 @@ function createGlossyButton(host, initial = {}) {
       font: s.font + "px"
     };
     for (const [k, v] of Object.entries(vars)) host.style.setProperty(`--glossy-${k}`, String(v));
+    const light = luminance(o.color) > 0.72;
+    host.toggleAttribute("data-light", light);
+    host.style.setProperty("--glossy-bg", light ? `linear-gradient(to bottom, ${o.color}, color-mix(in srgb, ${o.color} 86%, #8a8a94))` : "");
+    host.style.setProperty("--glossy-glow", light ? "0 0 18px rgba(255, 255, 255, 0.18), 0 0 1px rgba(255, 255, 255, 0.6)" : "");
     host.style.display = o.fullWidth ? "flex" : "inline-flex";
     if (o.fullWidth !== full) host.style.width = o.fullWidth ? "100%" : "";
     full = o.fullWidth;
