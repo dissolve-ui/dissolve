@@ -38,6 +38,7 @@ import AvatarStackDemo from './AvatarStack.demo';
 import TooltipDemo from './Tooltip.demo';
 import TypingIndicatorDemo from './TypingIndicator.demo';
 import MarqueeDemo from './Marquee.demo';
+import TextScrambleDemo from './TextScramble.demo';
 
 /**
  * One demo per registry component, in registry/index.json order. The slug is the registry
@@ -85,4 +86,5 @@ export const DEMOS: DemoEntry[] = [
   { slug: 'tooltip', title: 'Tooltip', note: 'Hold a tool: its label grows in, flips and stays on screen.', icon: 'text.bubble', Component: TooltipDemo, scroll: true },
   { slug: 'typing-indicator', title: 'Typing indicator', note: 'Tap people to make them type: avatars pop into the stack.', icon: 'ellipsis.bubble', Component: TypingIndicatorDemo, scroll: false },
   { slug: 'marquee', title: 'Marquee', note: 'Press a row to stop it, drag and flick to scrub.', icon: 'text.line.first.and.arrowtriangle.forward', Component: MarqueeDemo, scroll: true },
+  { slug: 'text-scramble', title: 'Text scramble', note: 'Press Refresh: the status decodes into the next update.', icon: 'character.cursor.ibeam', Component: TextScrambleDemo, scroll: true },
 ];
