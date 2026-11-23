@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { cliSandbox, existsSync, read, registryIndex, REGISTRY_DIR, writeTree } from './helpers.mjs';
+import { cliSandbox, existsSync, offlineEnv, read, registryIndex, REGISTRY_DIR, writeTree } from './helpers.mjs';
 
 const ANSI = /\x1b\[[0-9;]*m/g;
 const ALL_DEPS = {
@@ -49,7 +49,7 @@ function project(files = {}) {
 }
 
 function run(cwd, ...args) {
-  const r = spawnSync(process.execPath, [sandbox.bin, ...args], { cwd, encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [sandbox.bin, ...args], { cwd, encoding: 'utf8', env: offlineEnv(join(sandbox.dir, 'home')) });
   return { code: r.status, out: (r.stdout + r.stderr).replace(ANSI, '') };
 }
 
