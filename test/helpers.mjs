@@ -50,8 +50,8 @@ export function walk(dir, filter = () => true) {
  * refuses connections, so nothing reaches the network unless a test passes a mock server url.
  */
 export function offlineEnv(home, extra = {}) {
-  const env = { ...process.env, HOME: home, USERPROFILE: home, DISSOLVE_API_URL: 'http://127.0.0.1:9', DISSOLVE_NO_BROWSER: '1', ...extra };
-  delete env.DISSOLVE_TOKEN;
+  const { DISSOLVE_TOKEN: _, ...base } = process.env;
+  const env = { ...base, HOME: home, USERPROFILE: home, DISSOLVE_API_URL: 'http://127.0.0.1:9', DISSOLVE_NO_BROWSER: '1', ...extra };
   for (const [k, v] of Object.entries(extra)) if (v === undefined) delete env[k];
   return env;
 }
