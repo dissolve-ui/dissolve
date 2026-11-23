@@ -159,6 +159,12 @@ export function createSegmentedControl(host: HTMLElement, initial: SegmentedCont
   const cv = el('canvas', 'dissolve-segmented-grains');
   const ctx = cv.getContext('2d')!;
   const row = el('div', 'dissolve-segmented-row');
+  // The pill is placed by layout() only, never transitioned: a page wide `transition` rule would
+  // otherwise slide it in from the left on its first placement. Hidden until it has a size.
+  for (const box of [ghost, pill]) {
+    box.style.setProperty('transition', 'none', 'important');
+    box.style.visibility = 'hidden';
+  }
   host.append(ghost, pill, cv, row);
 
   /** Segment nodes by index, made on demand so the icon boxes exist before the segments do. */
@@ -251,7 +257,7 @@ export function createSegmentedControl(host: HTMLElement, initial: SegmentedCont
     N = grid.length;
     D = new Float32Array(N * 4);
     F = new Float32Array(N * 4);
-    for (const box of [ghost, pill]) Object.assign(box.style, { width: seg + 'px', height: ph + 'px', top: inset + 'px', borderRadius: ph / 2 + 'px' });
+    for (const box of [ghost, pill]) Object.assign(box.style, { width: seg + 'px', height: ph + 'px', top: inset + 'px', borderRadius: ph / 2 + 'px', visibility: '' });
     dpr = Math.min(3, devicePixelRatio || 1);
     cv.width = Math.round((W + PAD * 2) * dpr);
     cv.height = Math.round((H + PAD * 2) * dpr);
@@ -394,7 +400,9 @@ export function createSegmentedControl(host: HTMLElement, initial: SegmentedCont
   host.addEventListener('pointercancel', onEnd);
   host.addEventListener('keydown', onKey);
 
-  const ro = new ResizeObserver(() => { if (host.clientWidth !== W) layout(); });
+  // A host that is not laid out yet (detached, display: none, a width that settles later) gets its
+  // first placement from the observer, which runs after layout and before the frame is painted.
+  const ro = new ResizeObserver(() => { if (host.clientWidth !== W || seg <= 0) layout(); });
   ro.observe(host);
   onThemeChange(sc, () => { paint(); kick(); });
 
@@ -408,6 +416,7 @@ export function createSegmentedControl(host: HTMLElement, initial: SegmentedCont
   syncAria();
   paint();
   disable();
+  // Synchronous first placement: the pill is right on the very first painted frame.
   layout();
 
   return {
