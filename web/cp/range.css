@@ -1,9 +1,0 @@
-/* RangeSlider demo (cp/range.js). The sliders bring their own styles (web/lib). */
-.rg-demo { display: flex; flex-direction: column; align-items: stretch; gap: 32px; }
-.rg-group { padding: 0 4px; }
-.rg-label { font: 400 14px/1.3 var(--sans); color: var(--muted); }
-.rg-val { margin-top: 2px; font: 600 28px/34px var(--sans); letter-spacing: -0.03em; color: var(--text); font-variant-numeric: tabular-nums; }
-.rg-val small { font-size: 18px; color: var(--muted); letter-spacing: -0.02em; }
-.rg-stage { gap: 44px; }
-.rg-stage .rg-val { font-size: 34px; line-height: 41px; }
-.rg-stage .rg-val small { font-size: 22px; }

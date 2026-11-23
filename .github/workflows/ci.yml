@@ -33,14 +33,9 @@ jobs:
       - name: Tests (CLI, registry, theme, engine, package)
         run: npm test
 
-      - name: Syntax check web and mcp modules
+      - name: Syntax check mcp modules
         run: |
           set -e
-          for f in web/*.js web/lib/*.js web/cp/*.js; do
-            [ -f "$f" ] || continue
-            echo "node --check $f"
-            node --check --input-type=module < "$f"
-          done
           for f in mcp/*.mjs; do
             echo "node --check $f"
             node --check "$f"

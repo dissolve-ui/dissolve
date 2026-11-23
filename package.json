@@ -32,11 +32,7 @@
     "test:registry": "node --test test/registry.test.mjs test/theme.test.mjs",
     "test:package": "node --test test/package.test.mjs",
     "build:package": "sh scripts/build-package.sh",
-    "check": "npm run typecheck && npm test",
-    "web:stamp": "node scripts/build-web.mjs && node scripts/build-shadcn.mjs && node scripts/stamp-web.mjs && npm run web:seo",
-    "web:seo": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-seo.mjs",
-    "web:registry": "node scripts/build-shadcn.mjs",
-    "web:build": "node scripts/build-web.mjs"
+    "check": "npm run typecheck && npm test"
   },
   "dependencies": {
     "@shopify/react-native-skia": "2.6.2",
@@ -70,7 +66,6 @@
   "devDependencies": {
     "@types/react": "~19.2.2",
     "@types/react-dom": "~19.2.2",
-    "esbuild": "^0.25.12",
     "react-dom": "19.2.3",
     "typescript": "~6.0.3"
   },

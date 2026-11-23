@@ -1,7 +1,0 @@
-/* PullToRefresh (cp/pull.js). The pull itself styles its host (web/lib/pull-to-refresh.js). */
-.pr { text-align: left; color: var(--text); }
-.pr-row { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; }
-.pr-row + .pr-row::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 0.5px; background: var(--line); }
-.pr-name, .pr-amt { font-size: 17px; line-height: 22px; letter-spacing: -0.025em; white-space: nowrap; }
-.pr-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.pr-amt { flex: none; color: var(--muted); font-variant-numeric: tabular-nums; }

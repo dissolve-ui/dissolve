@@ -1,6 +1,10 @@
+// The web grain engine (registry/web/engine.ts), loaded with Node's type stripping.
 import assert from 'node:assert/strict';
+import { register } from 'node:module';
 import { test } from 'node:test';
-import { play } from '../web/lib/engine.js';
+
+register('./ts-loader.mjs', import.meta.url);
+const { play } = await import('../registry/web/engine.ts');
 
 // Record source rectangles at DPR 1 with the public scrub handle driving the frame loop.
 test('rain batches settled neighbours in paint order and can scrub back out of a batch', () => {

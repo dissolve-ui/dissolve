@@ -1,3 +1,0 @@
-/* SegmentedControl demo (cp/segmented.js). The control brings its own styles (web/lib). */
-.sg-demo { display: flex; flex-direction: column; align-items: center; gap: 28px; user-select: none; -webkit-user-select: none; }
-.sg { flex: none; }

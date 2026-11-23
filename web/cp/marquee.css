@@ -1,7 +1,0 @@
-/* Marquee demo (cp/marquee.js). The rows bring their own styles (web/lib). */
-.mq-demo { display: flex; flex-direction: column; gap: 14px; }
-.mq-demo .dissolve-mq-row { align-items: stretch; }
-.mq-quote { box-sizing: border-box; width: 232px; margin: 0; padding: 14px 16px; border-radius: 16px; background: var(--surface-2); color: var(--text); font: 400 15px/20px var(--sans); }
-.mq-quote p { margin: 0; letter-spacing: -0.01em; }
-.mq-quote span { display: block; margin-top: 6px; font-size: 13px; line-height: 18px; color: var(--muted); }
-.mq-pill { display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 17px; background: var(--surface-2); color: var(--text); font: 500 14px/1 var(--sans); white-space: nowrap; }

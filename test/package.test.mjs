@@ -97,6 +97,6 @@ test('the packed CLI speaks as dissolve-ui', () => {
 
 test('nothing in the repo still points at the old package name', () => {
   const old = 'react-native' + '-dissolve';
-  const hits = spawnSync('git', ['grep', '--untracked', '-l', old, '--', '.', ':!CHANGELOG.md', ':!web/lib'], { cwd: ROOT, encoding: 'utf8' }).stdout.trim();
+  const hits = spawnSync('git', ['grep', '--untracked', '-l', old, '--', '.', ':!CHANGELOG.md'], { cwd: ROOT, encoding: 'utf8' }).stdout.trim();
   assert.equal(hits, '', `still mentions ${old}: ${hits}`);
 });

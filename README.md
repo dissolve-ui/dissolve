@@ -217,13 +217,7 @@ The token is saved in `~/.config/dissolve/auth.json`. In CI, set `DISSOLVE_TOKEN
 
 ## Documentation
 
-- Website: the `web/` folder holds the docs and the showcase (gallery, variant pages, docs, agent
-  prompt), with a live Canvas 2D port of the engine. Component pages run the React web cores, built
-  into `web/lib/` by `npm run web:stamp` and committed, so the server needs no build step:
-
-  ```sh
-  cd web && python3 -m http.server 8000
-  ```
+- Website: https://dissolve.rselmi.com (docs, gallery, variant pages). Its source is no longer in this repository.
 
 - React web components: how a component becomes one, in [docs/WEB.md](docs/WEB.md).
 
@@ -249,12 +243,12 @@ On Claude Code 2.1.275 or later, one line does both:
 ## For coding agents
 
 - Agent prompt: the website's [Agent prompt](https://dissolve.rselmi.com/docs/agent-prompt/) page gives a ready to paste prompt.
-- Claude skill: [web/skills/dissolve/SKILL.md](web/skills/dissolve/SKILL.md). Install it for every
-  project with:
+- Claude skill: [plugins/dissolve/skills/dissolve/SKILL.md](https://github.com/dissolve-ui/dissolve/blob/main/plugins/dissolve/skills/dissolve/SKILL.md),
+  shipped with the Claude Code plugin above. Install it on its own for every project with:
 
   ```sh
-  mkdir -p ~/.claude/skills/dissolve-ui
-  cp web/skills/dissolve/SKILL.md ~/.claude/skills/dissolve-ui/SKILL.md
+  mkdir -p ~/.claude/skills/dissolve
+  cp plugins/dissolve/skills/dissolve/SKILL.md ~/.claude/skills/dissolve/SKILL.md
   ```
 
 - MCP server: [mcp/server.mjs](mcp/server.mjs), dependency free, Node over stdio. Tools:
@@ -283,7 +277,7 @@ The tests live in `test/` and run in CI on every push and pull request. See
 
 Contributions are welcome, new components included: the
 [component workflow](CONTRIBUTING.md#adding-a-component) covers the registry file, the
-`index.json` entry, the demo, the web port and the tests. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the
+`index.json` entry, the demo, the React web version and the tests. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the
 [Code of Conduct](CODE_OF_CONDUCT.md). Security issues: see [SECURITY.md](SECURITY.md).
 
 ## License
