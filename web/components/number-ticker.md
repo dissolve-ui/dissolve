@@ -85,8 +85,8 @@ import { NumberTicker } from '@/components/dissolve/number-ticker';
 
 ## Source
 
-- React Native: [registry/number-ticker.tsx](https://github.com/rs-4/dissolve/blob/main/registry/number-ticker.tsx)
-- React: [registry/web/number-ticker.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/number-ticker.tsx) and [registry/web/number-ticker.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/number-ticker.core.ts)
+- React Native: [registry/number-ticker.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/number-ticker.tsx)
+- React: [registry/web/number-ticker.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/number-ticker.tsx) and [registry/web/number-ticker.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/number-ticker.core.ts)
 
 Previous: [OTPInput](https://dissolve.rselmi.com/components/otp-input/) · Next: [ReactionPicker](https://dissolve.rselmi.com/components/reaction-picker/) · [All components](https://dissolve.rselmi.com/components/)
 

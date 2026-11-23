@@ -75,8 +75,8 @@ import { MorphButton } from '@/components/dissolve/morph-button';
 
 ## Source
 
-- React Native: [registry/morph-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/morph-button.tsx)
-- React: [registry/web/morph-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/morph-button.tsx) and [registry/web/morph-button.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/morph-button.core.ts)
+- React Native: [registry/morph-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/morph-button.tsx)
+- React: [registry/web/morph-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/morph-button.tsx) and [registry/web/morph-button.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/morph-button.core.ts)
 
 Previous: [LikeButton](https://dissolve.rselmi.com/components/like-button/) · Next: [SplitButton](https://dissolve.rselmi.com/components/split-button/) · [All components](https://dissolve.rselmi.com/components/)
 

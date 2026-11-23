@@ -9,7 +9,7 @@ const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, 
 const PEERS = ['@shopify/react-native-skia', 'react-native-reanimated', 'react-native-worklets', 'react-native-gesture-handler', 'expo-haptics'];
 const INSTALL = `npx expo install ${PKG} ${PEERS.join(' ')}`;
 const SKILL_PATH = '/skills/dissolve/SKILL.md';
-const GITHUB = 'https://github.com/rs-4/dissolve';
+const GITHUB = 'https://github.com/dissolve-ui/dissolve';
 
 const skillURL = () => new URL(SKILL_PATH, location.href).href;
 

@@ -98,8 +98,8 @@ import { MiniPlayer } from '@/components/dissolve/mini-player';
 
 ## Source
 
-- React Native: [registry/mini-player.tsx](https://github.com/rs-4/dissolve/blob/main/registry/mini-player.tsx)
-- React: [registry/web/mini-player.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/mini-player.tsx) and [registry/web/mini-player.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/mini-player.core.ts)
+- React Native: [registry/mini-player.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/mini-player.tsx)
+- React: [registry/web/mini-player.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/mini-player.tsx) and [registry/web/mini-player.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/mini-player.core.ts)
 
 Previous: [BarChart](https://dissolve.rselmi.com/components/bar-chart/) · Next: [PullToRefresh](https://dissolve.rselmi.com/components/pull-to-refresh/) · [All components](https://dissolve.rselmi.com/components/)
 

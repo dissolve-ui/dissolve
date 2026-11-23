@@ -80,8 +80,8 @@ import { ImageReveal } from '@/components/dissolve/image-reveal';
 
 ## Source
 
-- React Native: [registry/image-reveal.tsx](https://github.com/rs-4/dissolve/blob/main/registry/image-reveal.tsx)
-- React: [registry/web/image-reveal.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/image-reveal.tsx) and [registry/web/image-reveal.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/image-reveal.core.ts)
+- React Native: [registry/image-reveal.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/image-reveal.tsx)
+- React: [registry/web/image-reveal.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/image-reveal.tsx) and [registry/web/image-reveal.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/image-reveal.core.ts)
 
 Previous: [ThinkingOrb](https://dissolve.rselmi.com/components/thinking-orb/) · Next: [SweepTransition](https://dissolve.rselmi.com/components/sweep-transition/) · [All components](https://dissolve.rselmi.com/components/)
 

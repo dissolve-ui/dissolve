@@ -86,8 +86,8 @@ import { BarChart } from '@/components/dissolve/bar-chart';
 
 ## Source
 
-- React Native: [registry/bar-chart.tsx](https://github.com/rs-4/dissolve/blob/main/registry/bar-chart.tsx)
-- React: [registry/web/bar-chart.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/bar-chart.tsx) and [registry/web/bar-chart.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/bar-chart.core.ts)
+- React Native: [registry/bar-chart.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/bar-chart.tsx)
+- React: [registry/web/bar-chart.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/bar-chart.tsx) and [registry/web/bar-chart.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/bar-chart.core.ts)
 
 Previous: [RulerPicker](https://dissolve.rselmi.com/components/ruler-picker/) · Next: [MiniPlayer](https://dissolve.rselmi.com/components/mini-player/) · [All components](https://dissolve.rselmi.com/components/)
 

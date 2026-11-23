@@ -82,8 +82,8 @@ const [step, setStep] = useState(0);
 
 ## Source
 
-- React Native: [registry/progress-steps.tsx](https://github.com/rs-4/dissolve/blob/main/registry/progress-steps.tsx)
-- React: [registry/web/progress-steps.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/progress-steps.tsx) and [registry/web/progress-steps.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/progress-steps.core.ts)
+- React Native: [registry/progress-steps.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/progress-steps.tsx)
+- React: [registry/web/progress-steps.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/progress-steps.tsx) and [registry/web/progress-steps.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/progress-steps.core.ts)
 
 Previous: [Toggle](https://dissolve.rselmi.com/components/toggle/) · Next: [ElasticSlider](https://dissolve.rselmi.com/components/elastic-slider/) · [All components](https://dissolve.rselmi.com/components/)
 

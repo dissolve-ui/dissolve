@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to report a bug. Please search [existing issues](https://github.com/rs-4/dissolve/issues) first.
+        Thanks for taking the time to report a bug. Please search [existing issues](https://github.com/dissolve-ui/dissolve/issues) first.
   - type: dropdown
     id: area
     attributes:
