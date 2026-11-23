@@ -216,12 +216,11 @@ describe('registry sources', () => {
 });
 
 describe('copy rules', () => {
-  test('no em dash in registry, engine, docs and web copy', () => {
+  test('no em dash in registry, engine and docs copy', () => {
     const textFile = (p) => /\.(tsx?|mjs|js|css|html|md|json|ya?ml)$/.test(p);
     const targets = [
       ...walk(REGISTRY_DIR, textFile),
       ...walk(join(ROOT, 'src', 'dissolve'), textFile),
-      ...walk(join(ROOT, 'web'), (p) => textFile(p) && !p.includes(`${join('web', 'assets')}`)),
       ...walk(join(ROOT, 'docs'), textFile),
       ...walk(join(ROOT, 'mcp'), textFile),
       ...walk(join(ROOT, 'plugins'), textFile),

@@ -29,10 +29,11 @@ npm run check      # type check + tests, must pass before you open a pull reques
 | `packages/dissolve-ui/` | The npm package: the React Native engine and hooks (`lib/`), the `init/add/list` CLI (`bin/`) and a copy of the registry, native and web |
 | `src/demos/` | One demo screen per component (`<Name>.demo.tsx`), listed in `src/demos/index.ts` |
 | `app/` | Expo Router example app: demo screens for every variant and a playground |
-| `web/` | Static docs and showcase website (no build step on the server), with the component demos in `web/cp/` (`web/components.js` assembles them) running the web cores built into `web/lib/` |
 | `test/` | `node:test` suites: CLI, registry, theme, engine logic, package contents |
 | `mcp/` | Dependency free MCP server exposing the docs to coding agents |
 | `docs/VARIANTS.md` | Variant math and intent |
+
+The website is at https://dissolve.rselmi.com. Its source is no longer in this repository.
 
 ## Adding a variant
 
@@ -46,8 +47,7 @@ npm run check      # type check + tests, must pass before you open a pull reques
 3. Add the name to `VariantName` in `src/dissolve/types.ts`.
 4. Register it in `REGISTRY` in `src/dissolve/variants/registry.ts`.
 5. Add a demo in `app/` (the playground picks it up from the registry), and document it in
-   `README.md`, `docs/VARIANTS.md`, the website (`web/data.js`) and the MCP server data
-   (`mcp/server.mjs`).
+   `README.md`, `docs/VARIANTS.md` and the MCP server data (`mcp/server.mjs`).
 6. Run `npm run check` and try it on a real device.
 
 ## Adding a component
@@ -67,10 +67,8 @@ app code. They are styled with NativeWind v5 classes and the `dissolve-*` theme 
    `export` lists the names the CLI prints in the import hint, comma separated.
 3. **Demo.** Add `src/demos/<Name>.demo.tsx` importing from `@registry/<name>`, and list it in
    `src/demos/index.ts`.
-4. **Web port.** Add an entry to the right `ENTRIES` map in `web/cp/*.js`, then run `npm run web:stamp`:
-   title, description, a `mount` function drawing it on the page and the usage `code`. To ship it
-   as a React web component too, follow [docs/WEB.md](docs/WEB.md): its page then shows a React
-   Native / React switch on its own.
+4. **React web version.** To ship it as a React web component too, follow
+   [docs/WEB.md](docs/WEB.md): a core and a wrapper in `registry/web/`.
 5. **Tests.** `npm test` checks the new file automatically: index entry and file match, declared
    exports exist, imports stay in the allowlist, tokens exist in `theme.css`, no em dash. Add a
    test in `test/` if the component brings new logic that can run in Node.
@@ -89,6 +87,7 @@ npm test              # every suite in test/ (node:test, no extra dependency)
 npm run test:cli      # CLI only: init, add, list against temp projects
 npm run test:registry # registry and theme consistency
 npm run test:package  # builds the package in a temp copy and checks npm pack contents
+npm run test:guard    # no pro code, .claude/ or secrets in the repo (also the first CI step)
 npm run build:package # builds packages/dissolve-ui for real
 ```
 
@@ -116,25 +115,6 @@ the imperative mood, lowercase, without a trailing period.
 3. Make sure `npm run check` passes. CI runs the same checks on every push and pull request.
 4. Fill in the pull request template. Attach a short screen recording for anything visual.
 5. A maintainer reviews it, and it gets merged once approved.
-
-## Running the website locally
-
-The website is plain HTML, CSS and ES modules, with no build step:
-
-```sh
-cd web
-python3 -m http.server 8000
-```
-
-Then open http://localhost:8000.
-
-Every page has its own URL (`/components/<name>/`, `/effects/<name>/`, `/docs/<page>/`). `npm run web:stamp`
-ends with `scripts/build-seo.mjs`, which writes a static `index.html` per URL from the site data (title,
-description, JSON-LD and the page content for crawlers, then the app takes over), a markdown copy of
-each page, `llms.txt`, `llms-full.txt`, `sitemap.xml` and `robots.txt`. They are committed, and
-`test/seo.test.mjs` fails when they are stale. Links inside the site use these paths (`pathOf(id)` in
-`web/routes.js`), and asset URLs start with `/`, since pages live in sub folders. Old `#/<id>` links
-still open the right page.
 
 ## Reporting bugs and security issues
 

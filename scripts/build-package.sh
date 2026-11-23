@@ -30,6 +30,5 @@ sed -e "s#from '@/dissolve'#from 'dissolve-ui'#g" \
     -e 's#](LICENSE)#](https://github.com/dissolve-ui/dissolve/blob/main/LICENSE)#g' \
     -e 's#](mcp/\([^)]*\))#](https://github.com/dissolve-ui/dissolve/blob/main/mcp/\1)#g' \
     -e 's#](docs/\([^)]*\))#](https://github.com/dissolve-ui/dissolve/blob/main/docs/\1)#g' \
-    -e 's#](web/\([^)]*\))#](https://github.com/dissolve-ui/dissolve/blob/main/web/\1)#g' \
     "$ROOT/README.md" > "$PKG/README.md"
 echo "built dissolve-ui: $(node -p "require('$ROOT/registry/index.json').components.length") components, $(ls "$PKG/registry/web" | grep -c '\.tsx$') with a web version"

@@ -1,8 +1,0 @@
-/* TextScramble demo (cp/scramble.js). The scramble brings its own styles (web/lib). */
-.ts-demo { display: flex; flex-direction: column; align-items: center; gap: 28px; text-align: center; color: var(--text); font-family: var(--sans); }
-.ts-board { display: flex; flex-direction: column; align-items: center; }
-.ts-eyebrow { font-size: 14px; line-height: 20px; color: var(--muted); margin-bottom: 6px; }
-.ts-h { margin: 0; font: 600 34px/41px var(--sans); letter-spacing: -0.012em; cursor: pointer; }
-.ts-l { margin-top: 12px; font-size: 13px; line-height: 18px; letter-spacing: 0.06em; color: var(--muted); }
-.ts-demo .gb-root, .ts-demo button { min-width: 160px; }
-.cp-mode-stage .ts-h { font-size: 48px; line-height: 56px; letter-spacing: -0.02em; }
