@@ -31,8 +31,9 @@ import { ENTRIES as CONFETTI } from './cp/confetti.js';
 import { ENTRIES as DOCK } from './cp/dock.js';
 import { ENTRIES as PAGER } from './cp/pager.js';
 import { ENTRIES as RANGE } from './cp/range.js';
+import { ENTRIES as PASSWORD } from './cp/password.js';
 
-export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED, ...TOGGLE, ...STEPS, ...SLIDER, ...ACCORDION, ...COPY, ...AVATARS, ...TOOLTIP, ...TYPING, ...MARQUEE, ...SCRAMBLE, ...CONFETTI, ...DOCK, ...PAGER, ...RANGE };
+export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED, ...TOGGLE, ...STEPS, ...SLIDER, ...ACCORDION, ...COPY, ...AVATARS, ...TOOLTIP, ...TYPING, ...MARQUEE, ...SCRAMBLE, ...CONFETTI, ...DOCK, ...PAGER, ...RANGE, ...PASSWORD };
 
 // Sidebar and gallery order: registry order, with the glossy button brought up front.
 export const COMPONENT_ORDER = (() => {
@@ -82,7 +83,7 @@ export const galleryCols = () => (innerWidth >= 1000 ? 3 : innerWidth > 860 ? 2 
 /** What each component is for: the sidebar groups and the label on each card. */
 export const CATEGORIES = [
   { name: 'Buttons', ids: ['glossy-button', 'copy-button', 'like-button', 'morph-button', 'split-button', 'gooey-menu', 'task-check'] },
-  { name: 'Inputs', ids: ['range-slider', 'toggle', 'elastic-slider', 'segmented-control', 'slide-to-confirm', 'otp-input', 'quantity-stepper', 'ruler-picker', 'signature-pad', 'reaction-picker'] },
+  { name: 'Inputs', ids: ['password-strength', 'range-slider', 'toggle', 'elastic-slider', 'segmented-control', 'slide-to-confirm', 'otp-input', 'quantity-stepper', 'ruler-picker', 'signature-pad', 'reaction-picker'] },
   { name: 'Navigation', ids: ['magnify-dock', 'pager-tabs'] },
   { name: 'Feedback', ids: ['confetti-burst', 'text-scramble', 'typing-indicator', 'tooltip', 'toast', 'skeleton', 'progress-steps', 'thinking-orb', 'upload-tile', 'pull-to-refresh', 'number-ticker', 'image-reveal'] },
   { name: 'Lists and cards', ids: ['marquee', 'accordion', 'swipe-to-delete', 'reorder-list', 'card-stack', 'scratch-card', 'before-after'] },
@@ -97,7 +98,7 @@ const openIcon = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" st
 /** The demos that open the gallery: the biggest ones, side by side on the first row. */
 const LEAD = ['bar-chart', 'scratch-card', 'card-stack'];
 /** The newest components, right after the lead row. */
-const NEW = ['range-slider', 'pager-tabs', 'magnify-dock', 'confetti-burst', 'text-scramble', 'marquee', 'typing-indicator', 'tooltip', 'avatar-stack', 'copy-button', 'accordion', 'elastic-slider', 'toggle', 'progress-steps'];
+const NEW = ['password-strength', 'range-slider', 'pager-tabs', 'magnify-dock', 'confetti-burst', 'text-scramble', 'marquee', 'typing-indicator', 'tooltip', 'avatar-stack', 'copy-button', 'accordion', 'elastic-slider', 'toggle', 'progress-steps'];
 
 /**
  * The grid of component demos. cols: column count (the gallery's by default). fx: false leaves out
