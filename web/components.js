@@ -20,8 +20,9 @@ import { ENTRIES as SEGMENTED } from './cp/segmented.js';
 import { ENTRIES as TOGGLE } from './cp/toggle.js';
 import { ENTRIES as STEPS } from './cp/steps.js';
 import { ENTRIES as SLIDER } from './cp/slider.js';
+import { ENTRIES as ACCORDION } from './cp/accordion.js';
 
-export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED, ...TOGGLE, ...STEPS, ...SLIDER };
+export const COMPONENTS = { ...CORE, ...INPUTS, ...MESSAGES, ...SURFACES, ...AI, ...CONTROLS, ...PULL, ...REORDER, ...BUTTON, ...SCRATCH, ...SKELETON, ...SEGMENTED, ...TOGGLE, ...STEPS, ...SLIDER, ...ACCORDION };
 
 // Sidebar and gallery order: registry order, with the glossy button brought up front.
 export const COMPONENT_ORDER = (() => {
@@ -73,7 +74,7 @@ export const CATEGORIES = [
   { name: 'Buttons', ids: ['glossy-button', 'like-button', 'morph-button', 'split-button', 'gooey-menu', 'task-check'] },
   { name: 'Inputs', ids: ['toggle', 'elastic-slider', 'segmented-control', 'slide-to-confirm', 'otp-input', 'quantity-stepper', 'ruler-picker', 'signature-pad', 'reaction-picker'] },
   { name: 'Feedback', ids: ['toast', 'skeleton', 'progress-steps', 'thinking-orb', 'upload-tile', 'pull-to-refresh', 'number-ticker', 'image-reveal'] },
-  { name: 'Lists and cards', ids: ['swipe-to-delete', 'reorder-list', 'card-stack', 'scratch-card', 'before-after'] },
+  { name: 'Lists and cards', ids: ['accordion', 'swipe-to-delete', 'reorder-list', 'card-stack', 'scratch-card', 'before-after'] },
   { name: 'Media and data', ids: ['bar-chart', 'mini-player', 'voice-note', 'sweep-transition'] },
 ];
 const CATEGORY_OF = Object.fromEntries(CATEGORIES.flatMap((c) => c.ids.map((id) => [id, c.name])));
@@ -85,7 +86,7 @@ const openIcon = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" st
 /** The demos that open the gallery: the biggest ones, side by side on the first row. */
 const LEAD = ['bar-chart', 'scratch-card', 'card-stack'];
 /** The newest components, right after the lead row. */
-const NEW = ['elastic-slider', 'toggle', 'progress-steps'];
+const NEW = ['accordion', 'elastic-slider', 'toggle', 'progress-steps'];
 
 /**
  * The grid of component demos. cols: column count (the gallery's by default). fx: false leaves out

@@ -1,0 +1,2 @@
+/* Accordion demo (cp/accordion.js). The sections bring their own styles (web/lib). */
+.ac-demo { display: flex; flex-direction: column; align-items: stretch; }

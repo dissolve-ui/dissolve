@@ -212,6 +212,12 @@
       "type": "registry:component",
       "title": "ElasticSlider",
       "description": "Thick rounded slider whose texts invert over the fill; pulled past an end, the track stretches like a rubber band and snaps back."
+    },
+    {
+      "name": "native/accordion",
+      "type": "registry:component",
+      "title": "Accordion",
+      "description": "Expandable sections: the height glides open, the chevron turns over and the content slides in."
     }
   ]
 }
