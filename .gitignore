@@ -67,3 +67,7 @@ coverage/
 # local agent state and pro previews
 .claude/
 src/demos/_pro/
+
+# dissolve pro lives in the private repo: never commit its sources here (test/no-pro.test.mjs)
+registry-pro/
+_pro/

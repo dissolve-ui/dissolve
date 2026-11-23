@@ -87,6 +87,7 @@ npm test              # every suite in test/ (node:test, no extra dependency)
 npm run test:cli      # CLI only: init, add, list against temp projects
 npm run test:registry # registry and theme consistency
 npm run test:package  # builds the package in a temp copy and checks npm pack contents
+npm run test:guard    # no pro code, .claude/ or secrets in the repo (also the first CI step)
 npm run build:package # builds packages/dissolve-ui for real
 ```
 
