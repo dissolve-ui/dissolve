@@ -1,0 +1,13 @@
+/* TypingIndicator demo (cp/typing.js). The indicator brings its own styles (web/lib). */
+.ti-demo { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+.ti-thread { display: flex; flex-direction: column; gap: 10px; }
+.ti-msg { display: grid; grid-template-columns: 28px auto; column-gap: 8px; align-items: end; justify-content: start; }
+.ti-msg > i { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: normal 600 11px/1 var(--sans); background: var(--surface-2); color: var(--text); }
+.ti-who { grid-column: 2; margin: 0 0 3px 12px; font: 400 12px/16px var(--sans); color: var(--muted); }
+.ti-bubble { grid-column: 2; max-width: 250px; padding: 8px 12px; border-radius: 18px; background: var(--surface-2); color: var(--text); font: 400 15px/20px var(--sans); letter-spacing: -0.01em; }
+.ti-host { margin-top: 6px; min-height: 58px; --dissolve-surface: var(--surface-2); }
+.ti-people { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 18px; }
+.ti-chip { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 6px; border: 0; border-radius: 999px; background: var(--surface-2); color: var(--text); font: 500 14px/1 var(--sans); cursor: pointer; transition: background-color .16s, color .16s, transform .12s; }
+.ti-chip:active { transform: scale(.96); }
+.ti-chip i { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: normal 600 11px/1 var(--sans); background: var(--bg); color: var(--text); }
+.ti-chip[aria-pressed="true"] { background: var(--text); color: var(--bg); }
