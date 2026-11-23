@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.8] - 2026-11-23
+
 ### Added
 - Site: every component, effect and docs page has its own URL (`/components/toggle/`, `/effects/dust/`, `/docs/installation/`) instead of a hash route, with a static page per URL written by `scripts/build-seo.mjs` (part of `npm run web:stamp`): title, description, canonical, Open Graph and Twitter tags, JSON-LD (library, article, breadcrumbs) and the page content as HTML for crawlers that do not run JavaScript. The app routes on the path and old `#/<name>` links open the matching page.
 - Site: `llms.txt`, `llms-full.txt` and a markdown copy of each page (`/components/<name>.md`), plus `sitemap.xml`, `robots.txt` (search engines and AI crawlers allowed), a default Open Graph image and static favicons.
@@ -134,7 +136,8 @@ First public release.
 - Claude skill (`web/skills/dissolve/SKILL.md`) and an agent prompt page.
 - Dependency free MCP server (`mcp/server.mjs`) exposing the docs as tools.
 
-[Unreleased]: https://github.com/dissolve-ui/dissolve/compare/v0.0.7...HEAD
+[Unreleased]: https://github.com/dissolve-ui/dissolve/compare/v0.0.8...HEAD
+[0.0.8]: https://github.com/dissolve-ui/dissolve/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/dissolve-ui/dissolve/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/dissolve-ui/dissolve/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/dissolve-ui/dissolve/compare/v0.0.4...v0.0.5
