@@ -221,6 +221,12 @@
       "file": "typing-indicator.tsx",
       "export": "TypingIndicator",
       "description": "Chat typing indicator: avatars of who is typing pop into a stack beside three waving dots, with a +N past the limit."
+    },
+    {
+      "name": "marquee",
+      "file": "marquee.tsx",
+      "export": "Marquee",
+      "description": "An endless row of logos, words or cards that scrolls on its own, seamless at any width: hover or press to stop, drag and flick to scrub."
     }
   ],
   "helpers": [
