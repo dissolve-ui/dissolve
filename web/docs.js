@@ -491,6 +491,10 @@ const DESKTOP = `{
     }
   }
 }`;
+// The repo is a Claude Code plugin marketplace (.claude-plugin/marketplace.json) with one plugin,
+// plugins/dissolve: the skill and the MCP server in one install.
+const PLUGIN_ADD = '/plugin marketplace add dissolve-ui/dissolve';
+const PLUGIN_INSTALL = '/plugin install dissolve@dissolve';
 const CODEX = `[mcp_servers.dissolve]
 command = "npx"
 args = ["-y", "dissolve-ui-mcp"]`;
@@ -506,7 +510,10 @@ export function agentPromptPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) {
     <div class="dc-quick">
       <section class="dc-quick-card">
         <header>${mark(CLAUDE_PATH, 'Claude').replace('class="dc-mark"', 'class="dc-mark dc-claude"')}<strong>Claude Code</strong></header>
-        <p class="dc-label">Install the skill</p>
+        <p class="dc-label">Install the plugin, skill and MCP server in one go</p>
+        ${cmd(PLUGIN_ADD)}
+        ${cmd(PLUGIN_INSTALL)}
+        <p class="dc-label">Or install the skill</p>
         ${cmd(`mkdir -p ~/.claude/skills/dissolve-ui && curl -fsSL ${url} -o ~/.claude/skills/dissolve-ui/SKILL.md`)}
         <p class="dc-label">Add the MCP server</p>
         ${cmd(`claude mcp add dissolve -- ${SERVER_CMD}`)}
@@ -522,11 +529,18 @@ export function agentPromptPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) {
 
     <h2 class="section-title">Details</h2>
     <div class="dc-ways">
+      ${card('dc-plugin', ICONS.skill, 'Claude Code plugin', 'Skill and MCP server, one install.')}
       ${card('dc-skill', ICONS.skill, 'Claude skill', 'Loaded when it is relevant.')}
       ${card('dc-mcp', ICONS.mcp, 'MCP server', 'Docs as tools, on demand.')}
     </div>
 
-    ${step(1, 'Claude skill', 'dc-skill')}
+    ${step(1, 'Claude Code plugin', 'dc-plugin')}
+    <p class="dc-text">The dissolve repository is a Claude Code plugin marketplace with one plugin, <code>dissolve</code>. It bundles a skill that knows when to reach for dissolve, picks the component and installs it with <code>npx dissolve-ui add</code>, and the MCP server below for the particle effects. Run these two commands inside Claude Code:</p>
+    ${cmd(PLUGIN_ADD)}
+    ${cmd(PLUGIN_INSTALL)}
+    <p class="dc-note">On Claude Code 2.1.275 or later, <code>/plugin install dissolve --marketplace dissolve-ui/dissolve</code> does both. Then ask for a component, for example "add an animated segmented control to the settings screen". The plugin is in <code>plugins/dissolve</code> on <a class="dc-link" href="${GITHUB}" target="_blank" rel="noopener">GitHub</a>.</p>
+
+    ${step(2, 'Claude skill', 'dc-skill')}
     <p class="dc-text">An Agent Skill is a <code>SKILL.md</code> file Claude loads on its own whenever you ask for a dissolve effect. It holds the setup, the API of every hook, a variant picking table and the best practices.</p>
     <div class="dc-file">
       <span class="dc-file-icon">${ICONS.skill}</span>
@@ -540,7 +554,7 @@ export function agentPromptPage({ pageHead, codeBlock, cmd, copyIcon, GLYPH }) {
     ${cmd(`mkdir -p .claude/skills/dissolve-ui && curl -fsSL ${url} -o .claude/skills/dissolve-ui/SKILL.md`)}
     <p class="dc-note">Restart Claude Code, then ask for an effect, for example "dissolve the row when I delete a task". With other agents, paste the file into <code>AGENTS.md</code> or a Cursor rule.</p>
 
-    ${step(2, 'MCP server', 'dc-mcp')}
+    ${step(3, 'MCP server', 'dc-mcp')}
     <p class="dc-text">A tiny MCP server with no dependencies, published on npm as <code>dissolve-ui-mcp</code>. Your agent runs it with <code>npx</code> over stdio, so it stays up to date, and it answers with the same data as the docs. The source is in <code>mcp/server.mjs</code> on <a class="dc-link" href="${GITHUB}" target="_blank" rel="noopener">GitHub</a>.</p>
     <div class="dc-table-wrap">
       <table class="dc-table">
@@ -564,6 +578,7 @@ export function agentsStripHTML() {
     <div class="dc-strip-marks">${mark(CLAUDE_PATH, 'Claude').replace('class="dc-mark"', 'class="dc-mark dc-claude"')}${mark(OPENAI_PATH, 'OpenAI')}</div>
     <p class="dc-strip-title">Works with your coding agent</p>
     <nav class="dc-strip-links">
+      <a href="${pathOf('agent-prompt')}">Claude Code plugin</a>
       <a href="${pathOf('agent-prompt')}">Claude skill</a>
       <a href="${pathOf('agent-prompt')}">MCP</a>
       <a href="${pathOf('agent-prompt')}">Prompt</a>

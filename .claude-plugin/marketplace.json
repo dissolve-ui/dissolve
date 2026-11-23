@@ -1,0 +1,24 @@
+{
+  "name": "dissolve",
+  "description": "dissolve: animated components you own, for React Native and React.",
+  "owner": {
+    "name": "Rayan Selmi",
+    "url": "https://github.com/dissolve-ui"
+  },
+  "plugins": [
+    {
+      "name": "dissolve",
+      "source": "./plugins/dissolve",
+      "description": "Animated UI for React Native and React: a skill that picks and installs dissolve components, and the dissolve MCP server for the particle effects.",
+      "category": "development",
+      "tags": [
+        "react-native",
+        "react",
+        "expo",
+        "animation",
+        "components",
+        "ui"
+      ]
+    }
+  ]
+}

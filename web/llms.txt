@@ -9,6 +9,7 @@
 - Add a component: `npx dissolve-ui add <name> --native` (React Native, needs NativeWind v5) or `npx dissolve-ui add <name> --web` (React 19 and react-dom only).
 - shadcn: `npx shadcn@latest add https://dissolve.rselmi.com/r/<name>.json` (React) or `npx shadcn@latest add https://dissolve.rselmi.com/r/native/<name>.json` (React Native).
 - MCP server for coding agents: `npx -y dissolve-ui-mcp`. Claude skill: https://dissolve.rselmi.com/skills/dissolve/SKILL.md
+- Claude Code plugin (skill and MCP server): `/plugin marketplace add dissolve-ui/dissolve`, then `/plugin install dissolve@dissolve`.
 
 ## Docs
 
