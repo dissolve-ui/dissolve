@@ -88,8 +88,8 @@ import { RulerPicker } from '@/components/dissolve/ruler-picker';
 
 ## Source
 
-- React Native: [registry/ruler-picker.tsx](https://github.com/rs-4/dissolve/blob/main/registry/ruler-picker.tsx)
-- React: [registry/web/ruler-picker.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/ruler-picker.tsx) and [registry/web/ruler-picker.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/ruler-picker.core.ts)
+- React Native: [registry/ruler-picker.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/ruler-picker.tsx)
+- React: [registry/web/ruler-picker.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/ruler-picker.tsx) and [registry/web/ruler-picker.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/ruler-picker.core.ts)
 
 Previous: [QuantityStepper](https://dissolve.rselmi.com/components/quantity-stepper/) · Next: [BarChart](https://dissolve.rselmi.com/components/bar-chart/) · [All components](https://dissolve.rselmi.com/components/)
 

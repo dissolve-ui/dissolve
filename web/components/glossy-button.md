@@ -97,8 +97,8 @@ import { GlossyButton } from '@/components/dissolve/glossy-button';
 
 ## Source
 
-- React Native: [registry/glossy-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/glossy-button.tsx)
-- React: [registry/web/glossy-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/glossy-button.tsx) and [registry/web/glossy-button.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/glossy-button.core.ts)
+- React Native: [registry/glossy-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/glossy-button.tsx)
+- React: [registry/web/glossy-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/glossy-button.tsx) and [registry/web/glossy-button.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/glossy-button.core.ts)
 
 Previous: [Toast](https://dissolve.rselmi.com/components/toast/) · Next: [LikeButton](https://dissolve.rselmi.com/components/like-button/) · [All components](https://dissolve.rselmi.com/components/)
 

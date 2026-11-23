@@ -77,8 +77,8 @@ import { ThinkingOrb } from '@/components/dissolve/thinking-orb';
 
 ## Source
 
-- React Native: [registry/thinking-orb.tsx](https://github.com/rs-4/dissolve/blob/main/registry/thinking-orb.tsx)
-- React: [registry/web/thinking-orb.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/thinking-orb.tsx) and [registry/web/thinking-orb.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/thinking-orb.core.ts)
+- React Native: [registry/thinking-orb.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/thinking-orb.tsx)
+- React: [registry/web/thinking-orb.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/thinking-orb.tsx) and [registry/web/thinking-orb.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/thinking-orb.core.ts)
 
 Previous: [BeforeAfter](https://dissolve.rselmi.com/components/before-after/) · Next: [ImageReveal](https://dissolve.rselmi.com/components/image-reveal/) · [All components](https://dissolve.rselmi.com/components/)
 

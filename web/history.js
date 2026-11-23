@@ -1,7 +1,7 @@
 // "Built in the open", under the gallery: the repo's GitHub history as a git graph. Main down the
 // left, every pull request as a branch beside it (merged ones curve back in, closed ones stop, open
 // ones keep going). Data comes from the public GitHub API, cached an hour.
-const REPO = 'rs-4/dissolve';
+const REPO = 'dissolve-ui/dissolve';
 const API = `https://api.github.com/repos/${REPO}`;
 const CACHE = 'gh-history-3';
 const HOUR = 3600e3, DAY = 24 * HOUR;

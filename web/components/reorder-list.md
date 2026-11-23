@@ -98,8 +98,8 @@ import { ReorderList, ReorderHandle } from '@/components/dissolve/reorder-list';
 
 ## Source
 
-- React Native: [registry/reorder-list.tsx](https://github.com/rs-4/dissolve/blob/main/registry/reorder-list.tsx)
-- React: [registry/web/reorder-list.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/reorder-list.tsx) and [registry/web/reorder-list.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/reorder-list.core.ts)
+- React Native: [registry/reorder-list.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/reorder-list.tsx)
+- React: [registry/web/reorder-list.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/reorder-list.tsx) and [registry/web/reorder-list.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/reorder-list.core.ts)
 
 Previous: [PullToRefresh](https://dissolve.rselmi.com/components/pull-to-refresh/) · Next: [ScratchCard](https://dissolve.rselmi.com/components/scratch-card/) · [All components](https://dissolve.rselmi.com/components/)
 

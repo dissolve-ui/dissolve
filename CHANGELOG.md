@@ -130,8 +130,8 @@ First public release.
 - Claude skill (`web/skills/dissolve/SKILL.md`) and an agent prompt page.
 - Dependency free MCP server (`mcp/server.mjs`) exposing the docs as tools.
 
-[Unreleased]: https://github.com/rs-4/dissolve/compare/v0.0.7...HEAD
-[0.0.7]: https://github.com/rs-4/dissolve/compare/v0.0.6...v0.0.7
-[0.0.6]: https://github.com/rs-4/dissolve/compare/v0.0.5...v0.0.6
-[0.0.5]: https://github.com/rs-4/dissolve/compare/v0.0.4...v0.0.5
-[0.0.1]: https://github.com/rs-4/dissolve/releases/tag/v0.0.1
+[Unreleased]: https://github.com/dissolve-ui/dissolve/compare/v0.0.7...HEAD
+[0.0.7]: https://github.com/dissolve-ui/dissolve/compare/v0.0.6...v0.0.7
+[0.0.6]: https://github.com/dissolve-ui/dissolve/compare/v0.0.5...v0.0.6
+[0.0.5]: https://github.com/dissolve-ui/dissolve/compare/v0.0.4...v0.0.5
+[0.0.1]: https://github.com/dissolve-ui/dissolve/releases/tag/v0.0.1

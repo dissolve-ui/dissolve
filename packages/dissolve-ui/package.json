@@ -7,11 +7,11 @@
   "homepage": "https://dissolve.rselmi.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rs-4/dissolve.git",
+    "url": "git+https://github.com/dissolve-ui/dissolve.git",
     "directory": "packages/dissolve-ui"
   },
   "bugs": {
-    "url": "https://github.com/rs-4/dissolve/issues"
+    "url": "https://github.com/dissolve-ui/dissolve/issues"
   },
   "keywords": [
     "react",

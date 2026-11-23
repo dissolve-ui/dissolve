@@ -76,8 +76,8 @@ import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
 
 ## Source
 
-- React Native: [registry/slide-to-confirm.tsx](https://github.com/rs-4/dissolve/blob/main/registry/slide-to-confirm.tsx)
-- React: [registry/web/slide-to-confirm.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/slide-to-confirm.tsx) and [registry/web/slide-to-confirm.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/slide-to-confirm.core.ts)
+- React Native: [registry/slide-to-confirm.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/slide-to-confirm.tsx)
+- React: [registry/web/slide-to-confirm.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/slide-to-confirm.tsx) and [registry/web/slide-to-confirm.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/slide-to-confirm.core.ts)
 
 Previous: [GooeyMenu](https://dissolve.rselmi.com/components/gooey-menu/) · Next: [OTPInput](https://dissolve.rselmi.com/components/otp-input/) · [All components](https://dissolve.rselmi.com/components/)
 

@@ -83,8 +83,8 @@ import { TaskCheck } from '@/components/dissolve/task-check';
 
 ## Source
 
-- React Native: [registry/task-check.tsx](https://github.com/rs-4/dissolve/blob/main/registry/task-check.tsx)
-- React: [registry/web/task-check.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/task-check.tsx) and [registry/web/task-check.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/task-check.core.ts)
+- React Native: [registry/task-check.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/task-check.tsx)
+- React: [registry/web/task-check.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/task-check.tsx) and [registry/web/task-check.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/task-check.core.ts)
 
 Previous: [UploadTile](https://dissolve.rselmi.com/components/upload-tile/) · Next: [QuantityStepper](https://dissolve.rselmi.com/components/quantity-stepper/) · [All components](https://dissolve.rselmi.com/components/)
 

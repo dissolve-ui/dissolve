@@ -91,8 +91,8 @@ card.current?.reset();
 
 ## Source
 
-- React Native: [registry/scratch-card.tsx](https://github.com/rs-4/dissolve/blob/main/registry/scratch-card.tsx)
-- React: [registry/web/scratch-card.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/scratch-card.tsx) and [registry/web/scratch-card.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/scratch-card.core.ts)
+- React Native: [registry/scratch-card.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/scratch-card.tsx)
+- React: [registry/web/scratch-card.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/scratch-card.tsx) and [registry/web/scratch-card.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/scratch-card.core.ts)
 
 Previous: [ReorderList](https://dissolve.rselmi.com/components/reorder-list/) · Next: [Skeleton](https://dissolve.rselmi.com/components/skeleton/) · [All components](https://dissolve.rselmi.com/components/)
 

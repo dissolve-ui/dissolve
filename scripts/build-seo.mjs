@@ -17,7 +17,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WEB = join(ROOT, 'web');
-const GITHUB = 'https://github.com/rs-4/dissolve';
+const GITHUB = 'https://github.com/dissolve-ui/dissolve';
 const NPM = 'https://www.npmjs.com/package/dissolve-ui';
 /** Folders of web/ this script owns entirely: emptied before each build, so a removed page goes away. */
 export const OWNED_DIRS = ['components', 'effects', 'docs'];

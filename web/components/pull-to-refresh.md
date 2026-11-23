@@ -120,8 +120,8 @@ import { PullToRefresh, PullItem } from '@/components/dissolve/pull-to-refresh';
 
 ## Source
 
-- React Native: [registry/pull-to-refresh.tsx](https://github.com/rs-4/dissolve/blob/main/registry/pull-to-refresh.tsx)
-- React: [registry/web/pull-to-refresh.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/pull-to-refresh.tsx) and [registry/web/pull-to-refresh.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/pull-to-refresh.core.ts)
+- React Native: [registry/pull-to-refresh.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/pull-to-refresh.tsx)
+- React: [registry/web/pull-to-refresh.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/pull-to-refresh.tsx) and [registry/web/pull-to-refresh.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/pull-to-refresh.core.ts)
 
 Previous: [MiniPlayer](https://dissolve.rselmi.com/components/mini-player/) · Next: [ReorderList](https://dissolve.rselmi.com/components/reorder-list/) · [All components](https://dissolve.rselmi.com/components/)
 

@@ -114,7 +114,7 @@ Restart Claude Code, then ask for an effect, for example "dissolve the row when 
 
 ## MCP server
 
-A tiny MCP server with no dependencies, published on npm as `dissolve-ui-mcp`. Your agent runs it with `npx` over stdio, so it stays up to date, and it answers with the same data as the docs. The source is in `mcp/server.mjs` on [GitHub](https://github.com/rs-4/dissolve).
+A tiny MCP server with no dependencies, published on npm as `dissolve-ui-mcp`. Your agent runs it with `npx` over stdio, so it stays up to date, and it answers with the same data as the docs. The source is in `mcp/server.mjs` on [GitHub](https://github.com/dissolve-ui/dissolve).
 
 | Tool | Returns |
 | --- | --- |

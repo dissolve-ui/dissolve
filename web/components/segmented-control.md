@@ -97,8 +97,8 @@ const [period, setPeriod] = useState('Week');
 
 ## Source
 
-- React Native: [registry/segmented-control.tsx](https://github.com/rs-4/dissolve/blob/main/registry/segmented-control.tsx)
-- React: [registry/web/segmented-control.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/segmented-control.tsx) and [registry/web/segmented-control.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/segmented-control.core.ts)
+- React Native: [registry/segmented-control.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/segmented-control.tsx)
+- React: [registry/web/segmented-control.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/segmented-control.tsx) and [registry/web/segmented-control.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/segmented-control.core.ts)
 
 Previous: [Skeleton](https://dissolve.rselmi.com/components/skeleton/) · Next: [Toggle](https://dissolve.rselmi.com/components/toggle/) · [All components](https://dissolve.rselmi.com/components/)
 

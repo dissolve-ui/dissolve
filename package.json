@@ -4,13 +4,13 @@
   "description": "An animation library for React Native: wrap any view and it dissolves, melts, peels or rebuilds itself. Skia snapshot, Reanimated 4 grains on the UI thread.",
   "author": "Rayan Selmi",
   "license": "MIT",
-  "homepage": "https://github.com/rs-4/dissolve#readme",
+  "homepage": "https://github.com/dissolve-ui/dissolve#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rs-4/dissolve.git"
+    "url": "git+https://github.com/dissolve-ui/dissolve.git"
   },
   "bugs": {
-    "url": "https://github.com/rs-4/dissolve/issues"
+    "url": "https://github.com/dissolve-ui/dissolve/issues"
   },
   "keywords": [
     "react-native",

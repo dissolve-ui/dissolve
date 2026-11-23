@@ -4,10 +4,10 @@
   "description": "MCP server for dissolve-ui: variants, usage snippets and setup as tools for your coding agent. No dependencies.",
   "author": "Rayan Selmi",
   "license": "MIT",
-  "homepage": "https://github.com/rs-4/dissolve/tree/main/mcp#readme",
+  "homepage": "https://github.com/dissolve-ui/dissolve/tree/main/packages/dissolve-ui-mcp#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rs-4/dissolve.git",
+    "url": "git+https://github.com/dissolve-ui/dissolve.git",
     "directory": "packages/dissolve-ui-mcp"
   },
   "keywords": ["mcp", "model-context-protocol", "react-native", "dissolve", "claude", "codex"],

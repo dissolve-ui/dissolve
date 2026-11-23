@@ -1,7 +1,7 @@
 name: Release
 
 # On a v* tag (for example v0.1.0): publishes dissolve-ui to npm with provenance,
-# mirrors it to GitHub Packages as @rs-4/dissolve-ui, and creates the GitHub Release
+# mirrors it to GitHub Packages as @dissolve-ui/dissolve-ui, and creates the GitHub Release
 # with the matching CHANGELOG section. Also runs by hand from the Actions tab (dry run by default).
 #
 # Maintainer setup (once): add an npm automation token as the repository secret NPM_TOKEN
@@ -84,7 +84,7 @@ jobs:
         if: steps.version.outputs.skip != 'true' && (github.event_name == 'push' || inputs.dry-run == false)
         working-directory: packages/dissolve-ui
         run: |
-          npm pkg set name=@rs-4/dissolve-ui
+          npm pkg set name=@dissolve-ui/dissolve-ui
           npm pkg set publishConfig.registry=https://npm.pkg.github.com
           echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" > .npmrc
           npm publish --ignore-scripts --registry https://npm.pkg.github.com

@@ -111,8 +111,8 @@ export function Inbox() {
 
 ## Source
 
-- React Native: [registry/swipe-to-delete.tsx](https://github.com/rs-4/dissolve/blob/main/registry/swipe-to-delete.tsx)
-- React: [registry/web/swipe-to-delete.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/swipe-to-delete.tsx) and [registry/web/swipe-to-delete.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/swipe-to-delete.core.ts)
+- React Native: [registry/swipe-to-delete.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/swipe-to-delete.tsx)
+- React: [registry/web/swipe-to-delete.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/swipe-to-delete.tsx) and [registry/web/swipe-to-delete.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/swipe-to-delete.core.ts)
 
 Next: [Toast](https://dissolve.rselmi.com/components/toast/) · [All components](https://dissolve.rselmi.com/components/)
 
