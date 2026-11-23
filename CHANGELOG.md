@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `typing-indicator`: the chat typing indicator. Avatars of who is typing overlap in a stack beside a bubble of three dots in a wave, with "Ana and Ben are typing" under them; people pop in and shrink away as they start and stop, the stack sliding to make room, and a +N disc stands for the rest. With nobody typing it fades out and keeps its height; announced politely to screen readers. React Native and React.
+- `marquee`: an endless row of logos, words or cards that scrolls on its own, seamless at any width. Hover or press it and it eases to a stop; drag to scrub and flick to let it coast, then it settles back to its cruise. Faded edges (a mask on the web, a gradient into fadeColor on iOS), copies hidden from screen readers. React Native and React.
+- `text-scramble`: text that decodes into place. Every letter turns into random glyphs, then they resolve one by one into the final text, on a text change, a trigger, ref.scramble() or on mount. Letters keep their final width, so nothing shifts; monospace option, glyphs in the muted token. The text stays real text, read once by screen readers. React Native and React.
+- `confetti-burst`: a short, quiet burst of paper thrown from a button or a point. About forty pieces flutter as they turn, slow down in the air and fall, fading out in under two seconds; rectangles, strips or dots, monochrome by default. Fired from a ref (`fire({ from })`); Skia on the UI thread with a success haptic on iOS, one canvas over the viewport or a container on the web. Reduced motion: no burst. React Native and React.
+- `magnify-dock`: the macOS dock. Icons swell on their own springs around the pointer (press and slide on touch), the frosted shelf widens with them, the name floats above, and a launch hops the icon out of the shelf and lights its running dot. Vector icons redrawn at every size (seven ready ones with dockIcon, or your own), keyboard toolbar with arrow keys, Home and End. React Native and React.
+- `pager-tabs`: tabs above swipeable pages. A soft pill slides behind the tabs with the swipe, stretching between tabs of different widths while the label turns from muted to full ink; a tap glides the pages over, and a row with more tabs than fit scrolls to keep the active one in view. Controlled from code with a ref; ARIA tabs with arrow keys, Home and End on the web. React Native and React.
+- `range-slider`: a dual handle range slider. The handles never cross (minDistance keeps a gap), the track fills between them and both values roll in NumberTicker bubbles while you drag, sliding apart when they would touch. With a step the handles snap on a quick spring, with a selection tick per step; arrows, Page Up, Page Down, Home and End on each handle. Controlled or not. React Native and React.
+- `password-strength`: a password field with Show and Hide, a quiet strength meter of four dotted segments that fill dot by dot while the word beside them (Weak, Fair, Good, Strong) rolls to the next, and the rules ticking live. Common passwords and long repeats score as weak; onChange hands the strength with passed once every rule and minScore are met. Your own rules or the default four. React Native and React.
+
 ## [0.0.8] - 2026-11-23
 
 ### Added

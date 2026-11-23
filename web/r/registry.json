@@ -248,6 +248,54 @@
       "type": "registry:component",
       "title": "Tooltip",
       "description": "A label with an arrow on hover, focus or long press: it grows in, flips and slides to stay on screen."
+    },
+    {
+      "name": "typing-indicator",
+      "type": "registry:component",
+      "title": "TypingIndicator",
+      "description": "Chat typing indicator: avatars of who is typing pop into a stack beside three waving dots, with a +N past the limit."
+    },
+    {
+      "name": "marquee",
+      "type": "registry:component",
+      "title": "Marquee",
+      "description": "An endless row of logos, words or cards that scrolls on its own, seamless at any width: hover or press to stop, drag and flick to scrub."
+    },
+    {
+      "name": "text-scramble",
+      "type": "registry:component",
+      "title": "TextScramble",
+      "description": "Text that decodes into place: every letter scrambles through random glyphs, then they land one by one into the final text."
+    },
+    {
+      "name": "confetti-burst",
+      "type": "registry:component",
+      "title": "ConfettiBurst",
+      "description": "A short, quiet burst of paper from a button or a point: the pieces flutter, turn and fall, gone in under two seconds."
+    },
+    {
+      "name": "magnify-dock",
+      "type": "registry:component",
+      "title": "MagnifyDock, dockIcon",
+      "description": "The macOS dock: icons swell on springs around the pointer, the shelf widens, a launch hops the icon and lights its dot."
+    },
+    {
+      "name": "pager-tabs",
+      "type": "registry:component",
+      "title": "PagerTabs",
+      "description": "Tabs over swipeable pages: a soft pill follows the swipe, stretching between tabs, the row scrolls to keep the tab in view."
+    },
+    {
+      "name": "range-slider",
+      "type": "registry:component",
+      "title": "RangeSlider",
+      "description": "Two handle range slider: the track fills between the handles, the values roll in bubbles while you drag, optional steps with ticks."
+    },
+    {
+      "name": "password-strength",
+      "type": "registry:component",
+      "title": "PasswordStrength, DEFAULT_RULES, scorePassword",
+      "description": "Password field with Show and Hide, a strength meter of dots that fill as it gets stronger and the rules ticking live."
     }
   ]
 }

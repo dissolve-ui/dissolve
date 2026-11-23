@@ -86,6 +86,6 @@ import { Tooltip } from '@/components/dissolve/tooltip';
 - React Native: [registry/tooltip.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/tooltip.tsx)
 - React: [registry/web/tooltip.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/tooltip.tsx) and [registry/web/tooltip.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/tooltip.core.ts)
 
-Previous: [AvatarStack](https://dissolve.rselmi.com/components/avatar-stack/) · [All components](https://dissolve.rselmi.com/components/)
+Previous: [AvatarStack](https://dissolve.rselmi.com/components/avatar-stack/) · Next: [TypingIndicator](https://dissolve.rselmi.com/components/typing-indicator/) · [All components](https://dissolve.rselmi.com/components/)
 
 Source: https://dissolve.rselmi.com/components/tooltip/
