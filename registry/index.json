@@ -251,6 +251,12 @@
       "file": "pager-tabs.tsx",
       "export": "PagerTabs",
       "description": "Tabs over swipeable pages: a soft pill follows the swipe, stretching between tabs, the row scrolls to keep the tab in view."
+    },
+    {
+      "name": "range-slider",
+      "file": "range-slider.tsx",
+      "export": "RangeSlider",
+      "description": "Two handle range slider: the track fills between the handles, the values roll in bubbles while you drag, optional steps with ticks."
     }
   ],
   "helpers": [
