@@ -61,6 +61,7 @@ function createNumberTicker(host, initial) {
   host.setAttribute("role", "img");
   const prefix = el("span");
   const suffix = el("span");
+  for (const a of [prefix, suffix]) a.setAttribute("aria-hidden", "true");
   host.append(prefix, suffix);
   const cols = /* @__PURE__ */ new Map();
   let lh = 0, digitW = 0, width = {};
@@ -88,6 +89,7 @@ function createNumberTicker(host, initial) {
   function makeCol(c, fresh) {
     const node = el("span", "dissolve-ticker-col " + textClass());
     node.style.height = lh + "px";
+    node.setAttribute("aria-hidden", "true");
     const roll = el("span", "dissolve-ticker-roll");
     const cw = c.kind === "digit" ? digitW : width[c.char] ?? 0;
     for (const d of c.kind === "digit" ? WHEEL : [c.char]) {
@@ -97,7 +99,21 @@ function createNumberTicker(host, initial) {
       roll.append(g);
     }
     node.append(roll);
+    const cells = roll.children;
+    let lo = -1, hi = -1;
+    const window_ = (pos) => {
+      if (cells.length < 2) return;
+      const a = Math.max(0, Math.floor(pos) - 1), b = Math.min(cells.length - 1, Math.ceil(pos) + 1);
+      if (a === lo && b === hi) return;
+      for (let i = 0; i < cells.length; i++) {
+        const on = i >= a && i <= b, was = i >= lo && i <= hi;
+        if (on !== was || lo < 0) cells[i].style.visibility = on ? "" : "hidden";
+      }
+      lo = a;
+      hi = b;
+    };
     const draw = () => {
+      window_(col.pos.v);
       roll.style.transform = `translate3d(0,${(-col.pos.v * lh).toFixed(2)}px,0)`;
       node.style.width = col.w.v.toFixed(2) + "px";
       node.style.opacity = col.o.v.toFixed(3);
