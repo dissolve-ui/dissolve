@@ -4,8 +4,8 @@ contact_links:
     url: https://dissolve.rselmi.com
     about: Variants, hooks, components and setup guides.
   - name: Questions and ideas
-    url: https://github.com/rs-4/dissolve/discussions
+    url: https://github.com/dissolve-ui/dissolve/discussions
     about: Ask how to build an effect, share what you made, discuss ideas before opening an issue.
   - name: Security issue
-    url: https://github.com/rs-4/dissolve/blob/main/SECURITY.md
+    url: https://github.com/dissolve-ui/dissolve/blob/main/SECURITY.md
     about: Please report vulnerabilities privately, not in a public issue.

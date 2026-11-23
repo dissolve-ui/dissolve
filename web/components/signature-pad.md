@@ -101,8 +101,8 @@ export function Sign() {
 
 ## Source
 
-- React Native: [registry/signature-pad.tsx](https://github.com/rs-4/dissolve/blob/main/registry/signature-pad.tsx)
-- React: [registry/web/signature-pad.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/signature-pad.tsx) and [registry/web/signature-pad.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/signature-pad.core.ts)
+- React Native: [registry/signature-pad.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/signature-pad.tsx)
+- React: [registry/web/signature-pad.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/signature-pad.tsx) and [registry/web/signature-pad.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/signature-pad.core.ts)
 
 Previous: [VoiceNote](https://dissolve.rselmi.com/components/voice-note/) · Next: [CardStack](https://dissolve.rselmi.com/components/card-stack/) · [All components](https://dissolve.rselmi.com/components/)
 

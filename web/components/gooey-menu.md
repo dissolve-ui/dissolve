@@ -81,8 +81,8 @@ import { GooeyMenu } from '@/components/dissolve/gooey-menu';
 
 ## Source
 
-- React Native: [registry/gooey-menu.tsx](https://github.com/rs-4/dissolve/blob/main/registry/gooey-menu.tsx)
-- React: [registry/web/gooey-menu.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/gooey-menu.tsx) and [registry/web/gooey-menu.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/gooey-menu.core.ts)
+- React Native: [registry/gooey-menu.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/gooey-menu.tsx)
+- React: [registry/web/gooey-menu.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/gooey-menu.tsx) and [registry/web/gooey-menu.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/gooey-menu.core.ts)
 
 Previous: [SplitButton](https://dissolve.rselmi.com/components/split-button/) · Next: [SlideToConfirm](https://dissolve.rselmi.com/components/slide-to-confirm/) · [All components](https://dissolve.rselmi.com/components/)
 

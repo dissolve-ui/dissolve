@@ -95,8 +95,8 @@ export function Message({ text }) {
 
 ## Source
 
-- React Native: [registry/reaction-picker.tsx](https://github.com/rs-4/dissolve/blob/main/registry/reaction-picker.tsx)
-- React: [registry/web/reaction-picker.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/reaction-picker.tsx) and [registry/web/reaction-picker.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/reaction-picker.core.ts)
+- React Native: [registry/reaction-picker.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/reaction-picker.tsx)
+- React: [registry/web/reaction-picker.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/reaction-picker.tsx) and [registry/web/reaction-picker.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/reaction-picker.core.ts)
 
 Previous: [NumberTicker](https://dissolve.rselmi.com/components/number-ticker/) · Next: [VoiceNote](https://dissolve.rselmi.com/components/voice-note/) · [All components](https://dissolve.rselmi.com/components/)
 

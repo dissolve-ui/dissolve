@@ -21,7 +21,7 @@
     <meta name="twitter:title" content="Agent prompt · dissolve docs" />
     <meta name="twitter:description" content="The fastest way to set up dissolve. Paste this prompt into your coding agent: it installs the engine, sets up NativeWind and adds the components you want." />
     <meta name="twitter:image" content="https://dissolve.rselmi.com/og.png" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://dissolve.rselmi.com/#website","url":"https://dissolve.rselmi.com/","name":"dissolve","description":"Animated components you own, for React Native and React. npx dissolve-ui add copies the source into your app; the React Native engine turns any view into dust (Skia, Reanimated 4).","inLanguage":"en","publisher":{"@id":"https://dissolve.rselmi.com/#author"}},{"@type":"SoftwareSourceCode","@id":"https://dissolve.rselmi.com/#library","name":"dissolve-ui","description":"Animated components you own, for React Native and React. npx dissolve-ui add copies the source into your app; the React Native engine turns any view into dust (Skia, Reanimated 4).","url":"https://dissolve.rselmi.com/","codeRepository":"https://github.com/rs-4/dissolve","programmingLanguage":["TypeScript","JavaScript"],"runtimePlatform":["React Native","React","Expo"],"license":"https://opensource.org/licenses/MIT","version":"0.0.7","keywords":"react, react-native, expo, skia, reanimated, components, animation, particles, dissolve, shadcn, cli","author":{"@id":"https://dissolve.rselmi.com/#author"},"sameAs":["https://github.com/rs-4/dissolve","https://www.npmjs.com/package/dissolve-ui"]},{"@type":"Person","@id":"https://dissolve.rselmi.com/#author","name":"Rayan Selmi","url":"https://github.com/rs-4"},{"@type":"TechArticle","@id":"https://dissolve.rselmi.com/docs/agent-prompt/#article","headline":"dissolve Agent prompt","description":"The fastest way to set up dissolve. Paste this prompt into your coding agent: it installs the engine, sets up NativeWind and adds the components you want.","url":"https://dissolve.rselmi.com/docs/agent-prompt/","mainEntityOfPage":"https://dissolve.rselmi.com/docs/agent-prompt/","isPartOf":{"@id":"https://dissolve.rselmi.com/#website"},"about":{"@id":"https://dissolve.rselmi.com/#library"},"author":{"@id":"https://dissolve.rselmi.com/#author"},"image":"https://dissolve.rselmi.com/og.png","inLanguage":"en"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"dissolve","item":"https://dissolve.rselmi.com/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://dissolve.rselmi.com/docs/introduction/"},{"@type":"ListItem","position":3,"name":"Agent prompt","item":"https://dissolve.rselmi.com/docs/agent-prompt/"}]}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://dissolve.rselmi.com/#website","url":"https://dissolve.rselmi.com/","name":"dissolve","description":"Animated components you own, for React Native and React. npx dissolve-ui add copies the source into your app; the React Native engine turns any view into dust (Skia, Reanimated 4).","inLanguage":"en","publisher":{"@id":"https://dissolve.rselmi.com/#author"}},{"@type":"SoftwareSourceCode","@id":"https://dissolve.rselmi.com/#library","name":"dissolve-ui","description":"Animated components you own, for React Native and React. npx dissolve-ui add copies the source into your app; the React Native engine turns any view into dust (Skia, Reanimated 4).","url":"https://dissolve.rselmi.com/","codeRepository":"https://github.com/dissolve-ui/dissolve","programmingLanguage":["TypeScript","JavaScript"],"runtimePlatform":["React Native","React","Expo"],"license":"https://opensource.org/licenses/MIT","version":"0.0.7","keywords":"react, react-native, expo, skia, reanimated, components, animation, particles, dissolve, shadcn, cli","author":{"@id":"https://dissolve.rselmi.com/#author"},"sameAs":["https://github.com/dissolve-ui/dissolve","https://www.npmjs.com/package/dissolve-ui"]},{"@type":"Person","@id":"https://dissolve.rselmi.com/#author","name":"Rayan Selmi","url":"https://github.com/rs-4"},{"@type":"TechArticle","@id":"https://dissolve.rselmi.com/docs/agent-prompt/#article","headline":"dissolve Agent prompt","description":"The fastest way to set up dissolve. Paste this prompt into your coding agent: it installs the engine, sets up NativeWind and adds the components you want.","url":"https://dissolve.rselmi.com/docs/agent-prompt/","mainEntityOfPage":"https://dissolve.rselmi.com/docs/agent-prompt/","isPartOf":{"@id":"https://dissolve.rselmi.com/#website"},"about":{"@id":"https://dissolve.rselmi.com/#library"},"author":{"@id":"https://dissolve.rselmi.com/#author"},"image":"https://dissolve.rselmi.com/og.png","inLanguage":"en"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"dissolve","item":"https://dissolve.rselmi.com/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://dissolve.rselmi.com/docs/introduction/"},{"@type":"ListItem","position":3,"name":"Agent prompt","item":"https://dissolve.rselmi.com/docs/agent-prompt/"}]}]}</script>
     <!-- /seo:head -->
     <meta name="theme-color" content="#121212" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -151,7 +151,7 @@ For a React web app (Next.js, Vite) there is no engine to install: run npx disso
     <p class="dc-note">Restart Claude Code, then ask for an effect, for example "dissolve the row when I delete a task". With other agents, paste the file into <code>AGENTS.md</code> or a Cursor rule.</p>
 
     <h2 class="section-title dc-step" id="dc-mcp"><span class="dc-num">2</span>MCP server</h2>
-    <p class="dc-text">A tiny MCP server with no dependencies, published on npm as <code>dissolve-ui-mcp</code>. Your agent runs it with <code>npx</code> over stdio, so it stays up to date, and it answers with the same data as the docs. The source is in <code>mcp/server.mjs</code> on <a class="dc-link" href="https://github.com/rs-4/dissolve" target="_blank" rel="noopener">GitHub</a>.</p>
+    <p class="dc-text">A tiny MCP server with no dependencies, published on npm as <code>dissolve-ui-mcp</code>. Your agent runs it with <code>npx</code> over stdio, so it stays up to date, and it answers with the same data as the docs. The source is in <code>mcp/server.mjs</code> on <a class="dc-link" href="https://github.com/dissolve-ui/dissolve" target="_blank" rel="noopener">GitHub</a>.</p>
     <div class="dc-table-wrap">
       <table class="dc-table">
         <thead><tr><th>Tool</th><th>Returns</th></tr></thead>
@@ -179,14 +179,14 @@ For a React web app (Next.js, Vite) there is no engine to install: run npx disso
     <figure class="code"><figcaption>Codex · ~/.codex/config.toml</figcaption><pre><code class="language-toml">[mcp_servers.dissolve]
 command = &quot;npx&quot;
 args = [&quot;-y&quot;, &quot;dissolve-ui-mcp&quot;]</code></pre></figure>
-    <p class="dc-note">Then ask: "use the dissolve MCP to add a delete effect to the inbox rows".</p><p>dissolve is MIT licensed. Source on <a href="https://github.com/rs-4/dissolve">GitHub</a>, package on <a href="https://www.npmjs.com/package/dissolve-ui">npm</a>. This page as <a href="/docs/agent-prompt.md">markdown</a>. For AI agents: <a href="/llms.txt">llms.txt</a>.</p></article><!-- /seo:view --></main>
+    <p class="dc-note">Then ask: "use the dissolve MCP to add a delete effect to the inbox rows".</p><p>dissolve is MIT licensed. Source on <a href="https://github.com/dissolve-ui/dissolve">GitHub</a>, package on <a href="https://www.npmjs.com/package/dissolve-ui">npm</a>. This page as <a href="/docs/agent-prompt.md">markdown</a>. For AI agents: <a href="/llms.txt">llms.txt</a>.</p></article><!-- /seo:view --></main>
     </div>
     <footer id="foot" class="foot"></footer>
     <div id="scrim" class="scrim"></div>
 
     <script type="importmap" data-stamp>{
   "imports": {
-    "/app.js": "/app.js?v=e95546ebbc",
+    "/app.js": "/app.js?v=ad4c6e305f",
     "/autoplay.js": "/autoplay.js?v=7fe52696f0",
     "/components.js": "/components.js?v=929eea7858",
     "/cp/ai.js": "/cp/ai.js?v=e0ead96208",
@@ -207,10 +207,10 @@ args = [&quot;-y&quot;, &quot;dissolve-ui-mcp&quot;]</code></pre></figure>
     "/cp/toggle.js": "/cp/toggle.js?v=d1a81ed2f1",
     "/data.js": "/data.js?v=4d0c7dcdaa",
     "/demo.js": "/demo.js?v=58c91af6f4",
-    "/docs.js": "/docs.js?v=75891f1fb7",
-    "/footer.js": "/footer.js?v=b4925c9b63",
+    "/docs.js": "/docs.js?v=3e422b3ebe",
+    "/footer.js": "/footer.js?v=10dab6d9d4",
     "/hero-bg.js": "/hero-bg.js?v=08714d9c83",
-    "/history.js": "/history.js?v=4ada9cdbb7",
+    "/history.js": "/history.js?v=3aa7543a74",
     "/icons.js": "/icons.js?v=f80b8839ec",
     "/images.js": "/images.js?v=5dca8c6582",
     "/lib/available.js": "/lib/available.js?v=a603945d18",
@@ -260,6 +260,6 @@ args = [&quot;-y&quot;, &quot;dissolve-ui-mcp&quot;]</code></pre></figure>
   }
 }</script>
 
-    <script type="module" src="/app.js?v=e95546ebbc"></script>
+    <script type="module" src="/app.js?v=ad4c6e305f"></script>
   </body>
 </html>

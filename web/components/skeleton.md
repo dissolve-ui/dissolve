@@ -118,8 +118,8 @@ import { Skeleton, SkeletonBlock } from '@/components/dissolve/skeleton';
 
 ## Source
 
-- React Native: [registry/skeleton.tsx](https://github.com/rs-4/dissolve/blob/main/registry/skeleton.tsx)
-- React: [registry/web/skeleton.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/skeleton.tsx) and [registry/web/skeleton.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/skeleton.core.ts)
+- React Native: [registry/skeleton.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/skeleton.tsx)
+- React: [registry/web/skeleton.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/skeleton.tsx) and [registry/web/skeleton.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/skeleton.core.ts)
 
 Previous: [ScratchCard](https://dissolve.rselmi.com/components/scratch-card/) · Next: [SegmentedControl](https://dissolve.rselmi.com/components/segmented-control/) · [All components](https://dissolve.rselmi.com/components/)
 

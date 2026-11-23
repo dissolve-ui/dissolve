@@ -98,8 +98,8 @@ toast.show({ title: 'Payment declined', message: 'Try another card', tone: 'erro
 
 ## Source
 
-- React Native: [registry/toast.tsx](https://github.com/rs-4/dissolve/blob/main/registry/toast.tsx)
-- React: [registry/web/toast.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/toast.tsx) and [registry/web/toast.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/toast.core.ts)
+- React Native: [registry/toast.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/toast.tsx)
+- React: [registry/web/toast.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/toast.tsx) and [registry/web/toast.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/toast.core.ts)
 
 Previous: [SwipeToDelete](https://dissolve.rselmi.com/components/swipe-to-delete/) · Next: [GlossyButton](https://dissolve.rselmi.com/components/glossy-button/) · [All components](https://dissolve.rselmi.com/components/)
 

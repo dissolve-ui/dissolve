@@ -5,7 +5,7 @@ animated by Reanimated 4 on the UI thread. Its ready-made components also run on
 components with the same props.
 
 [![npm](https://img.shields.io/npm/v/dissolve-ui.svg)](https://www.npmjs.com/package/dissolve-ui)
-[![CI](https://github.com/rs-4/dissolve/actions/workflows/ci.yml/badge.svg)](https://github.com/rs-4/dissolve/actions/workflows/ci.yml)
+[![CI](https://github.com/dissolve-ui/dissolve/actions/workflows/ci.yml/badge.svg)](https://github.com/dissolve-ui/dissolve/actions/workflows/ci.yml)
 [![npm downloads](https://img.shields.io/npm/dm/dissolve-ui.svg)](https://www.npmjs.com/package/dissolve-ui)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Expo SDK 57](https://img.shields.io/badge/Expo%20SDK-57-000020.svg)](https://expo.dev)

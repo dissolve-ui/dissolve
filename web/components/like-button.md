@@ -98,8 +98,8 @@ export function PostActions() {
 
 ## Source
 
-- React Native: [registry/like-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/like-button.tsx)
-- React: [registry/web/like-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/like-button.tsx) and [registry/web/like-button.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/like-button.core.ts)
+- React Native: [registry/like-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/like-button.tsx)
+- React: [registry/web/like-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/like-button.tsx) and [registry/web/like-button.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/like-button.core.ts)
 
 Previous: [GlossyButton](https://dissolve.rselmi.com/components/glossy-button/) · Next: [MorphButton](https://dissolve.rselmi.com/components/morph-button/) · [All components](https://dissolve.rselmi.com/components/)
 
