@@ -63,3 +63,7 @@ build/
 
 # coverage
 coverage/
+
+# local agent state and pro previews
+.claude/
+src/demos/_pro/
