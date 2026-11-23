@@ -245,6 +245,12 @@
       "file": "magnify-dock.tsx",
       "export": "MagnifyDock, dockIcon",
       "description": "The macOS dock: icons swell on springs around the pointer, the shelf widens, a launch hops the icon and lights its dot."
+    },
+    {
+      "name": "pager-tabs",
+      "file": "pager-tabs.tsx",
+      "export": "PagerTabs",
+      "description": "Tabs over swipeable pages: a soft pill follows the swipe, stretching between tabs, the row scrolls to keep the tab in view."
     }
   ],
   "helpers": [
