@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.9] - 2026-11-23
+
 ### Added
 - `typing-indicator`: the chat typing indicator. Avatars of who is typing overlap in a stack beside a bubble of three dots in a wave, with "Ana and Ben are typing" under them; people pop in and shrink away as they start and stop, the stack sliding to make room, and a +N disc stands for the rest. With nobody typing it fades out and keeps its height; announced politely to screen readers. React Native and React.
 - `marquee`: an endless row of logos, words or cards that scrolls on its own, seamless at any width. Hover or press it and it eases to a stop; drag to scrub and flick to let it coast, then it settles back to its cruise. Faded edges (a mask on the web, a gradient into fadeColor on iOS), copies hidden from screen readers. React Native and React.
@@ -152,7 +154,8 @@ First public release.
 - Claude skill (`web/skills/dissolve/SKILL.md`) and an agent prompt page.
 - Dependency free MCP server (`mcp/server.mjs`) exposing the docs as tools.
 
-[Unreleased]: https://github.com/dissolve-ui/dissolve/compare/v0.0.8...HEAD
+[Unreleased]: https://github.com/dissolve-ui/dissolve/compare/v0.0.9...HEAD
+[0.0.9]: https://github.com/dissolve-ui/dissolve/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/dissolve-ui/dissolve/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/dissolve-ui/dissolve/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/dissolve-ui/dissolve/compare/v0.0.5...v0.0.6
