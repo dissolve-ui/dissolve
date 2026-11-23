@@ -1,6 +1,6 @@
 {
   "name": "dissolve-ui",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Animated components you own, for React Native and React. npx dissolve-ui add copies the source into your app; the React Native engine turns any view into dust (Skia, Reanimated 4).",
   "author": "Rayan Selmi",
   "license": "MIT",
