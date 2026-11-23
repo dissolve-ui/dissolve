@@ -1,0 +1,2 @@
+/* MagnifyDock demo (cp/dock.js). The dock brings its own styles (web/lib). */
+.dk-demo { display: flex; flex-direction: column; justify-content: flex-end; min-height: 150px; padding-bottom: 6px; }

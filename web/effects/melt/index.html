@@ -53,6 +53,14 @@
     <link rel="stylesheet" href="/cp/copy.css?v=5b33dc0fee" />
     <link rel="stylesheet" href="/cp/avatars.css?v=5c1afc43d5" />
     <link rel="stylesheet" href="/cp/tooltip.css?v=375ae3b01f" />
+    <link rel="stylesheet" href="/cp/typing.css?v=7c1d6caeac" />
+    <link rel="stylesheet" href="/cp/marquee.css?v=4c884bf98d" />
+    <link rel="stylesheet" href="/cp/scramble.css?v=a3c7c0fea7" />
+    <link rel="stylesheet" href="/cp/confetti.css?v=f65b372e07" />
+    <link rel="stylesheet" href="/cp/dock.css?v=5cba607e3c" />
+    <link rel="stylesheet" href="/cp/pager.css?v=2f7dc06347" />
+    <link rel="stylesheet" href="/cp/range.css?v=8d2e9bd93a" />
+    <link rel="stylesheet" href="/cp/password.css?v=48d468673b" />
     <link rel="stylesheet" href="/layout.css?v=056b953cdf" />
     <script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
   </head>
@@ -63,7 +71,7 @@
 
     <header id="top" class="top"></header>
     <div class="shell">
-      <nav id="side" class="side" aria-label="Documentation"><!-- seo:nav --><div data-prerender><div class="side-group"><p class="side-label">Getting started</p><a class="side-link" href="/">Gallery</a><a class="side-link" href="/effects/">Effects</a><a class="side-link" href="/docs/introduction/">Introduction</a><a class="side-link" href="/docs/agent-prompt/">Agent prompt</a><a class="side-link" href="/docs/installation/">Installation</a><a class="side-link" href="/docs/cli/">CLI</a><a class="side-link" href="/docs/theming/">Theming</a></div><div class="side-group"><p class="side-label">Components</p><a class="side-link" href="/components/">All components</a><a class="side-link" href="/components/swipe-to-delete/">SwipeToDelete</a><a class="side-link" href="/components/toast/">Toast</a><a class="side-link" href="/components/glossy-button/">GlossyButton</a><a class="side-link" href="/components/like-button/">LikeButton</a><a class="side-link" href="/components/morph-button/">MorphButton</a><a class="side-link" href="/components/split-button/">SplitButton</a><a class="side-link" href="/components/gooey-menu/">GooeyMenu</a><a class="side-link" href="/components/slide-to-confirm/">SlideToConfirm</a><a class="side-link" href="/components/otp-input/">OTPInput</a><a class="side-link" href="/components/number-ticker/">NumberTicker</a><a class="side-link" href="/components/reaction-picker/">ReactionPicker</a><a class="side-link" href="/components/voice-note/">VoiceNote</a><a class="side-link" href="/components/signature-pad/">SignaturePad</a><a class="side-link" href="/components/card-stack/">CardStack</a><a class="side-link" href="/components/before-after/">BeforeAfter</a><a class="side-link" href="/components/thinking-orb/">ThinkingOrb</a><a class="side-link" href="/components/image-reveal/">ImageReveal</a><a class="side-link" href="/components/sweep-transition/">SweepTransition</a><a class="side-link" href="/components/upload-tile/">UploadTile</a><a class="side-link" href="/components/task-check/">TaskCheck</a><a class="side-link" href="/components/quantity-stepper/">QuantityStepper</a><a class="side-link" href="/components/ruler-picker/">RulerPicker</a><a class="side-link" href="/components/bar-chart/">BarChart</a><a class="side-link" href="/components/mini-player/">MiniPlayer</a><a class="side-link" href="/components/pull-to-refresh/">PullToRefresh</a><a class="side-link" href="/components/reorder-list/">ReorderList</a><a class="side-link" href="/components/scratch-card/">ScratchCard</a><a class="side-link" href="/components/skeleton/">Skeleton</a><a class="side-link" href="/components/segmented-control/">SegmentedControl</a><a class="side-link" href="/components/toggle/">Toggle</a><a class="side-link" href="/components/progress-steps/">ProgressSteps</a><a class="side-link" href="/components/elastic-slider/">ElasticSlider</a><a class="side-link" href="/components/accordion/">Accordion</a><a class="side-link" href="/components/copy-button/">CopyButton</a><a class="side-link" href="/components/avatar-stack/">AvatarStack</a><a class="side-link" href="/components/tooltip/">Tooltip</a></div><div class="side-group"><p class="side-label">Exits</p><a class="side-link" href="/effects/dust/">Dust</a><a class="side-link" href="/effects/sand/">Sand</a><a class="side-link" href="/effects/ember/">Ember</a><a class="side-link" href="/effects/pixel/">Pixel</a><a class="side-link" href="/effects/vortex/">Vortex</a><a class="side-link" href="/effects/shatter/">Shatter</a><a class="side-link" href="/effects/stream/">Stream</a></div><div class="side-group"><p class="side-label">Entrances</p><a class="side-link" href="/effects/gather/">Gather</a><a class="side-link" href="/effects/rain/">Rain</a><a class="side-link" href="/effects/print/">Print</a></div><div class="side-group"><p class="side-label">Gestures</p><a class="side-link" href="/effects/snap/">Snap</a><a class="side-link" href="/effects/fling/">Fling</a><a class="side-link" href="/effects/charge/">Charge</a></div><div class="side-group"><p class="side-label">Special</p><a class="side-link" href="/effects/morph/">Morph</a></div><div class="side-group"><p class="side-label">Casual</p><a class="side-link" href="/effects/peel/">Peel</a><a class="side-link" href="/effects/melt/">Melt</a></div></div><!-- /seo:nav --></nav>
+      <nav id="side" class="side" aria-label="Documentation"><!-- seo:nav --><div data-prerender><div class="side-group"><p class="side-label">Getting started</p><a class="side-link" href="/">Gallery</a><a class="side-link" href="/effects/">Effects</a><a class="side-link" href="/docs/introduction/">Introduction</a><a class="side-link" href="/docs/agent-prompt/">Agent prompt</a><a class="side-link" href="/docs/installation/">Installation</a><a class="side-link" href="/docs/cli/">CLI</a><a class="side-link" href="/docs/theming/">Theming</a></div><div class="side-group"><p class="side-label">Components</p><a class="side-link" href="/components/">All components</a><a class="side-link" href="/components/swipe-to-delete/">SwipeToDelete</a><a class="side-link" href="/components/toast/">Toast</a><a class="side-link" href="/components/glossy-button/">GlossyButton</a><a class="side-link" href="/components/like-button/">LikeButton</a><a class="side-link" href="/components/morph-button/">MorphButton</a><a class="side-link" href="/components/split-button/">SplitButton</a><a class="side-link" href="/components/gooey-menu/">GooeyMenu</a><a class="side-link" href="/components/slide-to-confirm/">SlideToConfirm</a><a class="side-link" href="/components/otp-input/">OTPInput</a><a class="side-link" href="/components/number-ticker/">NumberTicker</a><a class="side-link" href="/components/reaction-picker/">ReactionPicker</a><a class="side-link" href="/components/voice-note/">VoiceNote</a><a class="side-link" href="/components/signature-pad/">SignaturePad</a><a class="side-link" href="/components/card-stack/">CardStack</a><a class="side-link" href="/components/before-after/">BeforeAfter</a><a class="side-link" href="/components/thinking-orb/">ThinkingOrb</a><a class="side-link" href="/components/image-reveal/">ImageReveal</a><a class="side-link" href="/components/sweep-transition/">SweepTransition</a><a class="side-link" href="/components/upload-tile/">UploadTile</a><a class="side-link" href="/components/task-check/">TaskCheck</a><a class="side-link" href="/components/quantity-stepper/">QuantityStepper</a><a class="side-link" href="/components/ruler-picker/">RulerPicker</a><a class="side-link" href="/components/bar-chart/">BarChart</a><a class="side-link" href="/components/mini-player/">MiniPlayer</a><a class="side-link" href="/components/pull-to-refresh/">PullToRefresh</a><a class="side-link" href="/components/reorder-list/">ReorderList</a><a class="side-link" href="/components/scratch-card/">ScratchCard</a><a class="side-link" href="/components/skeleton/">Skeleton</a><a class="side-link" href="/components/segmented-control/">SegmentedControl</a><a class="side-link" href="/components/toggle/">Toggle</a><a class="side-link" href="/components/progress-steps/">ProgressSteps</a><a class="side-link" href="/components/elastic-slider/">ElasticSlider</a><a class="side-link" href="/components/accordion/">Accordion</a><a class="side-link" href="/components/copy-button/">CopyButton</a><a class="side-link" href="/components/avatar-stack/">AvatarStack</a><a class="side-link" href="/components/tooltip/">Tooltip</a><a class="side-link" href="/components/typing-indicator/">TypingIndicator</a><a class="side-link" href="/components/marquee/">Marquee</a><a class="side-link" href="/components/text-scramble/">TextScramble</a><a class="side-link" href="/components/confetti-burst/">ConfettiBurst</a><a class="side-link" href="/components/magnify-dock/">MagnifyDock</a><a class="side-link" href="/components/pager-tabs/">PagerTabs</a><a class="side-link" href="/components/range-slider/">RangeSlider</a><a class="side-link" href="/components/password-strength/">PasswordStrength</a></div><div class="side-group"><p class="side-label">Exits</p><a class="side-link" href="/effects/dust/">Dust</a><a class="side-link" href="/effects/sand/">Sand</a><a class="side-link" href="/effects/ember/">Ember</a><a class="side-link" href="/effects/pixel/">Pixel</a><a class="side-link" href="/effects/vortex/">Vortex</a><a class="side-link" href="/effects/shatter/">Shatter</a><a class="side-link" href="/effects/stream/">Stream</a></div><div class="side-group"><p class="side-label">Entrances</p><a class="side-link" href="/effects/gather/">Gather</a><a class="side-link" href="/effects/rain/">Rain</a><a class="side-link" href="/effects/print/">Print</a></div><div class="side-group"><p class="side-label">Gestures</p><a class="side-link" href="/effects/snap/">Snap</a><a class="side-link" href="/effects/fling/">Fling</a><a class="side-link" href="/effects/charge/">Charge</a></div><div class="side-group"><p class="side-label">Special</p><a class="side-link" href="/effects/morph/">Morph</a></div><div class="side-group"><p class="side-label">Casual</p><a class="side-link" href="/effects/peel/">Peel</a><a class="side-link" href="/effects/melt/">Melt</a></div></div><!-- /seo:nav --></nav>
       <main id="view" class="view"><!-- seo:view --><article data-prerender class="dc-static"><nav aria-label="Breadcrumb"><ol class="dc-crumbs"><li><a href="/">dissolve</a></li><li><a href="/effects/">Effects</a></li><li><a href="/effects/melt/">Melt</a></li></ol></nav>
         <h1>Melt</h1>
         <p><strong>Melt</strong> is one of the 16 effects of dissolve, an animation library for React Native. Melts down in drips, like wax under a lamp. It runs with <code>useDissolve</code> from <code>dissolve-ui</code>.</p>
@@ -110,19 +118,26 @@ export default function Layout() {
   "imports": {
     "/app.js": "/app.js?v=9c17cec47a",
     "/autoplay.js": "/autoplay.js?v=7fe52696f0",
-    "/components.js": "/components.js?v=925266284d",
+    "/components.js": "/components.js?v=32e4f487d6",
     "/cp/accordion.js": "/cp/accordion.js?v=483ba59b0f",
     "/cp/ai.js": "/cp/ai.js?v=e0ead96208",
     "/cp/avatars.js": "/cp/avatars.js?v=8029889a3e",
     "/cp/button.js": "/cp/button.js?v=3853907472",
+    "/cp/confetti.js": "/cp/confetti.js?v=1a889d4b7b",
     "/cp/controls.js": "/cp/controls.js?v=ba8c76addf",
     "/cp/copy.js": "/cp/copy.js?v=83fd97a3e2",
     "/cp/core.js": "/cp/core.js?v=1ea928f975",
+    "/cp/dock.js": "/cp/dock.js?v=320a223041",
     "/cp/inputs.js": "/cp/inputs.js?v=df7042e2c2",
     "/cp/kit.js": "/cp/kit.js?v=cc54566c1d",
+    "/cp/marquee.js": "/cp/marquee.js?v=2409760fcb",
     "/cp/messages.js": "/cp/messages.js?v=4d7fc15b28",
+    "/cp/pager.js": "/cp/pager.js?v=f59f7f1be2",
+    "/cp/password.js": "/cp/password.js?v=71ad19eda2",
     "/cp/pull.js": "/cp/pull.js?v=94d2a23f5d",
+    "/cp/range.js": "/cp/range.js?v=104545417c",
     "/cp/reorder.js": "/cp/reorder.js?v=0cdc768d2d",
+    "/cp/scramble.js": "/cp/scramble.js?v=b3304a69cb",
     "/cp/scratch.js": "/cp/scratch.js?v=36cfaf610c",
     "/cp/segmented.js": "/cp/segmented.js?v=e92fd01bcf",
     "/cp/skeleton.js": "/cp/skeleton.js?v=6a46e0cb6a",
@@ -131,6 +146,7 @@ export default function Layout() {
     "/cp/surfaces.js": "/cp/surfaces.js?v=89457d83d2",
     "/cp/toggle.js": "/cp/toggle.js?v=d1a81ed2f1",
     "/cp/tooltip.js": "/cp/tooltip.js?v=1943103e09",
+    "/cp/typing.js": "/cp/typing.js?v=ed1495f54f",
     "/data.js": "/data.js?v=4d0c7dcdaa",
     "/demo.js": "/demo.js?v=58c91af6f4",
     "/docs.js": "/docs.js?v=3e422b3ebe",
@@ -140,7 +156,7 @@ export default function Layout() {
     "/icons.js": "/icons.js?v=f80b8839ec",
     "/images.js": "/images.js?v=5dca8c6582",
     "/lib/accordion.js": "/lib/accordion.js?v=66b31c19fd",
-    "/lib/available.js": "/lib/available.js?v=9e10c224c2",
+    "/lib/available.js": "/lib/available.js?v=f9e6af22fa",
     "/lib/avatar-stack.js": "/lib/avatar-stack.js?v=e9807b506f",
     "/lib/bar-chart.js": "/lib/bar-chart.js?v=fbbbe628f2",
     "/lib/before-after.js": "/lib/before-after.js?v=2b8f2edc64",
@@ -149,6 +165,7 @@ export default function Layout() {
     "/lib/chunks/chunk-O6B3NHPJ.js": "/lib/chunks/chunk-O6B3NHPJ.js?v=9c3e97aa3c",
     "/lib/chunks/chunk-OQW5JTMC.js": "/lib/chunks/chunk-OQW5JTMC.js?v=9925729270",
     "/lib/chunks/chunk-R2UPSOGD.js": "/lib/chunks/chunk-R2UPSOGD.js?v=d890a92e43",
+    "/lib/confetti-burst.js": "/lib/confetti-burst.js?v=8a707b1c6b",
     "/lib/copy-button.js": "/lib/copy-button.js?v=23040bae4c",
     "/lib/elastic-slider.js": "/lib/elastic-slider.js?v=86c303a629",
     "/lib/engine.js": "/lib/engine.js?v=f83603ad4e",
@@ -157,13 +174,18 @@ export default function Layout() {
     "/lib/image-reveal.js": "/lib/image-reveal.js?v=97668f5400",
     "/lib/kit.js": "/lib/kit.js?v=99620eaeb0",
     "/lib/like-button.js": "/lib/like-button.js?v=fe349047f1",
+    "/lib/magnify-dock.js": "/lib/magnify-dock.js?v=5a2e26f5ed",
+    "/lib/marquee.js": "/lib/marquee.js?v=af71106b45",
     "/lib/mini-player.js": "/lib/mini-player.js?v=abfd80795a",
     "/lib/morph-button.js": "/lib/morph-button.js?v=bbeb9490d3",
     "/lib/number-ticker.js": "/lib/number-ticker.js?v=5123e10fee",
     "/lib/otp-input.js": "/lib/otp-input.js?v=6365780b17",
+    "/lib/pager-tabs.js": "/lib/pager-tabs.js?v=58cec71bc4",
+    "/lib/password-strength.js": "/lib/password-strength.js?v=fcef07d48e",
     "/lib/progress-steps.js": "/lib/progress-steps.js?v=559c344e36",
     "/lib/pull-to-refresh.js": "/lib/pull-to-refresh.js?v=24d44c950c",
     "/lib/quantity-stepper.js": "/lib/quantity-stepper.js?v=acc50687aa",
+    "/lib/range-slider.js": "/lib/range-slider.js?v=a81b300b2d",
     "/lib/reaction-picker.js": "/lib/reaction-picker.js?v=41514ed352",
     "/lib/reorder-list.js": "/lib/reorder-list.js?v=0638bb105c",
     "/lib/ruler-picker.js": "/lib/ruler-picker.js?v=543926d46b",
@@ -176,10 +198,12 @@ export default function Layout() {
     "/lib/sweep-transition.js": "/lib/sweep-transition.js?v=401bdd2270",
     "/lib/swipe-to-delete.js": "/lib/swipe-to-delete.js?v=96111d30a2",
     "/lib/task-check.js": "/lib/task-check.js?v=8d759c26e8",
+    "/lib/text-scramble.js": "/lib/text-scramble.js?v=ce84a875d8",
     "/lib/thinking-orb.js": "/lib/thinking-orb.js?v=fe61a12100",
     "/lib/toast.js": "/lib/toast.js?v=427adb016f",
     "/lib/toggle.js": "/lib/toggle.js?v=6533b68b3c",
     "/lib/tooltip.js": "/lib/tooltip.js?v=e5117895d4",
+    "/lib/typing-indicator.js": "/lib/typing-indicator.js?v=09c2360415",
     "/lib/upload-tile.js": "/lib/upload-tile.js?v=10fad8e11a",
     "/lib/voice-note.js": "/lib/voice-note.js?v=cf071b2a22",
     "/logo.js": "/logo.js?v=53a154bd5b",

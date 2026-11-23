@@ -36,6 +36,14 @@ import AccordionDemo from './Accordion.demo';
 import CopyButtonDemo from './CopyButton.demo';
 import AvatarStackDemo from './AvatarStack.demo';
 import TooltipDemo from './Tooltip.demo';
+import TypingIndicatorDemo from './TypingIndicator.demo';
+import MarqueeDemo from './Marquee.demo';
+import TextScrambleDemo from './TextScramble.demo';
+import ConfettiBurstDemo from './ConfettiBurst.demo';
+import MagnifyDockDemo from './MagnifyDock.demo';
+import PagerTabsDemo from './PagerTabs.demo';
+import RangeSliderDemo from './RangeSlider.demo';
+import PasswordStrengthDemo from './PasswordStrength.demo';
 
 /**
  * One demo per registry component, in registry/index.json order. The slug is the registry
@@ -81,4 +89,12 @@ export const DEMOS: DemoEntry[] = [
   { slug: 'copy-button', title: 'Copy button', note: 'Tap to copy: the icon breaks into grains that reform as a check.', icon: 'doc.on.doc', Component: CopyButtonDemo, scroll: true },
   { slug: 'avatar-stack', title: 'Avatar stack', note: 'Hold the stack to spread it and read the names.', icon: 'person.3', Component: AvatarStackDemo, scroll: true },
   { slug: 'tooltip', title: 'Tooltip', note: 'Hold a tool: its label grows in, flips and stays on screen.', icon: 'text.bubble', Component: TooltipDemo, scroll: true },
+  { slug: 'typing-indicator', title: 'Typing indicator', note: 'Tap people to make them type: avatars pop into the stack.', icon: 'ellipsis.bubble', Component: TypingIndicatorDemo, scroll: false },
+  { slug: 'marquee', title: 'Marquee', note: 'Press a row to stop it, drag and flick to scrub.', icon: 'text.line.first.and.arrowtriangle.forward', Component: MarqueeDemo, scroll: true },
+  { slug: 'text-scramble', title: 'Text scramble', note: 'Press Refresh: the status decodes into the next update.', icon: 'character.cursor.ibeam', Component: TextScrambleDemo, scroll: true },
+  { slug: 'confetti-burst', title: 'Confetti burst', note: "Log today's run: a small burst of paper leaves the button.", icon: 'party.popper', Component: ConfettiBurstDemo, scroll: false },
+  { slug: 'magnify-dock', title: 'Magnify dock', note: 'Slide along the dock: icons swell under the finger, lift to launch.', icon: 'dock.rectangle', Component: MagnifyDockDemo, scroll: false },
+  { slug: 'pager-tabs', title: 'Pager tabs', note: 'Swipe the pages: the pill slides and stretches between the tabs.', icon: 'rectangle.split.3x1', Component: PagerTabsDemo, scroll: false },
+  { slug: 'range-slider', title: 'Range slider', note: 'Drag either handle: the values roll in bubbles above them.', icon: 'slider.horizontal.below.rectangle', Component: RangeSliderDemo, scroll: true },
+  { slug: 'password-strength', title: 'Password strength', note: 'Type a password: the dots fill and the rules tick as it gets stronger.', icon: 'key', Component: PasswordStrengthDemo, scroll: true },
 ];
