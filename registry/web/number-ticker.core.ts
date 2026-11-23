@@ -190,11 +190,16 @@ export function createNumberTicker(host: HTMLElement, initial: NumberTickerProps
       const shown = it.present && it.kind === 'digit' ? +it.char : 0;
       // Re-base the wheel on the turn that leaves room in the direction of travel (same digit on
       // screen), then roll the short way that way. Picks up mid roll.
-      let c = col.pos.v % 10;
-      if (dir < 0) c += 10;
-      col.pos.set(c);
-      const to = dir >= 0 ? (shown >= c - 0.5 ? shown : shown + 10) : shown + 10 <= c + 0.5 ? shown + 10 : shown;
-      col.pos.to(to, duration, CALM, delay);
+      if (it.kind === 'digit') {
+        let c = col.pos.v % 10;
+        if (dir < 0) c += 10;
+        col.pos.set(c);
+        const to = dir >= 0 ? (shown >= c - 0.5 ? shown : shown + 10) : shown + 10 <= c + 0.5 ? shown + 10 : shown;
+        col.pos.to(to, duration, CALM, delay);
+      } else {
+        // Separators and signs have one cell, no wheel: they never roll, or a decrease would scroll them out.
+        col.pos.set(0);
+      }
       col.w.to(it.present ? col.cw : 0, duration, CALM, it.present ? 0 : delay);
       col.o.to(it.present ? 1 : 0, duration * 0.6, CALM, it.present ? delay : 0);
       if (!it.present && !col.leaving) {
