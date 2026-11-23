@@ -452,7 +452,8 @@ const componentsPage = () => `
   ${componentsSectionHTML({ cols: innerWidth > 860 ? 2 : 1, fx: false })}`;
 
 /** The home page: every component, the lead demos and the newest first, a few effects among them. */
-const homeGrid = () => componentsSectionHTML();
+// Home: the title sits inside each card, top left. The components page keeps captions under the cards.
+const homeGrid = () => componentsSectionHTML({ inside: true });
 
 const PAGES = {
   components: componentsPage,
