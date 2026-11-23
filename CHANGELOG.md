@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Site: every component, effect and docs page has its own URL (`/components/toggle/`, `/effects/dust/`, `/docs/installation/`) instead of a hash route, with a static page per URL written by `scripts/build-seo.mjs` (part of `npm run web:stamp`): title, description, canonical, Open Graph and Twitter tags, JSON-LD (library, article, breadcrumbs) and the page content as HTML for crawlers that do not run JavaScript. The app routes on the path and old `#/<name>` links open the matching page.
 - Site: `llms.txt`, `llms-full.txt` and a markdown copy of each page (`/components/<name>.md`), plus `sitemap.xml`, `robots.txt` (search engines and AI crawlers allowed), a default Open Graph image and static favicons.
 - `accordion`: expandable sections on hairline dividers. The section opens on a smooth height curve while the chevron turns over, then the content fades in and slides down into place. Single (collapsible) or multiple open, controlled or not; on the web headers are buttons with aria-expanded and aria-controls over labelled regions, with arrow key navigation. React Native and React.
+- `copy-button`: icon button that copies text. The copy icon breaks into a few grains that flow over and reform as a check with a tiny pop, while a Copied tooltip rises (and is announced); after 1.5 s it settles back. `effects="none"` for a plain crossfade. React Native (expo-clipboard, success haptic) and React (Clipboard API).
 
 ## [0.0.7] - 2026-11-21
 

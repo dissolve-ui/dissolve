@@ -33,6 +33,7 @@ import ToggleDemo from './Toggle.demo';
 import ProgressStepsDemo from './ProgressSteps.demo';
 import ElasticSliderDemo from './ElasticSlider.demo';
 import AccordionDemo from './Accordion.demo';
+import CopyButtonDemo from './CopyButton.demo';
 
 /**
  * One demo per registry component, in registry/index.json order. The slug is the registry
@@ -75,4 +76,5 @@ export const DEMOS: DemoEntry[] = [
   { slug: 'progress-steps', title: 'Progress steps', note: 'Numbered steps or story bars: the progress streams on in grains.', icon: 'point.3.connected.trianglepath.dotted', Component: ProgressStepsDemo, scroll: true },
   { slug: 'elastic-slider', title: 'Elastic slider', note: 'Drag, then pull past the end: the track stretches and snaps back.', icon: 'slider.horizontal.3', Component: ElasticSliderDemo, scroll: true },
   { slug: 'accordion', title: 'Accordion', note: 'Tap a header: the section glides open, the content slides in.', icon: 'list.bullet.indent', Component: AccordionDemo, scroll: true },
+  { slug: 'copy-button', title: 'Copy button', note: 'Tap to copy: the icon breaks into grains that reform as a check.', icon: 'doc.on.doc', Component: CopyButtonDemo, scroll: true },
 ];

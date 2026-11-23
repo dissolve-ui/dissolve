@@ -31,6 +31,7 @@ const ALLOWED_PACKAGES = [
   'expo-image',
   'expo-glass-effect',
   'expo-blur',
+  'expo-clipboard',
 ];
 
 const stripComments = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`])\/\/.*$/gm, '$1');

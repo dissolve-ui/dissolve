@@ -230,6 +230,12 @@
       "type": "registry:component",
       "title": "Accordion",
       "description": "Expandable sections: the height glides open, the chevron turns over and the content slides in."
+    },
+    {
+      "name": "copy-button",
+      "type": "registry:component",
+      "title": "CopyButton",
+      "description": "Icon button that copies text: the copy icon breaks into grains that reform as a check, a Copied tooltip rises."
     }
   ]
 }

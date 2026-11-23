@@ -90,6 +90,6 @@ const [open, setOpen] = useState<string[]>([]);
 - React Native: [registry/accordion.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/accordion.tsx)
 - React: [registry/web/accordion.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/accordion.tsx) and [registry/web/accordion.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/accordion.core.ts)
 
-Previous: [ElasticSlider](https://dissolve.rselmi.com/components/elastic-slider/) · [All components](https://dissolve.rselmi.com/components/)
+Previous: [ElasticSlider](https://dissolve.rselmi.com/components/elastic-slider/) · Next: [CopyButton](https://dissolve.rselmi.com/components/copy-button/) · [All components](https://dissolve.rselmi.com/components/)
 
 Source: https://dissolve.rselmi.com/components/accordion/
