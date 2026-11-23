@@ -1,6 +1,6 @@
 # dissolve
 
-> dissolve (npm package `dissolve-ui`, version 0.0.7, MIT) is an open source animation library for React Native with 32 animated UI components for React Native and React. Components are copied into your app as source with `npx dissolve-ui add <name>` or the shadcn CLI. The React Native engine snapshots any view with Skia, cuts it into grains and animates them on the UI thread with Reanimated 4.
+> dissolve (npm package `dissolve-ui`, version 0.0.7, MIT) is an open source animation library for React Native with 33 animated UI components for React Native and React. Components are copied into your app as source with `npx dissolve-ui add <name>` or the shadcn CLI. The React Native engine snapshots any view with Skia, cuts it into grains and animates them on the UI thread with Reanimated 4.
 
 - Website: https://dissolve.rselmi.com/
 - Source: https://github.com/dissolve-ui/dissolve
@@ -52,6 +52,7 @@
 - [Toggle](https://dissolve.rselmi.com/components/toggle/): iOS switch whose thumb breaks into grains, flows to the other end of the track and reassembles while the track fills. Install: `npx dissolve-ui add toggle` (`--native` for React Native, `--web` for React) or `npx shadcn@latest add https://dissolve.rselmi.com/r/toggle.json`. Markdown: https://dissolve.rselmi.com/components/toggle.md
 - [ProgressSteps](https://dissolve.rselmi.com/components/progress-steps/): Numbered steps on a line, or story style bars: the progress streams on to the next step in grains. Install: `npx dissolve-ui add progress-steps` (`--native` for React Native, `--web` for React) or `npx shadcn@latest add https://dissolve.rselmi.com/r/progress-steps.json`. Markdown: https://dissolve.rselmi.com/components/progress-steps.md
 - [ElasticSlider](https://dissolve.rselmi.com/components/elastic-slider/): Thick rounded slider whose texts invert over the fill; pulled past an end, the track stretches like a rubber band and snaps back. Install: `npx dissolve-ui add elastic-slider` (`--native` for React Native, `--web` for React) or `npx shadcn@latest add https://dissolve.rselmi.com/r/elastic-slider.json`. Markdown: https://dissolve.rselmi.com/components/elastic-slider.md
+- [Accordion](https://dissolve.rselmi.com/components/accordion/): Expandable sections: the height glides open, the chevron turns over and the content slides in. Install: `npx dissolve-ui add accordion` (`--native` for React Native, `--web` for React) or `npx shadcn@latest add https://dissolve.rselmi.com/r/accordion.json`. Markdown: https://dissolve.rselmi.com/components/accordion.md
 
 ## Effects
 

@@ -191,6 +191,12 @@
       "file": "elastic-slider.tsx",
       "export": "ElasticSlider",
       "description": "Thick rounded slider whose texts invert over the fill; pulled past an end, the track stretches like a rubber band and snaps back."
+    },
+    {
+      "name": "accordion",
+      "file": "accordion.tsx",
+      "export": "Accordion",
+      "description": "Expandable sections: the height glides open, the chevron turns over and the content slides in."
     }
   ],
   "helpers": [
