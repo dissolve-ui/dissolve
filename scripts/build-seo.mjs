@@ -407,6 +407,7 @@ function llmsTxt(pages, { SITE, pkg, PKG, SHADCN, INSTALL }) {
 - Add a component: \`npx ${PKG} add <name> --native\` (React Native, needs NativeWind v5) or \`npx ${PKG} add <name> --web\` (React 19 and react-dom only).
 - shadcn: \`npx shadcn@latest add ${SHADCN}/<name>.json\` (React) or \`npx shadcn@latest add ${SHADCN}/native/<name>.json\` (React Native).
 - MCP server for coding agents: \`npx -y dissolve-ui-mcp\`. Claude skill: ${SITE}/skills/dissolve/SKILL.md
+- Claude Code plugin (skill and MCP server): \`/plugin marketplace add dissolve-ui/dissolve\`, then \`/plugin install dissolve@dissolve\`.
 
 ## Docs
 
