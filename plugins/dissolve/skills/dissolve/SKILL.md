@@ -57,6 +57,14 @@ Run `npx dissolve-ui list` in the project for the current list and the platforms
 | `copy-button` | `CopyButton` | Copy icon that breaks into grains and reforms as a check, with a Copied tooltip. |
 | `avatar-stack` | `AvatarStack` | Overlapping avatars with a +N chip that spread apart with names on hover or hold. |
 | `tooltip` | `Tooltip` | A label with an arrow on hover, focus or long press, flips and slides to stay on screen. |
+| `typing-indicator` | `TypingIndicator` | Chat typing indicator: avatars pop into a stack beside three waving dots. |
+| `marquee` | `Marquee` | Endless scrolling row of logos, words or cards; hover to stop, drag to scrub. |
+| `text-scramble` | `TextScramble` | Text that decodes into place through random glyphs, without shifting layout. |
+| `confetti-burst` | `ConfettiBurst` | A short, quiet burst of paper from a button, fired from a ref. |
+| `magnify-dock` | `MagnifyDock` | The macOS dock: icons swell around the pointer, launch bounce and running dots. |
+| `pager-tabs` | `PagerTabs` | Tabs over swipeable pages with a soft pill that follows the swipe. |
+| `range-slider` | `RangeSlider` | Two handle range slider with rolling value bubbles and optional steps. |
+| `password-strength` | `PasswordStrength` | Password field with a dotted strength meter and live rules. |
 
 Pick the one closest to the user's intent, and say which you picked and why in one line. Each component's page, with its props and an example, is at `https://dissolve.rselmi.com/components/<name>/`, and as markdown at `https://dissolve.rselmi.com/components/<name>.md`. Read it before you wire props you are unsure of.
 
