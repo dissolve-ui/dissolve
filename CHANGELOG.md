@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-23
+
+### Added
+- dissolve pro in the CLI: `npx dissolve-ui add <name>` installs pro screens and components like free ones. The first time it shows a code and opens dissolve.rselmi.com to connect your account (device login), then carries on; without pro it prints the checkout link. New `login`, `logout` and `whoami`; `list` marks pro items. The token lives in `~/.config/dissolve/auth.json`, or `DISSOLVE_TOKEN` in CI.
+- dissolve pro in the MCP server (`dissolve-ui-mcp` 0.1.0): `list_components`, `add_component`, `dissolve_login` and `dissolve_login_status`, so an agent can find and install free and pro items.
+
 ## [0.0.9] - 2026-11-23
 
 ### Added
@@ -154,7 +160,8 @@ First public release.
 - Claude skill (`web/skills/dissolve/SKILL.md`) and an agent prompt page.
 - Dependency free MCP server (`mcp/server.mjs`) exposing the docs as tools.
 
-[Unreleased]: https://github.com/dissolve-ui/dissolve/compare/v0.0.9...HEAD
+[Unreleased]: https://github.com/dissolve-ui/dissolve/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/dissolve-ui/dissolve/compare/v0.0.9...v0.1.0
 [0.0.9]: https://github.com/dissolve-ui/dissolve/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/dissolve-ui/dissolve/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/dissolve-ui/dissolve/compare/v0.0.6...v0.0.7

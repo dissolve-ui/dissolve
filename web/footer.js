@@ -29,7 +29,7 @@ export function footerHTML() {
       <span class="foot-hint" aria-hidden="true">Move through it, click to scatter</span>
     </div>
     <div class="foot-bottom">
-      <span>v0.0.9 · MIT · Built in the open</span>
+      <span>v0.1.0 · MIT · Built in the open</span>
       <div class="foot-theme" role="radiogroup" aria-label="Theme">
         <button role="radio" data-foot-theme="dark">Dark</button><button role="radio" data-foot-theme="light">Light</button>
       </div>
