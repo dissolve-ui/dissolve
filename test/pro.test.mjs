@@ -181,7 +181,7 @@ describe('CLI', () => {
     assert.match((await cli(f, ['login'])).out, /Already logged in as vibe@example\.com/);
     assert.match((await cli(f, ['logout'])).out, /Logged out/);
     assert.ok(!existsSync(f.authFile));
-    assert.match((await cli(f, ['whoami'], { DISSOLVE_TOKEN: NOPAY })).out, /free@example\.com\s+no dissolve pro subscription\s+\(token from DISSOLVE_TOKEN\)/);
+    assert.match((await cli(f, ['whoami'], { DISSOLVE_TOKEN: NOPAY })).out, /free@example\.com\s+no dissolve pro\s+\(token from DISSOLVE_TOKEN\)/);
   });
 });
 

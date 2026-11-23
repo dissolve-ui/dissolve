@@ -598,7 +598,7 @@ async function whoami() {
     process.exitCode = 1;
     return;
   }
-  const plan = who.pro ? c.green(`dissolve pro${who.plan ? ` (${who.plan})` : ''}`) : c.dim('no dissolve pro subscription');
+  const plan = who.pro ? c.green(`dissolve pro${who.plan ? ` (${who.plan})` : ''}`) : c.dim('no dissolve pro');
   console.log(`${c.bold(who.user.email)}  ${plan}${auth.source === 'env' ? c.dim('  (token from DISSOLVE_TOKEN)') : ''}`);
 }
 

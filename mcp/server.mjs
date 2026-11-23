@@ -479,7 +479,7 @@ async function settlePendingLogin() {
 async function listComponents() {
   const { code, out } = await runCli(['list'], process.cwd());
   if (code !== 0) throw new ToolError(`Could not list the components:\n${out}`);
-  return `${out}\n\nInstall with add_component({ name }). "pro" items need a dissolve pro subscription; add_component handles the login and the checkout link.`;
+  return `${out}\n\nInstall with add_component({ name }). "pro" items need dissolve pro (a one-time purchase); add_component handles the login and the checkout link.`;
 }
 
 async function addComponent({ name, cwd, platform, overwrite } = {}) {
@@ -497,7 +497,7 @@ async function addComponent({ name, cwd, platform, overwrite } = {}) {
   if (code === 0) return out;
   // 3: the item is pro and no account is connected (or the token was revoked).
   if (code === 3) return loginPrompt();
-  // 4: connected, no active subscription. Files of the other names may have been written.
+  // 4: connected, no dissolve pro purchase. Files of the other names may have been written.
   if (code === 4) {
     const links = [...out.matchAll(/^(\S+) is part of dissolve pro\.\s*\n\s*Subscribe: (\S+)/gm)];
     const lines = links.map((m) => `${m[1]} is part of dissolve pro: subscribe at ${m[2]}, then ask me again.`);
