@@ -257,6 +257,12 @@
       "file": "range-slider.tsx",
       "export": "RangeSlider",
       "description": "Two handle range slider: the track fills between the handles, the values roll in bubbles while you drag, optional steps with ticks."
+    },
+    {
+      "name": "password-strength",
+      "file": "password-strength.tsx",
+      "export": "PasswordStrength, DEFAULT_RULES, scorePassword",
+      "description": "Password field with Show and Hide, a strength meter of dots that fill as it gets stronger and the rules ticking live."
     }
   ],
   "helpers": [
