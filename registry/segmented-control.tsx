@@ -194,6 +194,14 @@ export function SegmentedControl({
     [],
   );
   const [geo, setGeo] = useState({ seg: 0, pillH: 0, dot: 0, count: 0 });
+  /**
+   * The resting pill of the first frames: a plain view placed by flex slots, so it is right on
+   * the very first frame, before onLayout has measured anything and before the animated pill's
+   * values have reached the UI thread. It hands over to the animated pill when the first flight
+   * starts (on the UI thread, in the same frame), and never animates itself.
+   */
+  const [restAt] = useState(selected);
+  const restA = useSharedValue(1);
 
   /** Pill geometry on the UI thread. */
   const segW = useSharedValue(0);
@@ -237,11 +245,14 @@ export function SegmentedControl({
     labelFrom.value = L.slice();
     segW.value = seg;
     count.value = g.length / GF;
-    // Snap: no flight on first layout or a resize.
+    // Snap: no flight on first layout or a resize. A selection made before the first layout lands
+    // here too: the resting pill only knows the first index, so the animated pill takes over.
+    if (target.value !== restAt) restA.value = 0;
     flying.value = 0;
     req.value = 0;
     pillX.value = s.inset + target.value * seg;
-    pillA.value = 1;
+    // While the resting pill shows, the animated one stays clear, so the shadow is not doubled.
+    pillA.value = restA.value > 0 ? 0 : 1;
     ghostA.value = 0;
     painted.value += 1;
     setGeo({ seg, pillH, dot, count: g.length / GF });
@@ -268,6 +279,9 @@ export function SegmentedControl({
       req.value = 0;
       // Start (or re-aim) the flight from wherever everything is right now.
       for (let i = 0; i < L.length; i++) LF[i] = L[i];
+      // The resting pill hands over: the ghost (same place, same look) takes its opacity.
+      const rest = restA.value;
+      restA.value = 0;
       if (flying.value && !reduced) {
         for (let i = 0; i < N * DF; i++) F[i] = D[i];
         ghostX.value = pillX.value;
@@ -281,7 +295,7 @@ export function SegmentedControl({
           F[i * DF + 3] = 1;
         }
         ghostX.value = ox;
-        ghostA0.value = pillA.value;
+        ghostA0.value = Math.max(pillA.value, rest);
       }
       slideFrom.value = pillX.value;
       startAt.value = now;
@@ -378,7 +392,9 @@ export function SegmentedControl({
 
   const pillStyle = useAnimatedStyle(() => ({ opacity: pillA.value, transform: [{ translateX: pillX.value }] }));
   const ghostStyle = useAnimatedStyle(() => ({ opacity: ghostA.value, transform: [{ translateX: ghostX.value }] }));
+  const restStyle = useAnimatedStyle(() => ({ opacity: restA.value }));
 
+  const restH = s.height - s.inset * 2;
   const radius = geo.pillH / 2;
   const shadow: BoxShadowValue[] = colors.dark
     ? []
@@ -397,6 +413,19 @@ export function SegmentedControl({
         className={cn('self-stretch', className)}
         style={{ height: s.height, borderRadius: s.height / 2, borderCurve: 'continuous', backgroundColor: colors.track, opacity: disabled ? 0.5 : 1 }}
       >
+        {/* First frame: the pill from flex slots, one per segment, no measure, no animation. */}
+        <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { flexDirection: 'row', padding: s.inset }, restStyle]}>
+          {items.map((it, i) => (
+            <RNView
+              key={it.value}
+              style={
+                i === Math.min(restAt, n - 1)
+                  ? { flex: 1, height: restH, borderRadius: restH / 2, borderCurve: 'continuous', backgroundColor: colors.pill, boxShadow: shadow }
+                  : { flex: 1 }
+              }
+            />
+          ))}
+        </Animated.View>
         {geo.seg > 0 ? (
           <RNView pointerEvents="none" style={StyleSheet.absoluteFill}>
             <Animated.View style={[pillBox, ghostStyle]} />
