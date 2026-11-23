@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- seo:head (scripts/build-seo.mjs writes the page head and content below) -->
+    <title>Copy button component for React Native and React · dissolve</title>
+    <meta name="description" content="Icon button that copies text: the copy icon breaks into grains that reform as a check, a Copied tooltip rises. CopyButton for React Native and React: npx dissolve-ui add copy-button." />
+    <link rel="canonical" href="https://dissolve.rselmi.com/components/copy-button/" />
+    <link rel="alternate" type="text/markdown" href="/components/copy-button.md" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="dissolve" />
+    <meta property="og:title" content="Copy button component for React Native and React · dissolve" />
+    <meta property="og:description" content="Icon button that copies text: the copy icon breaks into grains that reform as a check, a Copied tooltip rises. CopyButton for React Native and React: npx dissolve-ui add copy-button." />
+    <meta property="og:url" content="https://dissolve.rselmi.com/components/copy-button/" />
+    <meta property="og:image" content="https://dissolve.rselmi.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="dissolve: animated components for React Native and React" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Copy button component for React Native and React · dissolve" />
+    <meta name="twitter:description" content="Icon button that copies text: the copy icon breaks into grains that reform as a check, a Copied tooltip rises. CopyButton for React Native and React: npx dissolve-ui add copy-button." />
+    <meta name="twitter:image" content="https://dissolve.rselmi.com/og.png" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://dissolve.rselmi.com/#website","url":"https://dissolve.rselmi.com/","name":"dissolve","description":"Animated components you own, for React Native and React. npx dissolve-ui add copies the source into your app; the React Native engine turns any view into dust (Skia, Reanimated 4).","inLanguage":"en","publisher":{"@id":"https://dissolve.rselmi.com/#author"}},{"@type":"SoftwareSourceCode","@id":"https://dissolve.rselmi.com/#library","name":"dissolve-ui","description":"Animated components you own, for React Native and React. npx dissolve-ui add copies the source into your app; the React Native engine turns any view into dust (Skia, Reanimated 4).","url":"https://dissolve.rselmi.com/","codeRepository":"https://github.com/dissolve-ui/dissolve","programmingLanguage":["TypeScript","JavaScript"],"runtimePlatform":["React Native","React","Expo"],"license":"https://opensource.org/licenses/MIT","version":"0.0.7","keywords":"react, react-native, expo, skia, reanimated, components, animation, particles, dissolve, shadcn, cli","author":{"@id":"https://dissolve.rselmi.com/#author"},"sameAs":["https://github.com/dissolve-ui/dissolve","https://www.npmjs.com/package/dissolve-ui"]},{"@type":"Person","@id":"https://dissolve.rselmi.com/#author","name":"Rayan Selmi","url":"https://github.com/rs-4"},{"@type":"TechArticle","@id":"https://dissolve.rselmi.com/components/copy-button/#article","headline":"CopyButton: copy button component for React Native and React","description":"Icon button that copies text: the copy icon breaks into grains that reform as a check, a Copied tooltip rises. CopyButton for React Native and React: npx dissolve-ui add copy-button.","url":"https://dissolve.rselmi.com/components/copy-button/","mainEntityOfPage":"https://dissolve.rselmi.com/components/copy-button/","isPartOf":{"@id":"https://dissolve.rselmi.com/#website"},"about":{"@type":"SoftwareSourceCode","name":"CopyButton","description":"Icon button that copies text: the copy icon breaks into grains that reform as a check, a Copied tooltip rises. CopyButton for React Native and React: npx dissolve-ui add copy-button.","codeRepository":"https://github.com/dissolve-ui/dissolve","url":"https://github.com/dissolve-ui/dissolve/blob/main/registry/copy-button.tsx","programmingLanguage":"TypeScript","runtimePlatform":["React Native","React"],"isPartOf":{"@id":"https://dissolve.rselmi.com/#library"},"license":"https://opensource.org/licenses/MIT"},"author":{"@id":"https://dissolve.rselmi.com/#author"},"image":"https://dissolve.rselmi.com/og.png","inLanguage":"en"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"dissolve","item":"https://dissolve.rselmi.com/"},{"@type":"ListItem","position":2,"name":"Components","item":"https://dissolve.rselmi.com/components/"},{"@type":"ListItem","position":3,"name":"CopyButton","item":"https://dissolve.rselmi.com/components/copy-button/"}]}]}</script>
+    <!-- /seo:head -->
+    <meta name="theme-color" content="#121212" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-48.png" type="image/png" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/fonts/allo/AlloVariable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/styles.css?v=a3dccb06b5" />
+    <link rel="stylesheet" href="/docs.css?v=741d78c34c" />
+    <link rel="stylesheet" href="/playground.css?v=af552c378b" />
+    <link rel="stylesheet" href="/components.css?v=dad90181f1" />
+    <link rel="stylesheet" href="/cp/inputs.css?v=2488679e54" />
+    <link rel="stylesheet" href="/cp/messages.css?v=2b60e10506" />
+    <link rel="stylesheet" href="/cp/surfaces.css?v=ea43522768" />
+    <link rel="stylesheet" href="/cp/ai.css?v=b941a3757f" />
+    <link rel="stylesheet" href="/cp/controls.css?v=2ed761991c" />
+    <link rel="stylesheet" href="/cp/pull.css?v=787202502a" />
+    <link rel="stylesheet" href="/cp/reorder.css?v=8bc90adb8b" />
+    <link rel="stylesheet" href="/cp/button.css?v=90d46f684c" />
+    <link rel="stylesheet" href="/cp/scratch.css?v=6c8033eb37" />
+    <link rel="stylesheet" href="/cp/skeleton.css?v=25cf9deed0" />
+    <link rel="stylesheet" href="/cp/segmented.css?v=5d4246d48f" />
+    <link rel="stylesheet" href="/cp/toggle.css?v=b9bb10c055" />
+    <link rel="stylesheet" href="/cp/steps.css?v=17258a3bbe" />
+    <link rel="stylesheet" href="/cp/slider.css?v=afb8da4193" />
+    <link rel="stylesheet" href="/cp/accordion.css?v=6815ff2829" />
+    <link rel="stylesheet" href="/cp/copy.css?v=5b33dc0fee" />
+    <link rel="stylesheet" href="/cp/avatars.css?v=5c1afc43d5" />
+    <link rel="stylesheet" href="/cp/tooltip.css?v=375ae3b01f" />
+    <link rel="stylesheet" href="/layout.css?v=056b953cdf" />
+    <script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
+  </head>
+  <body>
+    <button id="menu" class="icon-btn menu-fab" aria-label="Open navigation">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 6h12M3 12h12"/></svg>
+        </button>
+
+    <header id="top" class="top"></header>
+    <div class="shell">
+      <nav id="side" class="side" aria-label="Documentation"><!-- seo:nav --><div data-prerender><div class="side-group"><p class="side-label">Getting started</p><a class="side-link" href="/">Gallery</a><a class="side-link" href="/effects/">Effects</a><a class="side-link" href="/docs/introduction/">Introduction</a><a class="side-link" href="/docs/agent-prompt/">Agent prompt</a><a class="side-link" href="/docs/installation/">Installation</a><a class="side-link" href="/docs/cli/">CLI</a><a class="side-link" href="/docs/theming/">Theming</a></div><div class="side-group"><p class="side-label">Components</p><a class="side-link" href="/components/">All components</a><a class="side-link" href="/components/swipe-to-delete/">SwipeToDelete</a><a class="side-link" href="/components/toast/">Toast</a><a class="side-link" href="/components/glossy-button/">GlossyButton</a><a class="side-link" href="/components/like-button/">LikeButton</a><a class="side-link" href="/components/morph-button/">MorphButton</a><a class="side-link" href="/components/split-button/">SplitButton</a><a class="side-link" href="/components/gooey-menu/">GooeyMenu</a><a class="side-link" href="/components/slide-to-confirm/">SlideToConfirm</a><a class="side-link" href="/components/otp-input/">OTPInput</a><a class="side-link" href="/components/number-ticker/">NumberTicker</a><a class="side-link" href="/components/reaction-picker/">ReactionPicker</a><a class="side-link" href="/components/voice-note/">VoiceNote</a><a class="side-link" href="/components/signature-pad/">SignaturePad</a><a class="side-link" href="/components/card-stack/">CardStack</a><a class="side-link" href="/components/before-after/">BeforeAfter</a><a class="side-link" href="/components/thinking-orb/">ThinkingOrb</a><a class="side-link" href="/components/image-reveal/">ImageReveal</a><a class="side-link" href="/components/sweep-transition/">SweepTransition</a><a class="side-link" href="/components/upload-tile/">UploadTile</a><a class="side-link" href="/components/task-check/">TaskCheck</a><a class="side-link" href="/components/quantity-stepper/">QuantityStepper</a><a class="side-link" href="/components/ruler-picker/">RulerPicker</a><a class="side-link" href="/components/bar-chart/">BarChart</a><a class="side-link" href="/components/mini-player/">MiniPlayer</a><a class="side-link" href="/components/pull-to-refresh/">PullToRefresh</a><a class="side-link" href="/components/reorder-list/">ReorderList</a><a class="side-link" href="/components/scratch-card/">ScratchCard</a><a class="side-link" href="/components/skeleton/">Skeleton</a><a class="side-link" href="/components/segmented-control/">SegmentedControl</a><a class="side-link" href="/components/toggle/">Toggle</a><a class="side-link" href="/components/progress-steps/">ProgressSteps</a><a class="side-link" href="/components/elastic-slider/">ElasticSlider</a><a class="side-link" href="/components/accordion/">Accordion</a><a class="side-link" href="/components/copy-button/">CopyButton</a><a class="side-link" href="/components/avatar-stack/">AvatarStack</a><a class="side-link" href="/components/tooltip/">Tooltip</a></div><div class="side-group"><p class="side-label">Exits</p><a class="side-link" href="/effects/dust/">Dust</a><a class="side-link" href="/effects/sand/">Sand</a><a class="side-link" href="/effects/ember/">Ember</a><a class="side-link" href="/effects/pixel/">Pixel</a><a class="side-link" href="/effects/vortex/">Vortex</a><a class="side-link" href="/effects/shatter/">Shatter</a><a class="side-link" href="/effects/stream/">Stream</a></div><div class="side-group"><p class="side-label">Entrances</p><a class="side-link" href="/effects/gather/">Gather</a><a class="side-link" href="/effects/rain/">Rain</a><a class="side-link" href="/effects/print/">Print</a></div><div class="side-group"><p class="side-label">Gestures</p><a class="side-link" href="/effects/snap/">Snap</a><a class="side-link" href="/effects/fling/">Fling</a><a class="side-link" href="/effects/charge/">Charge</a></div><div class="side-group"><p class="side-label">Special</p><a class="side-link" href="/effects/morph/">Morph</a></div><div class="side-group"><p class="side-label">Casual</p><a class="side-link" href="/effects/peel/">Peel</a><a class="side-link" href="/effects/melt/">Melt</a></div></div><!-- /seo:nav --></nav>
+      <main id="view" class="view"><!-- seo:view --><article data-prerender class="dc-static"><nav aria-label="Breadcrumb"><ol class="dc-crumbs"><li><a href="/">dissolve</a></li><li><a href="/components/">Components</a></li><li><a href="/components/copy-button/">CopyButton</a></li></ol></nav>
+        <h1>CopyButton</h1>
+        <p><strong>CopyButton</strong> is an animated copy button component for React Native and React, from the dissolve library. Icon button that copies text: the copy icon breaks into grains that reform as a check, a Copied tooltip rises.</p>
+        <p>An icon button that copies text. Press it and the text goes to the clipboard with a success haptic on iOS. The copy icon breaks into a few grains that flow over on a slight arc, shrinking mid flight, and reform as a check with a tiny pop, while a Copied tooltip rises above the button and screen readers announce it. After 1.5 s it settles back to the copy icon; pressing again while the check shows only restarts the countdown. The grains are the one dissolve moment: effects="none" swaps the icons with a plain crossfade. Reduced motion: a crossfade, no pop. React Native copies with expo-clipboard; the web uses the Clipboard API, with the selection fallback on insecure pages.</p>
+        <h2>Install</h2>
+        <h3>React Native</h3>
+        <p>Install the engine once per app and wrap the root layout in <code>&lt;DissolveProvider&gt;</code> (see <a href="/docs/installation/">Installation</a>), then copy the component into <code>components/dissolve</code>:</p>
+        <figure class="code"><pre><code class="language-sh">npx expo install dissolve-ui @shopify/react-native-skia react-native-reanimated react-native-worklets react-native-gesture-handler expo-haptics</code></pre></figure>
+        <figure class="code"><pre><code class="language-sh">npx dissolve-ui add copy-button --native</code></pre></figure>
+        <figure class="code"><pre><code class="language-sh">npx shadcn@latest add https://dissolve.rselmi.com/r/native/copy-button.json</code></pre></figure>
+        <h3>React</h3>
+        <p>Needs React 19 and <code>react-dom</code>, nothing else: no engine, no provider, no Tailwind. Works in the Next.js App Router.</p>
+        <figure class="code"><pre><code class="language-sh">npx dissolve-ui add copy-button --web</code></pre></figure>
+        <figure class="code"><pre><code class="language-sh">npx shadcn@latest add https://dissolve.rselmi.com/r/copy-button.json</code></pre></figure>
+        <h2>Usage</h2>
+        <figure class="code"><figcaption>CopyButton.tsx (React Native)</figcaption><pre><code class="language-tsx">import { CopyButton } from '@/components/dissolve/copy-button';
+
+&lt;CopyButton text=&quot;npx dissolve-ui add copy-button&quot; /&gt;
+
+// The text at press time, smaller, a plain crossfade.
+&lt;CopyButton text={() =&gt; editor.getValue()} size=&quot;sm&quot; effects=&quot;none&quot; onCopy={(t) =&gt; track('copied', t.length)} /&gt;</code></pre></figure>
+        <figure class="code"><figcaption>CopyButton.tsx (React)</figcaption><pre><code class="language-tsx">import { CopyButton } from '@/components/dissolve/copy-button';
+
+&lt;CopyButton text=&quot;npx dissolve-ui add copy-button&quot; /&gt;
+
+// The text at press time, smaller, a plain crossfade.
+&lt;CopyButton text={() =&gt; editor.getValue()} size=&quot;sm&quot; effects=&quot;none&quot; onCopy={(t) =&gt; track('copied', t.length)} /&gt;</code></pre></figure>
+        <h2>Props</h2>
+        <div class="dc-table-wrap"><table class="dc-table"><thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>text</code></td><td><code>string | () =&gt; string</code></td><td></td><td>The text to copy, or a function that returns it at press time.</td></tr><tr><td><code>onCopy</code></td><td><code>(text: string) =&gt; void</code></td><td></td><td>Called with the copied text.</td></tr><tr><td><code>timeout</code></td><td><code>number</code></td><td><code>1500</code></td><td>How long the check and the tooltip stay, in ms.</td></tr><tr><td><code>copiedLabel</code></td><td><code>string</code></td><td><code>'Copied'</code></td><td>Tooltip text, also announced to screen readers.</td></tr><tr><td><code>size</code></td><td><code>'sm' | 'md' | 'lg'</code></td><td><code>'md'</code></td><td>Button and icon size: 32, 36 or 44 pt.</td></tr><tr><td><code>effects</code></td><td><code>'accent' | 'none'</code></td><td><code>'accent'</code></td><td>Accent: the copy icon breaks into grains that reform as the check. None: a plain crossfade.</td></tr><tr><td><code>haptics</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Success haptic on copy.</td></tr><tr><td><code>disabled</code></td><td><code>boolean</code></td><td><code>false</code></td><td>No copy, the button shows at 40% opacity.</td></tr><tr><td><code>accessibilityLabel</code></td><td><code>string</code></td><td><code>'Copy'</code></td><td>Read by screen readers.</td></tr><tr><td><code>className</code></td><td><code>string</code></td><td></td><td>Outer classes (margins, background...). The size comes from the size prop.</td></tr></tbody></table></div>
+        <h2>Source</h2>
+        <ul><li>React Native: <a href="https://github.com/dissolve-ui/dissolve/blob/main/registry/copy-button.tsx">registry/copy-button.tsx</a></li><li>React: <a href="https://github.com/dissolve-ui/dissolve/blob/main/registry/web/copy-button.tsx">registry/web/copy-button.tsx</a> and <a href="https://github.com/dissolve-ui/dissolve/blob/main/registry/web/copy-button.core.ts">registry/web/copy-button.core.ts</a></li></ul>
+        <p>Previous: <a href="/components/accordion/">Accordion</a> · Next: <a href="/components/avatar-stack/">AvatarStack</a> · <a href="/components/">All components</a></p><p>dissolve is MIT licensed. Source on <a href="https://github.com/dissolve-ui/dissolve">GitHub</a>, package on <a href="https://www.npmjs.com/package/dissolve-ui">npm</a>. This page as <a href="/components/copy-button.md">markdown</a>. For AI agents: <a href="/llms.txt">llms.txt</a>.</p></article><!-- /seo:view --></main>
+    </div>
+    <footer id="foot" class="foot"></footer>
+    <div id="scrim" class="scrim"></div>
+
+    <script type="importmap" data-stamp>{
+  "imports": {
+    "/app.js": "/app.js?v=56159c59b8",
+    "/autoplay.js": "/autoplay.js?v=7fe52696f0",
+    "/components.js": "/components.js?v=925266284d",
+    "/cp/accordion.js": "/cp/accordion.js?v=483ba59b0f",
+    "/cp/ai.js": "/cp/ai.js?v=e0ead96208",
+    "/cp/avatars.js": "/cp/avatars.js?v=8029889a3e",
+    "/cp/button.js": "/cp/button.js?v=3853907472",
+    "/cp/controls.js": "/cp/controls.js?v=ba8c76addf",
+    "/cp/copy.js": "/cp/copy.js?v=83fd97a3e2",
+    "/cp/core.js": "/cp/core.js?v=1ea928f975",
+    "/cp/inputs.js": "/cp/inputs.js?v=df7042e2c2",
+    "/cp/kit.js": "/cp/kit.js?v=cc54566c1d",
+    "/cp/messages.js": "/cp/messages.js?v=4d7fc15b28",
+    "/cp/pull.js": "/cp/pull.js?v=94d2a23f5d",
+    "/cp/reorder.js": "/cp/reorder.js?v=0cdc768d2d",
+    "/cp/scratch.js": "/cp/scratch.js?v=36cfaf610c",
+    "/cp/segmented.js": "/cp/segmented.js?v=e92fd01bcf",
+    "/cp/skeleton.js": "/cp/skeleton.js?v=6a46e0cb6a",
+    "/cp/slider.js": "/cp/slider.js?v=b48a2fbeea",
+    "/cp/steps.js": "/cp/steps.js?v=cabe26243a",
+    "/cp/surfaces.js": "/cp/surfaces.js?v=89457d83d2",
+    "/cp/toggle.js": "/cp/toggle.js?v=d1a81ed2f1",
+    "/cp/tooltip.js": "/cp/tooltip.js?v=1943103e09",
+    "/data.js": "/data.js?v=4d0c7dcdaa",
+    "/demo.js": "/demo.js?v=58c91af6f4",
+    "/docs.js": "/docs.js?v=3e422b3ebe",
+    "/footer.js": "/footer.js?v=10dab6d9d4",
+    "/hero-bg.js": "/hero-bg.js?v=08714d9c83",
+    "/history.js": "/history.js?v=3aa7543a74",
+    "/icons.js": "/icons.js?v=f80b8839ec",
+    "/images.js": "/images.js?v=5dca8c6582",
+    "/lib/accordion.js": "/lib/accordion.js?v=66b31c19fd",
+    "/lib/available.js": "/lib/available.js?v=9e10c224c2",
+    "/lib/avatar-stack.js": "/lib/avatar-stack.js?v=e9807b506f",
+    "/lib/bar-chart.js": "/lib/bar-chart.js?v=fbbbe628f2",
+    "/lib/before-after.js": "/lib/before-after.js?v=2b8f2edc64",
+    "/lib/card-stack.js": "/lib/card-stack.js?v=0a0368affd",
+    "/lib/chunks/chunk-BCIF2ROM.js": "/lib/chunks/chunk-BCIF2ROM.js?v=d72c02e665",
+    "/lib/chunks/chunk-O6B3NHPJ.js": "/lib/chunks/chunk-O6B3NHPJ.js?v=9c3e97aa3c",
+    "/lib/chunks/chunk-OQW5JTMC.js": "/lib/chunks/chunk-OQW5JTMC.js?v=9925729270",
+    "/lib/chunks/chunk-R2UPSOGD.js": "/lib/chunks/chunk-R2UPSOGD.js?v=d890a92e43",
+    "/lib/copy-button.js": "/lib/copy-button.js?v=23040bae4c",
+    "/lib/elastic-slider.js": "/lib/elastic-slider.js?v=86c303a629",
+    "/lib/engine.js": "/lib/engine.js?v=f83603ad4e",
+    "/lib/glossy-button.js": "/lib/glossy-button.js?v=562e4ecf47",
+    "/lib/gooey-menu.js": "/lib/gooey-menu.js?v=d4315105f0",
+    "/lib/image-reveal.js": "/lib/image-reveal.js?v=97668f5400",
+    "/lib/kit.js": "/lib/kit.js?v=99620eaeb0",
+    "/lib/like-button.js": "/lib/like-button.js?v=fe349047f1",
+    "/lib/mini-player.js": "/lib/mini-player.js?v=abfd80795a",
+    "/lib/morph-button.js": "/lib/morph-button.js?v=bbeb9490d3",
+    "/lib/number-ticker.js": "/lib/number-ticker.js?v=5123e10fee",
+    "/lib/otp-input.js": "/lib/otp-input.js?v=6365780b17",
+    "/lib/progress-steps.js": "/lib/progress-steps.js?v=559c344e36",
+    "/lib/pull-to-refresh.js": "/lib/pull-to-refresh.js?v=24d44c950c",
+    "/lib/quantity-stepper.js": "/lib/quantity-stepper.js?v=acc50687aa",
+    "/lib/reaction-picker.js": "/lib/reaction-picker.js?v=41514ed352",
+    "/lib/reorder-list.js": "/lib/reorder-list.js?v=0638bb105c",
+    "/lib/ruler-picker.js": "/lib/ruler-picker.js?v=543926d46b",
+    "/lib/scratch-card.js": "/lib/scratch-card.js?v=ed0bfd20fc",
+    "/lib/segmented-control.js": "/lib/segmented-control.js?v=f93e3e0162",
+    "/lib/signature-pad.js": "/lib/signature-pad.js?v=c7a39a2f23",
+    "/lib/skeleton.js": "/lib/skeleton.js?v=7d28497ae5",
+    "/lib/slide-to-confirm.js": "/lib/slide-to-confirm.js?v=b1bfe2c0c9",
+    "/lib/split-button.js": "/lib/split-button.js?v=ecea91211e",
+    "/lib/sweep-transition.js": "/lib/sweep-transition.js?v=401bdd2270",
+    "/lib/swipe-to-delete.js": "/lib/swipe-to-delete.js?v=96111d30a2",
+    "/lib/task-check.js": "/lib/task-check.js?v=8d759c26e8",
+    "/lib/thinking-orb.js": "/lib/thinking-orb.js?v=fe61a12100",
+    "/lib/toast.js": "/lib/toast.js?v=427adb016f",
+    "/lib/toggle.js": "/lib/toggle.js?v=6533b68b3c",
+    "/lib/tooltip.js": "/lib/tooltip.js?v=e5117895d4",
+    "/lib/upload-tile.js": "/lib/upload-tile.js?v=10fad8e11a",
+    "/lib/voice-note.js": "/lib/voice-note.js?v=cf071b2a22",
+    "/logo.js": "/logo.js?v=53a154bd5b",
+    "/playground.js": "/playground.js?v=58e0f28c5a",
+    "/routes.js": "/routes.js?v=70da173b7c",
+    "/showcase.js": "/showcase.js?v=879971dec6",
+    "/variants-content.js": "/variants-content.js?v=7e5bad6150"
+  }
+}</script>
+
+    <script type="module" src="/app.js?v=56159c59b8"></script>
+  </body>
+</html>

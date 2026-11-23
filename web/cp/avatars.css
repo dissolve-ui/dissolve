@@ -1,0 +1,8 @@
+/* AvatarStack demo (cp/avatars.js). The stack brings its own styles (web/lib). */
+.av-demo { display: flex; flex-direction: column; align-items: stretch; gap: 28px; }
+.av-stage { display: flex; justify-content: center; padding-top: 36px; }
+.av-buttons { display: flex; justify-content: center; gap: 10px; }
+.av-btn { height: 38px; min-width: 96px; padding: 0 18px; border: 0; border-radius: 999px; background: var(--surface-2); color: var(--text); font: 600 14px/1 var(--sans); cursor: pointer; transition: opacity .2s, transform .2s; }
+.av-btn:active { transform: scale(.96); }
+.av-btn:disabled { opacity: .4; cursor: default; }
+.av-add { background: var(--text); color: var(--bg); }

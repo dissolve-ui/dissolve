@@ -224,6 +224,30 @@
       "type": "registry:component",
       "title": "ElasticSlider",
       "description": "Thick rounded slider whose texts invert over the fill; pulled past an end, the track stretches like a rubber band and snaps back."
+    },
+    {
+      "name": "accordion",
+      "type": "registry:component",
+      "title": "Accordion",
+      "description": "Expandable sections: the height glides open, the chevron turns over and the content slides in."
+    },
+    {
+      "name": "copy-button",
+      "type": "registry:component",
+      "title": "CopyButton",
+      "description": "Icon button that copies text: the copy icon breaks into grains that reform as a check, a Copied tooltip rises."
+    },
+    {
+      "name": "avatar-stack",
+      "type": "registry:component",
+      "title": "AvatarStack",
+      "description": "Overlapping avatars with a +N chip: hover or hold to spread them with names, adding or removing one animates the stack."
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:component",
+      "title": "Tooltip",
+      "description": "A label with an arrow on hover, focus or long press: it grows in, flips and slides to stay on screen."
     }
   ]
 }
