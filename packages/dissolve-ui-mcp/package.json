@@ -1,7 +1,7 @@
 {
   "name": "dissolve-ui-mcp",
   "version": "0.0.1",
-  "description": "MCP server for dissolve-ui: variants, usage snippets and setup as tools for your coding agent. No dependencies.",
+  "description": "MCP server for dissolve-ui: variants, usage snippets, setup and component installs (free and pro) as tools for your coding agent. No dependencies.",
   "author": "Rayan Selmi",
   "license": "MIT",
   "homepage": "https://github.com/dissolve-ui/dissolve/tree/main/packages/dissolve-ui-mcp#readme",
@@ -15,12 +15,12 @@
   "bin": {
     "dissolve-ui-mcp": "server.mjs"
   },
-  "files": ["server.mjs", "README.md", "LICENSE"],
+  "files": ["server.mjs", "pro.mjs", "README.md", "LICENSE"],
   "engines": {
     "node": ">=18"
   },
   "scripts": {
-    "prepack": "cp ../../mcp/server.mjs server.mjs && chmod +x server.mjs && cp ../../mcp/README.md README.md && cp ../../LICENSE LICENSE"
+    "prepack": "cp ../../mcp/server.mjs server.mjs && chmod +x server.mjs && cp ../dissolve-ui/bin/pro.mjs pro.mjs && cp ../../mcp/README.md README.md && cp ../../LICENSE LICENSE"
   },
   "publishConfig": {
     "access": "public"

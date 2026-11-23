@@ -4,14 +4,29 @@
  *
  * Transport: stdio, JSON-RPC 2.0, one JSON message per line.
  * Methods: initialize, notifications/initialized, ping, tools/list, tools/call.
- * Tools: list_variants, get_variant, get_setup.
+ * Tools: list_variants, get_variant, get_setup, list_components, add_component, dissolve_login,
+ * dissolve_login_status.
  *
  * Register it in Claude Code:
  *   claude mcp add dissolve -- npx -y dissolve-ui-mcp
  *
  * The data below is derived from README.md and src/dissolve (types.ts, hooks/, variants/).
+ * list_components and add_component run the dissolve-ui CLI, the one install path for free and pro
+ * items. The dissolve pro login (device flow, token in ~/.config/dissolve/auth.json) comes from
+ * pro.mjs, the client the CLI ships.
  */
+import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { hostname } from 'node:os';
+import { isAbsolute, join } from 'node:path';
 import { createInterface } from 'node:readline';
+import { fileURLToPath } from 'node:url';
+
+// Published: pro.mjs sits next to this file (copied at pack time). In the repo: the CLI's copy.
+const pro = await import('./pro.mjs').catch((e) => {
+  if (e?.code !== 'ERR_MODULE_NOT_FOUND') throw e;
+  return import('../packages/dissolve-ui/bin/pro.mjs');
+});
 
 const PKG = 'dissolve-ui';
 const VERSION = '0.0.1';
@@ -339,6 +354,35 @@ const TOOLS = [
     },
   },
   {
+    name: 'list_components',
+    description: 'List the dissolve components and blocks you can install (React Native and React web), with their platforms. Install one with add_component.',
+    inputSchema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'add_component',
+    description: 'Install a dissolve component or block into the project (copies its source, like npx dissolve-ui add). If the user needs to connect or subscribe, relay the returned message as is.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Item name from list_components, e.g. slide-to-confirm or paywall. Several names: space separated.' },
+        cwd: { type: 'string', description: 'Absolute path of the app root (folder with package.json). Defaults to the server working directory.' },
+        platform: { type: 'string', enum: ['native', 'web'], description: 'Optional: React Native or React web. Defaults to dissolve.json, else detected.' },
+        overwrite: { type: 'boolean', description: 'Replace files that already exist.' },
+      },
+      required: ['name'],
+    },
+  },
+  {
+    name: 'dissolve_login',
+    description: 'Connect the user\'s dissolve account (only needed for pro items). Returns a link and a code to relay to the user.',
+    inputSchema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'dissolve_login_status',
+    description: 'Check whether the dissolve account is connected and has dissolve pro. Call it after the user opened the login link.',
+    inputSchema: { type: 'object', properties: {} },
+  },
+  {
     name: 'get_setup',
     description: 'Get the install command (package and peer dependencies), the DissolveProvider root layout snippet, a minimal useDissolve example, the component CLI (npx dissolve-ui init, add, list for React Native or React on the web, NativeWind v5 and theme tokens) and the variant picking rules.',
     inputSchema: { type: 'object', properties: {} },
@@ -381,10 +425,130 @@ const getSetup = () => `${SETUP}\n${RULES}\n`;
 
 class ToolError extends Error {}
 
-function callTool(name, args) {
+/* ---------- Components (free and pro) through the CLI ---------- */
+
+/** DISSOLVE_CLI (a path to dissolve.mjs), the built repo package in a checkout, else npx. */
+function cliCommand() {
+  if (process.env.DISSOLVE_CLI) return [process.execPath, [process.env.DISSOLVE_CLI]];
+  const pkg = fileURLToPath(new URL('../packages/dissolve-ui/', import.meta.url));
+  if (existsSync(join(pkg, 'registry', 'index.json'))) return [process.execPath, [join(pkg, 'bin', 'dissolve.mjs')]];
+  return ['npx', ['-y', `${PKG}@latest`]];
+}
+
+const ANSI = /\x1b\[[0-9;]*m/g;
+
+/** Runs the CLI, resolves { code, out } with colors stripped. */
+function runCli(args, cwd) {
+  const [cmd, base] = cliCommand();
+  return new Promise((resolve) => {
+    const child = spawn(cmd, [...base, ...args], { cwd, stdio: ['ignore', 'pipe', 'pipe'], shell: process.platform === 'win32' && cmd === 'npx' });
+    let out = '';
+    child.stdout.on('data', (d) => (out += d));
+    child.stderr.on('data', (d) => (out += d));
+    child.on('error', (e) => resolve({ code: -1, out: `Could not run ${cmd}: ${e.message}` }));
+    child.on('close', (code) => resolve({ code, out: out.replace(ANSI, '').trim() }));
+  });
+}
+
+/** Polls the login in the background, so the token is saved as soon as the user confirms. */
+let watching = null;
+function watchLogin(pending) {
+  if (watching) return;
+  watching = pro.waitForLogin(pending).catch(() => null).finally(() => (watching = null));
+}
+
+const loginMessage = (p) => `Open ${p.verify_url} to connect your dissolve account (code ${p.user_code}), then ask me again.`;
+
+/** The login in progress (or a new one, opened in the browser), as the message to relay. */
+async function loginPrompt() {
+  let pending = pro.pendingLogin();
+  if (!pending) {
+    pending = await pro.startLogin(`dissolve MCP on ${hostname()}`);
+    pro.openBrowser(pending.verify_url);
+  }
+  watchLogin(pending);
+  return loginMessage(pending);
+}
+
+/** A login in progress that the user may have confirmed since: one poll. */
+async function settlePendingLogin() {
+  const pending = !pro.readToken() && pro.pendingLogin();
+  if (pending) await pro.pollLogin(pending).catch(() => null);
+}
+
+async function listComponents() {
+  const { code, out } = await runCli(['list'], process.cwd());
+  if (code !== 0) throw new ToolError(`Could not list the components:\n${out}`);
+  return `${out}\n\nInstall with add_component({ name }). "pro" items need a dissolve pro subscription; add_component handles the login and the checkout link.`;
+}
+
+async function addComponent({ name, cwd, platform, overwrite } = {}) {
+  const names = String(name ?? '').split(/[\s,]+/).filter(Boolean);
+  if (!names.length) throw new ToolError('Pass the item name, e.g. { "name": "slide-to-confirm" }. See list_components.');
+  const root = cwd || process.cwd();
+  if (!isAbsolute(root) || !existsSync(join(root, 'package.json'))) {
+    throw new ToolError(`No package.json in ${root}. Pass cwd: the absolute path of the app root.`);
+  }
+  await settlePendingLogin();
+  const args = ['add', ...names, '--cwd', root, '--yes', '--no-login'];
+  if (platform === 'native' || platform === 'web') args.push(`--${platform}`);
+  if (overwrite) args.push('--overwrite');
+  const { code, out } = await runCli(args, root);
+  if (code === 0) return out;
+  // 3: the item is pro and no account is connected (or the token was revoked).
+  if (code === 3) return loginPrompt();
+  // 4: connected, no active subscription. Files of the other names may have been written.
+  if (code === 4) {
+    const links = [...out.matchAll(/^(\S+) is part of dissolve pro\.\s*\n\s*Subscribe: (\S+)/gm)];
+    const lines = links.map((m) => `${m[1]} is part of dissolve pro: subscribe at ${m[2]}, then ask me again.`);
+    const rest = out.split(/\n\S+ is part of dissolve pro\./)[0].trim();
+    return [...lines, rest && /\b(added|replaced|skipped)\b/.test(rest) ? `\nInstalled meanwhile:\n${rest}` : ''].filter(Boolean).join('\n');
+  }
+  throw new ToolError(out || `dissolve-ui exited with code ${code}.`);
+}
+
+async function describeAccount(token) {
+  const who = await pro.me(token);
+  if (!who) return null;
+  return `Connected as ${who.user.email}. dissolve pro: ${who.pro ? `active${who.plan ? ` (${who.plan})` : ''}` : 'not active'}.`;
+}
+
+async function login() {
+  const auth = pro.readToken();
+  if (auth) {
+    const who = await describeAccount(auth.token);
+    if (who) return who;
+    if (auth.source === 'env') throw new ToolError('DISSOLVE_TOKEN is set but was not accepted. Unset it or set a valid token.');
+    pro.clearToken();
+  }
+  return loginPrompt();
+}
+
+async function loginStatus() {
+  const pending = !pro.readToken() && pro.pendingLogin();
+  if (pending) {
+    const r = await pro.pollLogin(pending);
+    if (r === 'pending') return `Waiting for the user: ${loginMessage(pending)}`;
+    if (r === 'expired') return 'The login code expired. Call dissolve_login for a new one.';
+  }
+  const auth = pro.readToken();
+  if (!auth) return 'Not connected. Only pro items need it: call dissolve_login.';
+  return (await describeAccount(auth.token)) ?? 'The saved token is not valid anymore. Call dissolve_login.';
+}
+
+async function callTool(name, args) {
   if (name === 'list_variants') return listVariants(args);
   if (name === 'get_variant') return getVariant(args);
   if (name === 'get_setup') return getSetup();
+  try {
+    if (name === 'list_components') return await listComponents();
+    if (name === 'add_component') return await addComponent(args);
+    if (name === 'dissolve_login') return await login();
+    if (name === 'dissolve_login_status') return await loginStatus();
+  } catch (e) {
+    if (e instanceof pro.OfflineError) throw new ToolError(`${e.message} Check the connection and try again.`);
+    throw e;
+  }
   throw new RpcError(-32602, `Unknown tool: ${name}`);
 }
 
@@ -396,7 +560,7 @@ class RpcError extends Error {
 
 const send = (msg) => process.stdout.write(JSON.stringify({ jsonrpc: '2.0', ...msg }) + '\n');
 
-function handle(req) {
+async function handle(req) {
   const { method, params = {} } = req;
   switch (method) {
     case 'initialize':
@@ -404,7 +568,7 @@ function handle(req) {
         protocolVersion: typeof params.protocolVersion === 'string' ? params.protocolVersion : PROTOCOL,
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: 'dissolve', version: VERSION },
-        instructions: 'Docs for dissolve-ui (turn any React Native view into dust). Call get_setup to install it and add components, list_variants to pick an effect, get_variant for the code.',
+        instructions: 'dissolve-ui: animated components and blocks for React Native and React. list_components shows what can be installed, add_component installs it (free or pro, relay its message if the user must connect or subscribe). get_setup, list_variants and get_variant document the dissolve engine.',
       };
     case 'ping':
       return {};
@@ -412,7 +576,7 @@ function handle(req) {
       return { tools: TOOLS };
     case 'tools/call':
       try {
-        return { content: [{ type: 'text', text: callTool(params.name, params.arguments ?? {}) }] };
+        return { content: [{ type: 'text', text: await callTool(params.name, params.arguments ?? {}) }] };
       } catch (e) {
         if (e instanceof ToolError) return { content: [{ type: 'text', text: e.message }], isError: true };
         throw e;
@@ -423,7 +587,15 @@ function handle(req) {
 }
 
 const rl = createInterface({ input: process.stdin });
+/** Calls in flight: stdin closing waits for them before exiting. */
+const inflight = new Set();
 rl.on('line', (line) => {
+  const p = onLine(line).finally(() => inflight.delete(p));
+  inflight.add(p);
+});
+rl.on('close', () => Promise.allSettled([...inflight]).then(() => process.exit(0)));
+
+async function onLine(line) {
   if (!line.trim()) return;
   let req;
   try {
@@ -436,9 +608,8 @@ rl.on('line', (line) => {
   // notifications/initialized and any other notification: nothing to answer.
   if (isNotification) return;
   try {
-    send({ id: req.id, result: handle(req) });
+    send({ id: req.id, result: await handle(req) });
   } catch (e) {
     send({ id: req.id, error: { code: e.code ?? -32603, message: e.message } });
   }
-});
-rl.on('close', () => process.exit(0));
+}
