@@ -91,6 +91,6 @@ const [volume, setVolume] = useState(40);
 - React Native: [registry/elastic-slider.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/elastic-slider.tsx)
 - React: [registry/web/elastic-slider.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/elastic-slider.tsx) and [registry/web/elastic-slider.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/elastic-slider.core.ts)
 
-Previous: [ProgressSteps](https://dissolve.rselmi.com/components/progress-steps/) · [All components](https://dissolve.rselmi.com/components/)
+Previous: [ProgressSteps](https://dissolve.rselmi.com/components/progress-steps/) · Next: [Accordion](https://dissolve.rselmi.com/components/accordion/) · [All components](https://dissolve.rselmi.com/components/)
 
 Source: https://dissolve.rselmi.com/components/elastic-slider/

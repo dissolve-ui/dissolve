@@ -191,6 +191,30 @@
       "file": "elastic-slider.tsx",
       "export": "ElasticSlider",
       "description": "Thick rounded slider whose texts invert over the fill; pulled past an end, the track stretches like a rubber band and snaps back."
+    },
+    {
+      "name": "accordion",
+      "file": "accordion.tsx",
+      "export": "Accordion",
+      "description": "Expandable sections: the height glides open, the chevron turns over and the content slides in."
+    },
+    {
+      "name": "copy-button",
+      "file": "copy-button.tsx",
+      "export": "CopyButton",
+      "description": "Icon button that copies text: the copy icon breaks into grains that reform as a check, a Copied tooltip rises."
+    },
+    {
+      "name": "avatar-stack",
+      "file": "avatar-stack.tsx",
+      "export": "AvatarStack",
+      "description": "Overlapping avatars with a +N chip: hover or hold to spread them with names, adding or removing one animates the stack."
+    },
+    {
+      "name": "tooltip",
+      "file": "tooltip.tsx",
+      "export": "Tooltip",
+      "description": "A label with an arrow on hover, focus or long press: it grows in, flips and slides to stay on screen."
     }
   ],
   "helpers": [
