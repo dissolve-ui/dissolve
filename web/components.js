@@ -91,7 +91,7 @@ const NEW = ['elastic-slider', 'toggle', 'progress-steps'];
  * The grid of component demos. cols: column count (the gallery's by default). fx: false leaves out
  * the engine effects that sit among the components on the gallery.
  */
-export function componentsSectionHTML({ cols = galleryCols(), fx = true, ids } = {}) {
+export function componentsSectionHTML({ cols = galleryCols(), fx = true, ids, inside = false } = {}) {
   // Columns filled in reading order. The page re-renders when the count changes (app.js).
   const items = [];
   // Gallery order: the sidebar order, with a few swaps for the layout.
@@ -116,11 +116,12 @@ export function componentsSectionHTML({ cols = galleryCols(), fx = true, ids } =
     return `<figure class="bx-item">
       <section class="cp-panel bx-card${fx ? ' cp-panel-fx' : ''}" aria-label="${title}">
         ${body}
+        ${inside ? `<a class="bx-in" href="${href}"><span>${title}</span><em>${fx ? 'Effect' : categoryOf(it.id)}</em></a>` : ''}
         <span class="bx-acts"><a class="bx-act" href="${href}" aria-label="Open ${title}">${openIcon}</a></span>
       </section>
-      <figcaption class="bx-cap">
+      ${inside ? '' : `<figcaption class="bx-cap">
         <span class="bx-cap-row"><a class="bx-name" href="${href}">${title}</a><span class="bx-kind">${fx ? 'Effect' : categoryOf(it.id)}</span></span>
-      </figcaption>
+      </figcaption>`}
     </figure>`;
   };
   return `<div class="cp-grid cp-grid-home">${Array.from({ length: cols }, (_, col) => `<div class="cp-col">

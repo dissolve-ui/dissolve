@@ -551,7 +551,7 @@ function heroHTML() {
   <canvas class="hz-bg" aria-hidden="true"></canvas>
   <header class="hz-copy sc-hero2">
     <h1 class="hz-title">dissolve</h1>
-    <p class="hz-sub">Animated components for <strong>React Native</strong> and <strong>React</strong>. Copy them into your project, or let your agent build with them through MCP. The code is yours either way.</p>
+    <p class="hz-sub">One animated component library for <strong>React Native</strong> and <strong>React</strong>. The same components, the same props and the same feel on iOS, Android and the web. Copy them in, or let your agent build with them.</p>
     <div class="bx-cta" data-hero-cta></div>
   <div class="hx" data-hx>
     <div class="hx-src" role="tablist" aria-label="Install with">
