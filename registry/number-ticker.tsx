@@ -14,8 +14,8 @@
  * <NumberTicker value={balance} decimals={2} prefix="$" textClassName="text-dissolve-success" />
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { LayoutChangeEvent, TextStyle } from 'react-native';
-import { useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import type { LayoutChangeEvent, StyleProp, TextStyle } from 'react-native';
+import { useAnimatedStyle, useSharedValue, withDelay, withTiming, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnUI } from 'react-native-worklets';
 import { Animated, Text, View, cn } from './tw';
 import { CALM } from './motion';
@@ -130,9 +130,11 @@ function Column({ item, width, lineHeight, look, delay, duration, dir }: { item:
   const cell = { width: width + SLACK, marginLeft: -SLACK / 2, lineHeight, height: lineHeight };
   const cls = cn(look.className, 'text-center');
 
+  // The wheel is decoration: the root's accessibilityLabel carries the value.
+  const hidden = { accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' } as const;
   if (item.kind === 'sym') {
     return (
-      <Animated.View className="overflow-hidden" style={[{ height: lineHeight }, box]}>
+      <Animated.View {...hidden} className="overflow-hidden" style={[{ height: lineHeight }, box]}>
         <Text numberOfLines={1} className={cls} style={[look.style, cell]}>
           {item.char}
         </Text>
@@ -140,17 +142,30 @@ function Column({ item, width, lineHeight, look, delay, duration, dir }: { item:
     );
   }
   return (
-    <Animated.View className="overflow-hidden" style={[{ height: lineHeight }, box]}>
+    <Animated.View {...hidden} className="overflow-hidden" style={[{ height: lineHeight }, box]}>
       <Animated.View style={[{ height: lineHeight * WHEEL.length }, roll]}>
         {/* One text per digit at an exact offset: a single multi line text drifts on device,
             because iOS rounds every line box and the error adds up down the wheel. */}
         {WHEEL.map((d, i) => (
-          <Text key={i} numberOfLines={1} className={cls} style={[look.style, cell, { position: 'absolute', top: i * lineHeight, left: 0 }]}>
+          <WheelCell key={i} index={i} pos={pos} className={cls} style={[look.style, cell, { position: 'absolute', top: i * lineHeight, left: 0 }]}>
             {d}
-          </Text>
+          </WheelCell>
         ))}
       </Animated.View>
     </Animated.View>
+  );
+}
+
+/**
+ * One digit of the wheel. Only the cells within one step of the window are drawn; the rest of the
+ * wheel is transparent, so it is not picked up as content. Follows the roll on the UI thread.
+ */
+function WheelCell({ index, pos, className, style, children }: { index: number; pos: SharedValue<number>; className: string; style: StyleProp<TextStyle>; children: string }) {
+  const near = useAnimatedStyle(() => ({ opacity: index >= Math.floor(pos.value) - 1 && index <= Math.ceil(pos.value) + 1 ? 1 : 0 }));
+  return (
+    <Animated.Text numberOfLines={1} className={className} style={[style, near]}>
+      {children}
+    </Animated.Text>
   );
 }
 

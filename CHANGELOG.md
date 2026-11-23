@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `range-slider`: a dual handle range slider. The handles never cross (minDistance keeps a gap), the track fills between them and both values roll in NumberTicker bubbles while you drag, sliding apart when they would touch. With a step the handles snap on a quick spring, with a selection tick per step; arrows, Page Up, Page Down, Home and End on each handle. Controlled or not. React Native and React.
 - `password-strength`: a password field with Show and Hide, a quiet strength meter of four dotted segments that fill dot by dot while the word beside them (Weak, Fair, Good, Strong) rolls to the next, and the rules ticking live. Common passwords and long repeats score as weak; onChange hands the strength with passed once every rule and minScore are met. Your own rules or the default four. React Native and React.
 
+### Fixed
+- `number-ticker`: the off screen cells of the digit wheels no longer count as content. The wheels are hidden from assistive tech (`aria-hidden` on web, hidden descendants on iOS and Android) and the ticker's label carries the value; cells more than one step from the window are `visibility: hidden` on web (transparent on native), following the roll frame by frame. Same look and timing.
+- `segmented-control`: the selection pill is right on the very first frame. Native: a resting pill laid out by flex shows before `onLayout` has measured anything and hands over to the animated pill when the first flight starts. Web: placed synchronously when the control is created (or by its ResizeObserver, before paint, when the host has no width yet), hidden until placed, and never transitioned, even under a page wide `transition` rule.
+
 ## [0.0.8] - 2026-11-23
 
 ### Added
