@@ -80,8 +80,8 @@ import { OTPInput } from '@/components/dissolve/otp-input';
 
 ## Source
 
-- React Native: [registry/otp-input.tsx](https://github.com/rs-4/dissolve/blob/main/registry/otp-input.tsx)
-- React: [registry/web/otp-input.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/otp-input.tsx) and [registry/web/otp-input.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/otp-input.core.ts)
+- React Native: [registry/otp-input.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/otp-input.tsx)
+- React: [registry/web/otp-input.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/otp-input.tsx) and [registry/web/otp-input.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/otp-input.core.ts)
 
 Previous: [SlideToConfirm](https://dissolve.rselmi.com/components/slide-to-confirm/) · Next: [NumberTicker](https://dissolve.rselmi.com/components/number-ticker/) · [All components](https://dissolve.rselmi.com/components/)
 

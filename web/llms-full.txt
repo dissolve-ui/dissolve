@@ -152,7 +152,7 @@ Restart Claude Code, then ask for an effect, for example "dissolve the row when 
 
 ## MCP server
 
-A tiny MCP server with no dependencies, published on npm as `dissolve-ui-mcp`. Your agent runs it with `npx` over stdio, so it stays up to date, and it answers with the same data as the docs. The source is in `mcp/server.mjs` on [GitHub](https://github.com/rs-4/dissolve).
+A tiny MCP server with no dependencies, published on npm as `dissolve-ui-mcp`. Your agent runs it with `npx` over stdio, so it stays up to date, and it answers with the same data as the docs. The source is in `mcp/server.mjs` on [GitHub](https://github.com/dissolve-ui/dissolve).
 
 | Tool | Returns |
 | --- | --- |
@@ -827,8 +827,8 @@ export function Inbox() {
 
 ## Source
 
-- React Native: [registry/swipe-to-delete.tsx](https://github.com/rs-4/dissolve/blob/main/registry/swipe-to-delete.tsx)
-- React: [registry/web/swipe-to-delete.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/swipe-to-delete.tsx) and [registry/web/swipe-to-delete.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/swipe-to-delete.core.ts)
+- React Native: [registry/swipe-to-delete.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/swipe-to-delete.tsx)
+- React: [registry/web/swipe-to-delete.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/swipe-to-delete.tsx) and [registry/web/swipe-to-delete.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/swipe-to-delete.core.ts)
 
 Next: [Toast](https://dissolve.rselmi.com/components/toast/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -938,8 +938,8 @@ toast.show({ title: 'Payment declined', message: 'Try another card', tone: 'erro
 
 ## Source
 
-- React Native: [registry/toast.tsx](https://github.com/rs-4/dissolve/blob/main/registry/toast.tsx)
-- React: [registry/web/toast.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/toast.tsx) and [registry/web/toast.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/toast.core.ts)
+- React Native: [registry/toast.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/toast.tsx)
+- React: [registry/web/toast.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/toast.tsx) and [registry/web/toast.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/toast.core.ts)
 
 Previous: [SwipeToDelete](https://dissolve.rselmi.com/components/swipe-to-delete/) · Next: [GlossyButton](https://dissolve.rselmi.com/components/glossy-button/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -1048,8 +1048,8 @@ import { GlossyButton } from '@/components/dissolve/glossy-button';
 
 ## Source
 
-- React Native: [registry/glossy-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/glossy-button.tsx)
-- React: [registry/web/glossy-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/glossy-button.tsx) and [registry/web/glossy-button.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/glossy-button.core.ts)
+- React Native: [registry/glossy-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/glossy-button.tsx)
+- React: [registry/web/glossy-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/glossy-button.tsx) and [registry/web/glossy-button.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/glossy-button.core.ts)
 
 Previous: [Toast](https://dissolve.rselmi.com/components/toast/) · Next: [LikeButton](https://dissolve.rselmi.com/components/like-button/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -1159,8 +1159,8 @@ export function PostActions() {
 
 ## Source
 
-- React Native: [registry/like-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/like-button.tsx)
-- React: [registry/web/like-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/like-button.tsx) and [registry/web/like-button.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/like-button.core.ts)
+- React Native: [registry/like-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/like-button.tsx)
+- React: [registry/web/like-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/like-button.tsx) and [registry/web/like-button.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/like-button.core.ts)
 
 Previous: [GlossyButton](https://dissolve.rselmi.com/components/glossy-button/) · Next: [MorphButton](https://dissolve.rselmi.com/components/morph-button/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -1247,8 +1247,8 @@ import { MorphButton } from '@/components/dissolve/morph-button';
 
 ## Source
 
-- React Native: [registry/morph-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/morph-button.tsx)
-- React: [registry/web/morph-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/morph-button.tsx) and [registry/web/morph-button.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/morph-button.core.ts)
+- React Native: [registry/morph-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/morph-button.tsx)
+- React: [registry/web/morph-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/morph-button.tsx) and [registry/web/morph-button.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/morph-button.core.ts)
 
 Previous: [LikeButton](https://dissolve.rselmi.com/components/like-button/) · Next: [SplitButton](https://dissolve.rselmi.com/components/split-button/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -1344,8 +1344,8 @@ const toast = useToast();
 
 ## Source
 
-- React Native: [registry/split-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/split-button.tsx)
-- React: [registry/web/split-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/split-button.tsx) and [registry/web/split-button.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/split-button.core.ts)
+- React Native: [registry/split-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/split-button.tsx)
+- React: [registry/web/split-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/split-button.tsx) and [registry/web/split-button.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/split-button.core.ts)
 
 Previous: [MorphButton](https://dissolve.rselmi.com/components/morph-button/) · Next: [GooeyMenu](https://dissolve.rselmi.com/components/gooey-menu/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -1438,8 +1438,8 @@ import { GooeyMenu } from '@/components/dissolve/gooey-menu';
 
 ## Source
 
-- React Native: [registry/gooey-menu.tsx](https://github.com/rs-4/dissolve/blob/main/registry/gooey-menu.tsx)
-- React: [registry/web/gooey-menu.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/gooey-menu.tsx) and [registry/web/gooey-menu.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/gooey-menu.core.ts)
+- React Native: [registry/gooey-menu.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/gooey-menu.tsx)
+- React: [registry/web/gooey-menu.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/gooey-menu.tsx) and [registry/web/gooey-menu.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/gooey-menu.core.ts)
 
 Previous: [SplitButton](https://dissolve.rselmi.com/components/split-button/) · Next: [SlideToConfirm](https://dissolve.rselmi.com/components/slide-to-confirm/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -1527,8 +1527,8 @@ import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
 
 ## Source
 
-- React Native: [registry/slide-to-confirm.tsx](https://github.com/rs-4/dissolve/blob/main/registry/slide-to-confirm.tsx)
-- React: [registry/web/slide-to-confirm.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/slide-to-confirm.tsx) and [registry/web/slide-to-confirm.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/slide-to-confirm.core.ts)
+- React Native: [registry/slide-to-confirm.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/slide-to-confirm.tsx)
+- React: [registry/web/slide-to-confirm.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/slide-to-confirm.tsx) and [registry/web/slide-to-confirm.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/slide-to-confirm.core.ts)
 
 Previous: [GooeyMenu](https://dissolve.rselmi.com/components/gooey-menu/) · Next: [OTPInput](https://dissolve.rselmi.com/components/otp-input/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -1620,8 +1620,8 @@ import { OTPInput } from '@/components/dissolve/otp-input';
 
 ## Source
 
-- React Native: [registry/otp-input.tsx](https://github.com/rs-4/dissolve/blob/main/registry/otp-input.tsx)
-- React: [registry/web/otp-input.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/otp-input.tsx) and [registry/web/otp-input.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/otp-input.core.ts)
+- React Native: [registry/otp-input.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/otp-input.tsx)
+- React: [registry/web/otp-input.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/otp-input.tsx) and [registry/web/otp-input.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/otp-input.core.ts)
 
 Previous: [SlideToConfirm](https://dissolve.rselmi.com/components/slide-to-confirm/) · Next: [NumberTicker](https://dissolve.rselmi.com/components/number-ticker/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -1718,8 +1718,8 @@ import { NumberTicker } from '@/components/dissolve/number-ticker';
 
 ## Source
 
-- React Native: [registry/number-ticker.tsx](https://github.com/rs-4/dissolve/blob/main/registry/number-ticker.tsx)
-- React: [registry/web/number-ticker.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/number-ticker.tsx) and [registry/web/number-ticker.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/number-ticker.core.ts)
+- React Native: [registry/number-ticker.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/number-ticker.tsx)
+- React: [registry/web/number-ticker.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/number-ticker.tsx) and [registry/web/number-ticker.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/number-ticker.core.ts)
 
 Previous: [OTPInput](https://dissolve.rselmi.com/components/otp-input/) · Next: [ReactionPicker](https://dissolve.rselmi.com/components/reaction-picker/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -1826,8 +1826,8 @@ export function Message({ text }) {
 
 ## Source
 
-- React Native: [registry/reaction-picker.tsx](https://github.com/rs-4/dissolve/blob/main/registry/reaction-picker.tsx)
-- React: [registry/web/reaction-picker.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/reaction-picker.tsx) and [registry/web/reaction-picker.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/reaction-picker.core.ts)
+- React Native: [registry/reaction-picker.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/reaction-picker.tsx)
+- React: [registry/web/reaction-picker.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/reaction-picker.tsx) and [registry/web/reaction-picker.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/reaction-picker.core.ts)
 
 Previous: [NumberTicker](https://dissolve.rselmi.com/components/number-ticker/) · Next: [VoiceNote](https://dissolve.rselmi.com/components/voice-note/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -1926,8 +1926,8 @@ import { VoiceNote } from '@/components/dissolve/voice-note';
 
 ## Source
 
-- React Native: [registry/voice-note.tsx](https://github.com/rs-4/dissolve/blob/main/registry/voice-note.tsx)
-- React: [registry/web/voice-note.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/voice-note.tsx) and [registry/web/voice-note.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/voice-note.core.ts)
+- React Native: [registry/voice-note.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/voice-note.tsx)
+- React: [registry/web/voice-note.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/voice-note.tsx) and [registry/web/voice-note.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/voice-note.core.ts)
 
 Previous: [ReactionPicker](https://dissolve.rselmi.com/components/reaction-picker/) · Next: [SignaturePad](https://dissolve.rselmi.com/components/signature-pad/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -2040,8 +2040,8 @@ export function Sign() {
 
 ## Source
 
-- React Native: [registry/signature-pad.tsx](https://github.com/rs-4/dissolve/blob/main/registry/signature-pad.tsx)
-- React: [registry/web/signature-pad.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/signature-pad.tsx) and [registry/web/signature-pad.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/signature-pad.core.ts)
+- React Native: [registry/signature-pad.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/signature-pad.tsx)
+- React: [registry/web/signature-pad.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/signature-pad.tsx) and [registry/web/signature-pad.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/signature-pad.core.ts)
 
 Previous: [VoiceNote](https://dissolve.rselmi.com/components/voice-note/) · Next: [CardStack](https://dissolve.rselmi.com/components/card-stack/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -2131,8 +2131,8 @@ import { CardStack } from '@/components/dissolve/card-stack';
 
 ## Source
 
-- React Native: [registry/card-stack.tsx](https://github.com/rs-4/dissolve/blob/main/registry/card-stack.tsx)
-- React: [registry/web/card-stack.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/card-stack.tsx) and [registry/web/card-stack.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/card-stack.core.ts)
+- React Native: [registry/card-stack.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/card-stack.tsx)
+- React: [registry/web/card-stack.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/card-stack.tsx) and [registry/web/card-stack.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/card-stack.core.ts)
 
 Previous: [SignaturePad](https://dissolve.rselmi.com/components/signature-pad/) · Next: [BeforeAfter](https://dissolve.rselmi.com/components/before-after/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -2230,8 +2230,8 @@ import { BeforeAfter } from '@/components/dissolve/before-after';
 
 ## Source
 
-- React Native: [registry/before-after.tsx](https://github.com/rs-4/dissolve/blob/main/registry/before-after.tsx)
-- React: [registry/web/before-after.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/before-after.tsx) and [registry/web/before-after.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/before-after.core.ts)
+- React Native: [registry/before-after.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/before-after.tsx)
+- React: [registry/web/before-after.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/before-after.tsx) and [registry/web/before-after.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/before-after.core.ts)
 
 Previous: [CardStack](https://dissolve.rselmi.com/components/card-stack/) · Next: [ThinkingOrb](https://dissolve.rselmi.com/components/thinking-orb/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -2320,8 +2320,8 @@ import { ThinkingOrb } from '@/components/dissolve/thinking-orb';
 
 ## Source
 
-- React Native: [registry/thinking-orb.tsx](https://github.com/rs-4/dissolve/blob/main/registry/thinking-orb.tsx)
-- React: [registry/web/thinking-orb.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/thinking-orb.tsx) and [registry/web/thinking-orb.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/thinking-orb.core.ts)
+- React Native: [registry/thinking-orb.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/thinking-orb.tsx)
+- React: [registry/web/thinking-orb.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/thinking-orb.tsx) and [registry/web/thinking-orb.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/thinking-orb.core.ts)
 
 Previous: [BeforeAfter](https://dissolve.rselmi.com/components/before-after/) · Next: [ImageReveal](https://dissolve.rselmi.com/components/image-reveal/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -2413,8 +2413,8 @@ import { ImageReveal } from '@/components/dissolve/image-reveal';
 
 ## Source
 
-- React Native: [registry/image-reveal.tsx](https://github.com/rs-4/dissolve/blob/main/registry/image-reveal.tsx)
-- React: [registry/web/image-reveal.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/image-reveal.tsx) and [registry/web/image-reveal.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/image-reveal.core.ts)
+- React Native: [registry/image-reveal.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/image-reveal.tsx)
+- React: [registry/web/image-reveal.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/image-reveal.tsx) and [registry/web/image-reveal.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/image-reveal.core.ts)
 
 Previous: [ThinkingOrb](https://dissolve.rselmi.com/components/thinking-orb/) · Next: [SweepTransition](https://dissolve.rselmi.com/components/sweep-transition/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -2508,8 +2508,8 @@ sweep.current?.run(() => setPlan('pro'), { revert: () => setPlan('free') });
 
 ## Source
 
-- React Native: [registry/sweep-transition.tsx](https://github.com/rs-4/dissolve/blob/main/registry/sweep-transition.tsx)
-- React: [registry/web/sweep-transition.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/sweep-transition.tsx) and [registry/web/sweep-transition.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/sweep-transition.core.ts)
+- React Native: [registry/sweep-transition.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/sweep-transition.tsx)
+- React: [registry/web/sweep-transition.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/sweep-transition.tsx) and [registry/web/sweep-transition.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/sweep-transition.core.ts)
 
 Previous: [ImageReveal](https://dissolve.rselmi.com/components/image-reveal/) · Next: [UploadTile](https://dissolve.rselmi.com/components/upload-tile/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -2602,8 +2602,8 @@ import { UploadTray } from '@/components/dissolve/upload-tile';
 
 ## Source
 
-- React Native: [registry/upload-tile.tsx](https://github.com/rs-4/dissolve/blob/main/registry/upload-tile.tsx)
-- React: [registry/web/upload-tile.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/upload-tile.tsx) and [registry/web/upload-tile.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/upload-tile.core.ts)
+- React Native: [registry/upload-tile.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/upload-tile.tsx)
+- React: [registry/web/upload-tile.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/upload-tile.tsx) and [registry/web/upload-tile.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/upload-tile.core.ts)
 
 Previous: [SweepTransition](https://dissolve.rselmi.com/components/sweep-transition/) · Next: [TaskCheck](https://dissolve.rselmi.com/components/task-check/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -2698,8 +2698,8 @@ import { TaskCheck } from '@/components/dissolve/task-check';
 
 ## Source
 
-- React Native: [registry/task-check.tsx](https://github.com/rs-4/dissolve/blob/main/registry/task-check.tsx)
-- React: [registry/web/task-check.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/task-check.tsx) and [registry/web/task-check.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/task-check.core.ts)
+- React Native: [registry/task-check.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/task-check.tsx)
+- React: [registry/web/task-check.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/task-check.tsx) and [registry/web/task-check.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/task-check.core.ts)
 
 Previous: [UploadTile](https://dissolve.rselmi.com/components/upload-tile/) · Next: [QuantityStepper](https://dissolve.rselmi.com/components/quantity-stepper/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -2794,8 +2794,8 @@ import { QuantityStepper } from '@/components/dissolve/quantity-stepper';
 
 ## Source
 
-- React Native: [registry/quantity-stepper.tsx](https://github.com/rs-4/dissolve/blob/main/registry/quantity-stepper.tsx)
-- React: [registry/web/quantity-stepper.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/quantity-stepper.tsx) and [registry/web/quantity-stepper.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/quantity-stepper.core.ts)
+- React Native: [registry/quantity-stepper.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/quantity-stepper.tsx)
+- React: [registry/web/quantity-stepper.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/quantity-stepper.tsx) and [registry/web/quantity-stepper.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/quantity-stepper.core.ts)
 
 Previous: [TaskCheck](https://dissolve.rselmi.com/components/task-check/) · Next: [RulerPicker](https://dissolve.rselmi.com/components/ruler-picker/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -2895,8 +2895,8 @@ import { RulerPicker } from '@/components/dissolve/ruler-picker';
 
 ## Source
 
-- React Native: [registry/ruler-picker.tsx](https://github.com/rs-4/dissolve/blob/main/registry/ruler-picker.tsx)
-- React: [registry/web/ruler-picker.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/ruler-picker.tsx) and [registry/web/ruler-picker.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/ruler-picker.core.ts)
+- React Native: [registry/ruler-picker.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/ruler-picker.tsx)
+- React: [registry/web/ruler-picker.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/ruler-picker.tsx) and [registry/web/ruler-picker.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/ruler-picker.core.ts)
 
 Previous: [QuantityStepper](https://dissolve.rselmi.com/components/quantity-stepper/) · Next: [BarChart](https://dissolve.rselmi.com/components/bar-chart/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -2994,8 +2994,8 @@ import { BarChart } from '@/components/dissolve/bar-chart';
 
 ## Source
 
-- React Native: [registry/bar-chart.tsx](https://github.com/rs-4/dissolve/blob/main/registry/bar-chart.tsx)
-- React: [registry/web/bar-chart.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/bar-chart.tsx) and [registry/web/bar-chart.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/bar-chart.core.ts)
+- React Native: [registry/bar-chart.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/bar-chart.tsx)
+- React: [registry/web/bar-chart.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/bar-chart.tsx) and [registry/web/bar-chart.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/bar-chart.core.ts)
 
 Previous: [RulerPicker](https://dissolve.rselmi.com/components/ruler-picker/) · Next: [MiniPlayer](https://dissolve.rselmi.com/components/mini-player/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -3105,8 +3105,8 @@ import { MiniPlayer } from '@/components/dissolve/mini-player';
 
 ## Source
 
-- React Native: [registry/mini-player.tsx](https://github.com/rs-4/dissolve/blob/main/registry/mini-player.tsx)
-- React: [registry/web/mini-player.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/mini-player.tsx) and [registry/web/mini-player.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/mini-player.core.ts)
+- React Native: [registry/mini-player.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/mini-player.tsx)
+- React: [registry/web/mini-player.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/mini-player.tsx) and [registry/web/mini-player.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/mini-player.core.ts)
 
 Previous: [BarChart](https://dissolve.rselmi.com/components/bar-chart/) · Next: [PullToRefresh](https://dissolve.rselmi.com/components/pull-to-refresh/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -3238,8 +3238,8 @@ import { PullToRefresh, PullItem } from '@/components/dissolve/pull-to-refresh';
 
 ## Source
 
-- React Native: [registry/pull-to-refresh.tsx](https://github.com/rs-4/dissolve/blob/main/registry/pull-to-refresh.tsx)
-- React: [registry/web/pull-to-refresh.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/pull-to-refresh.tsx) and [registry/web/pull-to-refresh.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/pull-to-refresh.core.ts)
+- React Native: [registry/pull-to-refresh.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/pull-to-refresh.tsx)
+- React: [registry/web/pull-to-refresh.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/pull-to-refresh.tsx) and [registry/web/pull-to-refresh.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/pull-to-refresh.core.ts)
 
 Previous: [MiniPlayer](https://dissolve.rselmi.com/components/mini-player/) · Next: [ReorderList](https://dissolve.rselmi.com/components/reorder-list/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -3349,8 +3349,8 @@ import { ReorderList, ReorderHandle } from '@/components/dissolve/reorder-list';
 
 ## Source
 
-- React Native: [registry/reorder-list.tsx](https://github.com/rs-4/dissolve/blob/main/registry/reorder-list.tsx)
-- React: [registry/web/reorder-list.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/reorder-list.tsx) and [registry/web/reorder-list.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/reorder-list.core.ts)
+- React Native: [registry/reorder-list.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/reorder-list.tsx)
+- React: [registry/web/reorder-list.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/reorder-list.tsx) and [registry/web/reorder-list.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/reorder-list.core.ts)
 
 Previous: [PullToRefresh](https://dissolve.rselmi.com/components/pull-to-refresh/) · Next: [ScratchCard](https://dissolve.rselmi.com/components/scratch-card/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -3453,8 +3453,8 @@ card.current?.reset();
 
 ## Source
 
-- React Native: [registry/scratch-card.tsx](https://github.com/rs-4/dissolve/blob/main/registry/scratch-card.tsx)
-- React: [registry/web/scratch-card.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/scratch-card.tsx) and [registry/web/scratch-card.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/scratch-card.core.ts)
+- React Native: [registry/scratch-card.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/scratch-card.tsx)
+- React: [registry/web/scratch-card.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/scratch-card.tsx) and [registry/web/scratch-card.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/scratch-card.core.ts)
 
 Previous: [ReorderList](https://dissolve.rselmi.com/components/reorder-list/) · Next: [Skeleton](https://dissolve.rselmi.com/components/skeleton/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -3584,8 +3584,8 @@ import { Skeleton, SkeletonBlock } from '@/components/dissolve/skeleton';
 
 ## Source
 
-- React Native: [registry/skeleton.tsx](https://github.com/rs-4/dissolve/blob/main/registry/skeleton.tsx)
-- React: [registry/web/skeleton.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/skeleton.tsx) and [registry/web/skeleton.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/skeleton.core.ts)
+- React Native: [registry/skeleton.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/skeleton.tsx)
+- React: [registry/web/skeleton.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/skeleton.tsx) and [registry/web/skeleton.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/skeleton.core.ts)
 
 Previous: [ScratchCard](https://dissolve.rselmi.com/components/scratch-card/) · Next: [SegmentedControl](https://dissolve.rselmi.com/components/segmented-control/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -3694,8 +3694,8 @@ const [period, setPeriod] = useState('Week');
 
 ## Source
 
-- React Native: [registry/segmented-control.tsx](https://github.com/rs-4/dissolve/blob/main/registry/segmented-control.tsx)
-- React: [registry/web/segmented-control.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/segmented-control.tsx) and [registry/web/segmented-control.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/segmented-control.core.ts)
+- React Native: [registry/segmented-control.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/segmented-control.tsx)
+- React: [registry/web/segmented-control.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/segmented-control.tsx) and [registry/web/segmented-control.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/segmented-control.core.ts)
 
 Previous: [Skeleton](https://dissolve.rselmi.com/components/skeleton/) · Next: [Toggle](https://dissolve.rselmi.com/components/toggle/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -3785,8 +3785,8 @@ const [wifi, setWifi] = useState(true);
 
 ## Source
 
-- React Native: [registry/toggle.tsx](https://github.com/rs-4/dissolve/blob/main/registry/toggle.tsx)
-- React: [registry/web/toggle.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/toggle.tsx) and [registry/web/toggle.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/toggle.core.ts)
+- React Native: [registry/toggle.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/toggle.tsx)
+- React: [registry/web/toggle.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/toggle.tsx) and [registry/web/toggle.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/toggle.core.ts)
 
 Previous: [SegmentedControl](https://dissolve.rselmi.com/components/segmented-control/) · Next: [ProgressSteps](https://dissolve.rselmi.com/components/progress-steps/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -3880,8 +3880,8 @@ const [step, setStep] = useState(0);
 
 ## Source
 
-- React Native: [registry/progress-steps.tsx](https://github.com/rs-4/dissolve/blob/main/registry/progress-steps.tsx)
-- React: [registry/web/progress-steps.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/progress-steps.tsx) and [registry/web/progress-steps.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/progress-steps.core.ts)
+- React Native: [registry/progress-steps.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/progress-steps.tsx)
+- React: [registry/web/progress-steps.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/progress-steps.tsx) and [registry/web/progress-steps.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/progress-steps.core.ts)
 
 Previous: [Toggle](https://dissolve.rselmi.com/components/toggle/) · Next: [ElasticSlider](https://dissolve.rselmi.com/components/elastic-slider/) · [All components](https://dissolve.rselmi.com/components/)
 
@@ -3981,8 +3981,8 @@ const [volume, setVolume] = useState(40);
 
 ## Source
 
-- React Native: [registry/elastic-slider.tsx](https://github.com/rs-4/dissolve/blob/main/registry/elastic-slider.tsx)
-- React: [registry/web/elastic-slider.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/elastic-slider.tsx) and [registry/web/elastic-slider.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/elastic-slider.core.ts)
+- React Native: [registry/elastic-slider.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/elastic-slider.tsx)
+- React: [registry/web/elastic-slider.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/elastic-slider.tsx) and [registry/web/elastic-slider.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/elastic-slider.core.ts)
 
 Previous: [ProgressSteps](https://dissolve.rselmi.com/components/progress-steps/) · [All components](https://dissolve.rselmi.com/components/)
 

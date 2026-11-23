@@ -26,10 +26,10 @@ echo "d.ts refs rewritten"
 # Package README: the repo README, with imports pointing at the npm name and
 # repo-relative links made absolute.
 sed -e "s#from '@/dissolve'#from 'dissolve-ui'#g" \
-    -e 's#](\([A-Z_]*\.md[^)]*\))#](https://github.com/rs-4/dissolve/blob/main/\1)#g' \
-    -e 's#](LICENSE)#](https://github.com/rs-4/dissolve/blob/main/LICENSE)#g' \
-    -e 's#](mcp/\([^)]*\))#](https://github.com/rs-4/dissolve/blob/main/mcp/\1)#g' \
-    -e 's#](docs/\([^)]*\))#](https://github.com/rs-4/dissolve/blob/main/docs/\1)#g' \
-    -e 's#](web/\([^)]*\))#](https://github.com/rs-4/dissolve/blob/main/web/\1)#g' \
+    -e 's#](\([A-Z_]*\.md[^)]*\))#](https://github.com/dissolve-ui/dissolve/blob/main/\1)#g' \
+    -e 's#](LICENSE)#](https://github.com/dissolve-ui/dissolve/blob/main/LICENSE)#g' \
+    -e 's#](mcp/\([^)]*\))#](https://github.com/dissolve-ui/dissolve/blob/main/mcp/\1)#g' \
+    -e 's#](docs/\([^)]*\))#](https://github.com/dissolve-ui/dissolve/blob/main/docs/\1)#g' \
+    -e 's#](web/\([^)]*\))#](https://github.com/dissolve-ui/dissolve/blob/main/web/\1)#g' \
     "$ROOT/README.md" > "$PKG/README.md"
 echo "built dissolve-ui: $(node -p "require('$ROOT/registry/index.json').components.length") components, $(ls "$PKG/registry/web" | grep -c '\.tsx$') with a web version"

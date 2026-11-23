@@ -78,8 +78,8 @@ import { CardStack } from '@/components/dissolve/card-stack';
 
 ## Source
 
-- React Native: [registry/card-stack.tsx](https://github.com/rs-4/dissolve/blob/main/registry/card-stack.tsx)
-- React: [registry/web/card-stack.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/card-stack.tsx) and [registry/web/card-stack.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/card-stack.core.ts)
+- React Native: [registry/card-stack.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/card-stack.tsx)
+- React: [registry/web/card-stack.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/card-stack.tsx) and [registry/web/card-stack.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/card-stack.core.ts)
 
 Previous: [SignaturePad](https://dissolve.rselmi.com/components/signature-pad/) · Next: [BeforeAfter](https://dissolve.rselmi.com/components/before-after/) · [All components](https://dissolve.rselmi.com/components/)
 

@@ -10,7 +10,7 @@ By participating you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 You need Node 22 (see `.nvmrc`, `nvm use` picks it up) and the Expo Go app on a device or simulator.
 
 ```sh
-git clone https://github.com/rs-4/dissolve.git
+git clone https://github.com/dissolve-ui/dissolve.git
 cd dissolve
 npm install        # .npmrc sets legacy-peer-deps for the NativeWind v5 preview
 npm start          # then open the project in Expo Go

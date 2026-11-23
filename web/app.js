@@ -33,7 +33,7 @@ async function loadStars() {
   try {
     const cached = JSON.parse(localStorage.getItem('stars') || 'null');
     if (cached && Date.now() - cached.t < 3600e3) return show(cached.n);
-    const r = await fetch('https://api.github.com/repos/rs-4/dissolve');
+    const r = await fetch('https://api.github.com/repos/dissolve-ui/dissolve');
     if (!r.ok) return;
     const n = (await r.json()).stargazers_count;
     if (typeof n !== 'number') return;
@@ -51,7 +51,7 @@ function renderSidebar() {
             <svg class="i-sun" width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9" cy="9" r="3.2"/><path d="M9 1.8v1.6M9 14.6v1.6M1.8 9h1.6M14.6 9h1.6M3.9 3.9l1.1 1.1M13 13l1.1 1.1M3.9 14.1 5 13M13 5l1.1-1.1"/></svg>
             <svg class="i-moon" width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M15 10.6A6.2 6.2 0 0 1 7.4 3a6.2 6.2 0 1 0 7.6 7.6Z"/></svg>
           </button>
-      <a class="side-star" href="https://github.com/rs-4/dissolve" target="_blank" rel="noopener" aria-label="Star dissolve on GitHub">
+      <a class="side-star" href="https://github.com/dissolve-ui/dissolve" target="_blank" rel="noopener" aria-label="Star dissolve on GitHub">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         <span class="star-count" id="star-count" hidden></span>
       </a>
@@ -105,7 +105,7 @@ function renderTop() {
     <nav class="top-nav">${TOP.map((t) => `<a class="top-link" href="${t.href}">${t.label}</a>`).join('')}</nav>
     <div class="top-right">
       <button class="top-search" data-palette aria-label="Search components">${SEARCH}<span class="ts-label">Search <span class="ts-roll" aria-hidden="true"></span></span><kbd>⌘K</kbd></button>
-      <a class="top-gh" href="https://github.com/rs-4/dissolve" target="_blank" rel="noopener" aria-label="Star dissolve on GitHub">${GH}<span class="star-count" hidden></span></a>
+      <a class="top-gh" href="https://github.com/dissolve-ui/dissolve" target="_blank" rel="noopener" aria-label="Star dissolve on GitHub">${GH}<span class="star-count" hidden></span></a>
       <a class="bx-pill bx-pill-light top-cta" href="/docs/installation/">Get started</a>
     </div>`;
   $('#top').querySelector('[data-palette]').addEventListener('click', openPalette);

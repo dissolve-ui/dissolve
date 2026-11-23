@@ -87,8 +87,8 @@ import { VoiceNote } from '@/components/dissolve/voice-note';
 
 ## Source
 
-- React Native: [registry/voice-note.tsx](https://github.com/rs-4/dissolve/blob/main/registry/voice-note.tsx)
-- React: [registry/web/voice-note.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/voice-note.tsx) and [registry/web/voice-note.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/voice-note.core.ts)
+- React Native: [registry/voice-note.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/voice-note.tsx)
+- React: [registry/web/voice-note.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/voice-note.tsx) and [registry/web/voice-note.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/voice-note.core.ts)
 
 Previous: [ReactionPicker](https://dissolve.rselmi.com/components/reaction-picker/) · Next: [SignaturePad](https://dissolve.rselmi.com/components/signature-pad/) · [All components](https://dissolve.rselmi.com/components/)
 

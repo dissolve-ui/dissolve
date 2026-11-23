@@ -83,8 +83,8 @@ import { QuantityStepper } from '@/components/dissolve/quantity-stepper';
 
 ## Source
 
-- React Native: [registry/quantity-stepper.tsx](https://github.com/rs-4/dissolve/blob/main/registry/quantity-stepper.tsx)
-- React: [registry/web/quantity-stepper.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/quantity-stepper.tsx) and [registry/web/quantity-stepper.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/quantity-stepper.core.ts)
+- React Native: [registry/quantity-stepper.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/quantity-stepper.tsx)
+- React: [registry/web/quantity-stepper.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/quantity-stepper.tsx) and [registry/web/quantity-stepper.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/quantity-stepper.core.ts)
 
 Previous: [TaskCheck](https://dissolve.rselmi.com/components/task-check/) · Next: [RulerPicker](https://dissolve.rselmi.com/components/ruler-picker/) · [All components](https://dissolve.rselmi.com/components/)
 

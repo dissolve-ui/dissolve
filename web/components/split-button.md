@@ -84,8 +84,8 @@ const toast = useToast();
 
 ## Source
 
-- React Native: [registry/split-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/split-button.tsx)
-- React: [registry/web/split-button.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/split-button.tsx) and [registry/web/split-button.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/split-button.core.ts)
+- React Native: [registry/split-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/split-button.tsx)
+- React: [registry/web/split-button.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/split-button.tsx) and [registry/web/split-button.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/split-button.core.ts)
 
 Previous: [MorphButton](https://dissolve.rselmi.com/components/morph-button/) · Next: [GooeyMenu](https://dissolve.rselmi.com/components/gooey-menu/) · [All components](https://dissolve.rselmi.com/components/)
 

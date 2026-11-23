@@ -7,7 +7,7 @@ import { EFFECTS } from '@/catalog';
 import { Group, Row } from '@/ui';
 
 const WEBSITE = 'https://dissolve.rselmi.com';
-const GITHUB = 'https://github.com/rs-4/dissolve';
+const GITHUB = 'https://github.com/dissolve-ui/dissolve';
 
 export default function Home() {
   return (
@@ -18,7 +18,7 @@ export default function Home() {
 
       <Group>
         <Row icon="globe" title="Website" detail="dissolve.rselmi.com" external onPress={() => WebBrowser.openBrowserAsync(WEBSITE)} />
-        <Row icon="chevron.left.forwardslash.chevron.right" title="GitHub" detail="rs-4/dissolve" external onPress={() => WebBrowser.openBrowserAsync(GITHUB)} />
+        <Row icon="chevron.left.forwardslash.chevron.right" title="GitHub" detail="dissolve-ui/dissolve" external onPress={() => WebBrowser.openBrowserAsync(GITHUB)} />
       </Group>
 
       <Group title={`Components · ${DEMOS.length}`}>

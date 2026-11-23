@@ -82,8 +82,8 @@ sweep.current?.run(() => setPlan('pro'), { revert: () => setPlan('free') });
 
 ## Source
 
-- React Native: [registry/sweep-transition.tsx](https://github.com/rs-4/dissolve/blob/main/registry/sweep-transition.tsx)
-- React: [registry/web/sweep-transition.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/sweep-transition.tsx) and [registry/web/sweep-transition.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/sweep-transition.core.ts)
+- React Native: [registry/sweep-transition.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/sweep-transition.tsx)
+- React: [registry/web/sweep-transition.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/sweep-transition.tsx) and [registry/web/sweep-transition.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/sweep-transition.core.ts)
 
 Previous: [ImageReveal](https://dissolve.rselmi.com/components/image-reveal/) · Next: [UploadTile](https://dissolve.rselmi.com/components/upload-tile/) · [All components](https://dissolve.rselmi.com/components/)
 

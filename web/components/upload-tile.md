@@ -81,8 +81,8 @@ import { UploadTray } from '@/components/dissolve/upload-tile';
 
 ## Source
 
-- React Native: [registry/upload-tile.tsx](https://github.com/rs-4/dissolve/blob/main/registry/upload-tile.tsx)
-- React: [registry/web/upload-tile.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/upload-tile.tsx) and [registry/web/upload-tile.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/upload-tile.core.ts)
+- React Native: [registry/upload-tile.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/upload-tile.tsx)
+- React: [registry/web/upload-tile.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/upload-tile.tsx) and [registry/web/upload-tile.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/upload-tile.core.ts)
 
 Previous: [SweepTransition](https://dissolve.rselmi.com/components/sweep-transition/) · Next: [TaskCheck](https://dissolve.rselmi.com/components/task-check/) · [All components](https://dissolve.rselmi.com/components/)
 

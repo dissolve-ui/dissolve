@@ -11,7 +11,7 @@ const COLS = [
   { title: 'Library', links: [['Components', pathOf('gallery')], ['Effects', pathOf('effects')], ['Playground', pathOf('dust')]] },
   { title: 'Docs', links: [['Introduction', pathOf('introduction')], ['Installation', pathOf('installation')], ['CLI', pathOf('cli')], ['Theming', pathOf('theming')]] },
   { title: 'Agents', links: [['Agent prompt', pathOf('agent-prompt')], ['MCP server', pathOf('agent-prompt')], ['Claude skill', pathOf('agent-prompt')]] },
-  { title: 'Elsewhere', links: [['GitHub', 'https://github.com/rs-4/dissolve'], ['npm', `https://www.npmjs.com/package/${PKG}`], ['X', 'https://x.com/rsStats_']] },
+  { title: 'Elsewhere', links: [['GitHub', 'https://github.com/dissolve-ui/dissolve'], ['npm', `https://www.npmjs.com/package/${PKG}`], ['X', 'https://x.com/rsStats_']] },
 ];
 
 export function footerHTML() {

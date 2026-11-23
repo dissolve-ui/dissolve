@@ -78,8 +78,8 @@ const [wifi, setWifi] = useState(true);
 
 ## Source
 
-- React Native: [registry/toggle.tsx](https://github.com/rs-4/dissolve/blob/main/registry/toggle.tsx)
-- React: [registry/web/toggle.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/toggle.tsx) and [registry/web/toggle.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/toggle.core.ts)
+- React Native: [registry/toggle.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/toggle.tsx)
+- React: [registry/web/toggle.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/toggle.tsx) and [registry/web/toggle.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/toggle.core.ts)
 
 Previous: [SegmentedControl](https://dissolve.rselmi.com/components/segmented-control/) · Next: [ProgressSteps](https://dissolve.rselmi.com/components/progress-steps/) · [All components](https://dissolve.rselmi.com/components/)
 

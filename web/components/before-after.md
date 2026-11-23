@@ -86,8 +86,8 @@ import { BeforeAfter } from '@/components/dissolve/before-after';
 
 ## Source
 
-- React Native: [registry/before-after.tsx](https://github.com/rs-4/dissolve/blob/main/registry/before-after.tsx)
-- React: [registry/web/before-after.tsx](https://github.com/rs-4/dissolve/blob/main/registry/web/before-after.tsx) and [registry/web/before-after.core.ts](https://github.com/rs-4/dissolve/blob/main/registry/web/before-after.core.ts)
+- React Native: [registry/before-after.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/before-after.tsx)
+- React: [registry/web/before-after.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/before-after.tsx) and [registry/web/before-after.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/before-after.core.ts)
 
 Previous: [CardStack](https://dissolve.rselmi.com/components/card-stack/) · Next: [ThinkingOrb](https://dissolve.rselmi.com/components/thinking-orb/) · [All components](https://dissolve.rselmi.com/components/)
 
