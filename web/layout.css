@@ -1,5 +1,5 @@
-/* Test layout (branch design/bencho): a top bar instead of the sidebar on the gallery and component
-   pages, a centered hero on a dot field, interaction filters, headerless cards, a two panel component page. */
+/* Site layout: a top bar over the gallery and component pages, the hero on its grain field,
+   category sidebar, captioned cards and the two panel component page. */
 
 :root {
   --top-h: 64px;
