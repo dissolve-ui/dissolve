@@ -227,6 +227,12 @@
       "file": "marquee.tsx",
       "export": "Marquee",
       "description": "An endless row of logos, words or cards that scrolls on its own, seamless at any width: hover or press to stop, drag and flick to scrub."
+    },
+    {
+      "name": "text-scramble",
+      "file": "text-scramble.tsx",
+      "export": "TextScramble",
+      "description": "Text that decodes into place: every letter scrambles through random glyphs, then they land one by one into the final text."
     }
   ],
   "helpers": [
