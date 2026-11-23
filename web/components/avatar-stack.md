@@ -87,6 +87,6 @@ import { AvatarStack } from '@/components/dissolve/avatar-stack';
 - React Native: [registry/avatar-stack.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/avatar-stack.tsx)
 - React: [registry/web/avatar-stack.tsx](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/avatar-stack.tsx) and [registry/web/avatar-stack.core.ts](https://github.com/dissolve-ui/dissolve/blob/main/registry/web/avatar-stack.core.ts)
 
-Previous: [CopyButton](https://dissolve.rselmi.com/components/copy-button/) · [All components](https://dissolve.rselmi.com/components/)
+Previous: [CopyButton](https://dissolve.rselmi.com/components/copy-button/) · Next: [Tooltip](https://dissolve.rselmi.com/components/tooltip/) · [All components](https://dissolve.rselmi.com/components/)
 
 Source: https://dissolve.rselmi.com/components/avatar-stack/
