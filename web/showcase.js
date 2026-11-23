@@ -5,6 +5,7 @@ import { ready } from './images.js';
 import { play, snapshot, IMG, FONT, cover, pal, rr, wrap, text, isLight, boxOf, hide, show, onTheme, redraw, scope } from './cp/kit.js';
 import { CLAUDE_PATH, OPENAI_PATH } from './docs.js';
 import { createGlossyButton } from './lib/glossy-button.js';
+import { mountHeroBg } from './hero-bg.js';
 import { pathOf, go } from './routes.js';
 
 const PAINTINGS = ['temple', 'lake', 'pines', 'arch', 'valley', 'pond', 'cypress', 'tuscany', 'aqueduct'];
@@ -546,11 +547,12 @@ export function showcaseHTML({ components } = {}) {
 
 function heroHTML() {
   return `
-  <header class="sc-hero2">
-    <h1 class="hx-title"><canvas class="hx-title-cv" aria-hidden="true"></canvas><span class="hx-sr">dissolve</span></h1>
-    <p>Animated components for <strong>React Native</strong> and <strong>React</strong>, ready to copy into any project.</p>
+  <section class="hz">
+  <canvas class="hz-bg" aria-hidden="true"></canvas>
+  <header class="hz-copy sc-hero2">
+    <h1 class="hz-title">dissolve</h1>
+    <p class="hz-sub">Interfaces that dissolve, melt and rebuild themselves. Animated components for <strong>React Native</strong> and <strong>React</strong>, copied into your project and yours to edit.</p>
     <div class="bx-cta" data-hero-cta></div>
-  </header>
   <div class="hx" data-hx>
     <div class="hx-src" role="tablist" aria-label="Install with">
       <span class="hx-glide" aria-hidden="true"></span>
@@ -559,6 +561,8 @@ function heroHTML() {
     <code class="hx-cmd" data-hx-cmd>${HX[0].cmd}</code>
     <button class="hx-copy" aria-label="Copy command" data-hx-copy><svg class="i-copy" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><svg class="i-ok" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
   </div>
+  </header>
+  </section>
 `;
 }
 
@@ -798,6 +802,7 @@ export function mountShowcase(root) {
     mountInstall(root);
   }
   mountCta(root, sc);
+  mountHeroBg(root.querySelector('.hz-bg'), sc);
   if (!root.querySelector('.sc-bento')) return sc.dispose;
   ready.then(() => {
     if (!sc.alive) return;
