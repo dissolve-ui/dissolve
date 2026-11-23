@@ -192,7 +192,7 @@ npx dissolve-ui add paywall
 ```
 
 The first time, the CLI prints a link and a code and opens your browser to connect your account,
-then carries on. Without a subscription it prints the checkout link instead. Free components never
+then carries on. Without dissolve pro it prints the checkout link instead. Free components never
 need an account and work offline.
 
 ```sh

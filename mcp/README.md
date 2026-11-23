@@ -23,7 +23,7 @@ Its data comes from the README and `src/dissolve` (types, hooks, variants).
 
 Ask your agent for a pro item ("add the dissolve paywall") like any other. If no account is
 connected, `add_component` answers with a link and a code for you to open (and opens it), then
-installs on the next ask. Without a subscription it answers with the checkout link. The account is
+installs on the next ask. Without dissolve pro it answers with the checkout link. The account is
 shared with the CLI (`~/.config/dissolve/auth.json`, or `DISSOLVE_TOKEN`).
 
 ## Requirements
