@@ -224,6 +224,7 @@ describe('copy rules', () => {
       ...walk(join(ROOT, 'web'), (p) => textFile(p) && !p.includes(`${join('web', 'assets')}`)),
       ...walk(join(ROOT, 'docs'), textFile),
       ...walk(join(ROOT, 'mcp'), textFile),
+      ...walk(join(ROOT, 'plugins'), textFile),
       ...walk(join(ROOT, '.github'), textFile),
       ...['README.md', 'CONTRIBUTING.md', 'CHANGELOG.md', 'SECURITY.md'].map((f) => join(ROOT, f)).filter(existsSync),
     ];

@@ -1,0 +1,13 @@
+{
+  "name": "dissolve",
+  "displayName": "dissolve",
+  "description": "Animated UI for React Native and React: a skill that picks and installs dissolve components (npx dissolve-ui add), and the dissolve MCP server for the particle effects.",
+  "author": {
+    "name": "Rayan Selmi",
+    "url": "https://github.com/dissolve-ui"
+  },
+  "homepage": "https://dissolve.rselmi.com",
+  "repository": "https://github.com/dissolve-ui/dissolve",
+  "license": "MIT",
+  "keywords": ["react-native", "react", "expo", "animation", "components", "skia", "reanimated"]
+}
