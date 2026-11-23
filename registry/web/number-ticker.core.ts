@@ -115,6 +115,8 @@ export function createNumberTicker(host: HTMLElement, initial: NumberTickerProps
   host.setAttribute('role', 'img');
   const prefix = el('span');
   const suffix = el('span');
+  // Prefix and suffix are part of the aria-label below, so they are hidden from assistive tech too.
+  for (const a of [prefix, suffix]) a.setAttribute('aria-hidden', 'true');
   host.append(prefix, suffix);
 
   const cols = new Map<string, Column>();
@@ -146,6 +148,9 @@ export function createNumberTicker(host: HTMLElement, initial: NumberTickerProps
   function makeCol(c: Cell, fresh: boolean): Column {
     const node = el('span', 'dissolve-ticker-col ' + textClass());
     node.style.height = lh + 'px';
+    // The wheel is decoration: the ticker's aria-label carries the value, so assistive tech never
+    // reads the off-screen cells.
+    node.setAttribute('aria-hidden', 'true');
     const roll = el('span', 'dissolve-ticker-roll');
     const cw = c.kind === 'digit' ? digitW : width[c.char] ?? 0;
     for (const d of c.kind === 'digit' ? WHEEL : [c.char]) {
@@ -155,7 +160,22 @@ export function createNumberTicker(host: HTMLElement, initial: NumberTickerProps
       roll.append(g);
     }
     node.append(roll);
+    const cells = roll.children as HTMLCollectionOf<HTMLSpanElement>;
+    // Only the cells within one step of the window are laid out as visible; the rest of the wheel is
+    // visibility: hidden so layout checkers do not count it. The range follows the roll frame by frame.
+    let lo = -1, hi = -1;
+    const window_ = (pos: number) => {
+      if (cells.length < 2) return;
+      const a = Math.max(0, Math.floor(pos) - 1), b = Math.min(cells.length - 1, Math.ceil(pos) + 1);
+      if (a === lo && b === hi) return;
+      for (let i = 0; i < cells.length; i++) {
+        const on = i >= a && i <= b, was = i >= lo && i <= hi;
+        if (on !== was || lo < 0) cells[i].style.visibility = on ? '' : 'hidden';
+      }
+      lo = a; hi = b;
+    };
     const draw = () => {
+      window_(col.pos.v);
       roll.style.transform = `translate3d(0,${(-col.pos.v * lh).toFixed(2)}px,0)`;
       node.style.width = col.w.v.toFixed(2) + 'px';
       node.style.opacity = col.o.v.toFixed(3);
