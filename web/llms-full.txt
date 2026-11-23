@@ -97,7 +97,17 @@ Install the skill or the MCP server once, and your agent knows dissolve in every
 
 Claude Code
 
-Install the skill
+Install the plugin, skill and MCP server in one go
+
+```sh
+/plugin marketplace add dissolve-ui/dissolve
+```
+
+```sh
+/plugin install dissolve@dissolve
+```
+
+Or install the skill
 
 ```sh
 mkdir -p ~/.claude/skills/dissolve-ui && curl -fsSL https://dissolve.rselmi.com/skills/dissolve/SKILL.md -o ~/.claude/skills/dissolve-ui/SKILL.md
@@ -124,6 +134,20 @@ codex mcp add dissolve -- npx -y dissolve-ui-mcp
 ```
 
 ## Details
+
+## Claude Code plugin
+
+The dissolve repository is a Claude Code plugin marketplace with one plugin, `dissolve`. It bundles a skill that knows when to reach for dissolve, picks the component and installs it with `npx dissolve-ui add`, and the MCP server below for the particle effects. Run these two commands inside Claude Code:
+
+```sh
+/plugin marketplace add dissolve-ui/dissolve
+```
+
+```sh
+/plugin install dissolve@dissolve
+```
+
+On Claude Code 2.1.275 or later, `/plugin install dissolve --marketplace dissolve-ui/dissolve` does both. Then ask for a component, for example "add an animated segmented control to the settings screen". The plugin is in `plugins/dissolve` on [GitHub](https://github.com/dissolve-ui/dissolve).
 
 ## Claude skill
 

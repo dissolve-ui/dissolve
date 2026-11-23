@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `number-ticker`: the off screen cells of the digit wheels no longer count as content. The wheels are hidden from assistive tech (`aria-hidden` on web, hidden descendants on iOS and Android) and the ticker's label carries the value; cells more than one step from the window are `visibility: hidden` on web (transparent on native), following the roll frame by frame. Same look and timing.
 - `segmented-control`: the selection pill is right on the very first frame. Native: a resting pill laid out by flex shows before `onLayout` has measured anything and hands over to the animated pill when the first flight starts. Web: placed synchronously when the control is created (or by its ResizeObserver, before paint, when the host has no width yet), hidden until placed, and never transitioned, even under a page wide `transition` rule.
 
+- Claude Code plugin: the repository is a plugin marketplace (`.claude-plugin/marketplace.json`) with one plugin, `dissolve` (`plugins/dissolve`): a skill that picks components and installs them with `npx dissolve-ui add`, and the `dissolve-ui-mcp` server. `/plugin marketplace add dissolve-ui/dissolve`, then `/plugin install dissolve@dissolve`. README and the Agent prompt page show it.
+
 ## [0.0.8] - 2026-11-23
 
 ### Added

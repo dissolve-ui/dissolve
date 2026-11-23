@@ -209,6 +209,22 @@ Theme tokens (`--dissolve-background`, `surface`, `surface-2`, `foreground`, `mu
 - Engine contract for variant authors: the documented types in `src/dissolve/types.ts` (`AtlasVariant`, `StepFn`, `CustomVariant`).
 - Variant math and intent: [docs/VARIANTS.md](docs/VARIANTS.md).
 
+## Use with Claude Code
+
+This repository is a Claude Code plugin marketplace with one plugin, `dissolve`: a skill that picks
+and installs components with `npx dissolve-ui add`, plus the dissolve MCP server for the effects.
+In Claude Code:
+
+```
+/plugin marketplace add dissolve-ui/dissolve
+/plugin install dissolve@dissolve
+```
+
+On Claude Code 2.1.275 or later, one line does both:
+`/plugin install dissolve --marketplace dissolve-ui/dissolve`. Then ask for a component, for example
+"add an animated segmented control to the settings screen". The plugin lives in
+[plugins/dissolve](https://github.com/dissolve-ui/dissolve/tree/main/plugins/dissolve).
+
 ## For coding agents
 
 - Agent prompt: the website's [Agent prompt](https://dissolve.rselmi.com/docs/agent-prompt/) page gives a ready to paste prompt.
