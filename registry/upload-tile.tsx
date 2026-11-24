@@ -233,13 +233,11 @@ export function UploadTile({ file, upload, maxSize, size = 72, spacing = 0, onDo
       const view = canvasRef.current;
       const box = await measure(ref);
       const snap = view && box && !ctx.reduced ? await view.makeImageSnapshotAsync() : null;
-      const res =
-        snap && box
-          ? await runDissolve(ctx, ref, opts, {
-              image: snap.makeNonTextureImage() ?? snap,
-              box,
-            })
-          : null;
+      // A CPU copy for the dust; the GPU snapshot is not needed past this point.
+      const shot = snap ? (snap.makeNonTextureImage() ?? snap) : null;
+      if (shot && shot !== snap) snap?.dispose();
+      // The engine owns the copy: it frees it once the dust is gone.
+      const res = shot && box ? await runDissolve(ctx, ref, opts, { image: shot, box, owned: [shot] }) : null;
       await frames(2);
       setGone(true);
       if (res) await wait(res.duration * 0.6);

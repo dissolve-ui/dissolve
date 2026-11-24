@@ -15,7 +15,7 @@ import { Atlas, Canvas, FilterMode, MipmapMode, Skia, rect } from '@shopify/reac
 import { makeMutable, useFrameCallback, useReducedMotion, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { View, cn, useToken } from './tw';
-import { makeSprite, notify, toRGB } from './dots';
+import { argb, atlasColors, makeColors, makeSprite, notify, toRGB } from './dots';
 import { CALM_FN } from './motion';
 
 export type OrbState = 'idle' | 'thinking' | 'searching' | 'listening' | 'done' | 'error';
@@ -134,7 +134,7 @@ export function ThinkingOrb({ state = 'idle', size = 64, dots = 180, dotSize, le
       sprites: new Array(n).fill(0).map(() => rect(0, 0, SPR, SPR)),
       seed: seeds(n),
       transforms: makeMutable(new Array(n).fill(0).map(() => Skia.RSXform(0, 0, -100, -100))),
-      colors: makeMutable(new Array(n).fill(0).map(() => new Float32Array([1, 1, 1, 0]))),
+      colors: makeColors(n),
       pose: makeMutable<number[]>(new Array(n * POSE).fill(0)),
       from: makeMutable<number[]>(new Array(n * POSE).fill(0)),
       off: makeMutable<number[]>(new Array(n * 2).fill(0)),
@@ -354,11 +354,7 @@ export function ThinkingOrb({ state = 'idle', size = 64, dots = 180, dotSize, le
 
       const m = (dot * sc) / SPR;
       T_[i].set(m, 0, px - (m * SPR) / 2, py - (m * SPR) / 2);
-      const cl = K_[i];
-      cl[0] = r;
-      cl[1] = g;
-      cl[2] = b;
-      cl[3] = a < 0 ? 0 : a > 1 ? 1 : a;
+      K_[i] = argb(r, g, b, a);
     }
     last.wake = wake.value;
     last.lvl = lv0;
@@ -384,7 +380,7 @@ export function ThinkingOrb({ state = 'idle', size = 64, dots = 180, dotSize, le
     <GestureDetector gesture={pan}>
       <View className={cn('items-center justify-center', className)} style={{ width: size, height: size }} accessibilityRole="image" accessibilityLabel={`Assistant ${state}`}>
         <Canvas style={{ width: size, height: size }} pointerEvents="none">
-          {sprite ? <Atlas image={sprite} sprites={sprites} transforms={transforms} colors={colors} colorBlendMode="modulate" sampling={{ filter: FilterMode.Linear, mipmap: MipmapMode.Linear }} /> : null}
+          {sprite ? <Atlas image={sprite} sprites={sprites} transforms={transforms} colors={atlasColors(colors)} colorBlendMode="modulate" sampling={{ filter: FilterMode.Linear, mipmap: MipmapMode.Linear }} /> : null}
         </Canvas>
       </View>
     </GestureDetector>
