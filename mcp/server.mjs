@@ -231,7 +231,7 @@ const VARIANTS = [
     name: 'stream', kind: 'exit', hook: 'useDissolve / DissolveIn',
     use: 'Archive or move: grains fly into a target view (trash, folder, tab icon).',
     info: 'Grains fly into a target, or pour out of a source to form the view.',
-    snippet: `const trash = useRef<View>(null);\n\nawait dissolve({ preset: 'stream', to: trash, duration: 1300, onArrive: () => bump() });\n\n// entrance: grains pour out of a source\n<DissolveIn preset="stream" from={sourceRef}>{card}</DissolveIn>`,
+    snippet: `const trash = useRef<ComponentRef<typeof View>>(null);\n\nawait dissolve({ preset: 'stream', to: trash, duration: 1300, onArrive: () => bump() });\n\n// entrance: grains pour out of a source\n<DissolveIn preset="stream" from={sourceRef}>{card}</DissolveIn>`,
     options: [...COMMON, 'to: RefObject<View> | { x, y, width, height }', 'onArrive: () => void'],
     tips: ['Give the target a visible reaction in onArrive (badge count, bounce).', 'The target ref must be mounted and laid out.'],
   },
