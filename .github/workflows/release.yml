@@ -76,7 +76,13 @@ jobs:
       - name: Publish to npm
         if: steps.version.outputs.skip != 'true' && steps.version.outputs.on_npm != 'true' && (github.event_name == 'push' || inputs.dry-run == false)
         working-directory: packages/dissolve-ui
-        run: npm publish --provenance --access public --ignore-scripts
+        run: |
+          # Without a token (versions are published by hand with 2FA), skip instead of failing the tag.
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::notice::No NPM_TOKEN: publish dissolve-ui@${{ steps.version.outputs.version }} to npm by hand (2FA)."
+            exit 0
+          fi
+          npm publish --provenance --access public --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
