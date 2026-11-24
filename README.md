@@ -278,7 +278,9 @@ On Claude Code 2.1.275 or later, one line does both:
   ```
 
 - MCP server: [mcp/server.mjs](mcp/server.mjs), dependency free, Node over stdio. Tools:
-  `list_variants`, `get_variant`, `get_setup`. Register it with:
+  `list_variants`, `get_variant`, `get_setup`, `list_components`, `add_component`. The MCP needs a
+  free dissolve account (the first tool call gives you the sign-in link); the CLI and the source
+  stay open. Register it with:
 
   ```sh
   claude mcp add dissolve -- npx -y dissolve-ui-mcp
