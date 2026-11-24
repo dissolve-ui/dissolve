@@ -22,7 +22,7 @@
  *   <InfoIcon />
  * </Tooltip>
  */
-import { cloneElement, isValidElement, useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
+import { cloneElement, isValidElement, useEffect, useRef, useState, type ReactElement, type ReactNode, type ComponentRef } from 'react';
 import { Platform, StyleSheet, View as RNView, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -30,6 +30,9 @@ import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { Animated, Text, View, cn, useToken } from './tw';
 import { CALM } from './motion';
+
+/** Host ref of a View: the class instance on RN <= 0.86, a ReactNativeElement on 0.88+. */
+type RNViewRef = ComponentRef<typeof RNView>;
 
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
 
@@ -101,7 +104,7 @@ export function Tooltip({ content, children, placement = 'top', delay = 400, off
   const fg = useToken('foreground');
   const bg = useToken('background');
   const win = useWindowDimensions();
-  const trigger = useRef<RNView>(null);
+  const trigger = useRef<RNViewRef>(null);
   const [inner, setInner] = useState(false);
   const shown = !disabled && (open ?? inner);
   const [bubble, setBubble] = useState<{ w: number; h: number } | null>(null);

@@ -10,10 +10,14 @@ import { twMerge } from 'tailwind-merge';
 
 export type ClassName = { className?: string };
 
-export const View = (props: ComponentProps<typeof RNView> & ClassName) => useCssElement(RNView, props, { className: 'style' });
+// Every primitive goes in as ComponentType<any>: on RN 0.88 types, inferring useCssElement through
+// View or Text is TS2590 (union type too complex). The public props stay typed by the signature.
+export const View = (props: ComponentProps<typeof RNView> & ClassName) =>
+  useCssElement(RNView as ComponentType<any>, props, { className: 'style' });
 View.displayName = 'CSS(View)';
 
-export const Text = (props: ComponentProps<typeof RNText> & ClassName) => useCssElement(RNText, props, { className: 'style' });
+export const Text = (props: ComponentProps<typeof RNText> & ClassName) =>
+  useCssElement(RNText as ComponentType<any>, props, { className: 'style' });
 Text.displayName = 'CSS(Text)';
 
 export const Pressable = (props: ComponentProps<typeof RNPressable> & ClassName) =>

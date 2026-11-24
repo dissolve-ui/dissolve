@@ -79,6 +79,8 @@ npx dissolve-ui init --web      # React on the web (Next.js, Vite...)
 
 Skip it when `dissolve.json` already exists. On React Native, `init` prints what is missing (NativeWind v5, `react-native-css`, `tailwind-merge`, metro and postcss config): fix what it prints, then run it again.
 
+React Native apps need Expo SDK 57 or 58. Install the packages the CLI prints with `npx expo install` (never pinned versions), so Expo picks the versions of the app's SDK. Skia is `@shopify/react-native-skia` on both SDKs, the name the components import.
+
 2. Add components, one or more names. Shared files and the components they build on are copied too:
 
 ```sh

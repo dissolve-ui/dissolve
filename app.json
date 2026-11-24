@@ -15,7 +15,9 @@
       "expo-router",
       "expo-image",
       "expo-web-browser",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-status-bar",
+      "expo-font"
     ],
     "scheme": "dissolve",
     "experiments": {

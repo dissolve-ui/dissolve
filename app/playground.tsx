@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, type GestureResponderEvent } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import {
@@ -50,7 +50,7 @@ export default function Playground() {
 
   const out = useDissolve();
   const inn = useAppear();
-  const target = useRef<View>(null);
+  const target = useRef<ComponentRef<typeof View>>(null);
 
   const g = grain ?? VARIANT_GRAIN[variant];
   const spec = KNOB[variant];

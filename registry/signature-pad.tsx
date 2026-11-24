@@ -75,12 +75,13 @@ export type SignaturePadProps = {
  */
 function outline(pts: number[]): SkPath {
   'worklet';
-  const path = Skia.Path.Make();
+  // Built with PathBuilder: Skia 2.14 made SkPath immutable (no moveTo/quadTo on it).
+  const path = Skia.PathBuilder.Make();
   const n = Math.floor(pts.length / 3);
-  if (n === 0) return path;
+  if (n === 0) return path.detach();
   if (n === 1) {
     path.addCircle(pts[0], pts[1], pts[2] / 2);
-    return path;
+    return path.detach();
   }
   const L: number[] = [];
   const R: number[] = [];
@@ -118,7 +119,7 @@ function outline(pts: number[]): SkPath {
   ey = (ey / el) * k;
   path.cubicTo(R[0] + ex, R[1] + ey, L[0] + ex, L[1] + ey, L[0], L[1]);
   path.close();
-  return path;
+  return path.detach();
 }
 
 /**

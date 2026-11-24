@@ -75,6 +75,9 @@ app code. They are styled with NativeWind v5 classes and the `dissolve-*` theme 
 6. Try it end to end in a fresh Expo app:
    `node packages/dissolve-ui/bin/dissolve.mjs add <name> --cwd ../my-app` after
    `npm run build:package` (the CLI reads the registry copy inside the package).
+   Components must work on Expo SDK 57 and 58. CI typechecks against both; to run that check
+   locally in a throwaway clone (it rewrites `node_modules`):
+   `npm install --no-save $(node scripts/expo-sdk-deps.mjs 58) && npm run typecheck`.
 
 New theme tokens go in `registry/theme.css` with a light value, a dark value and a
 `--color-dissolve-*` mapping in `@theme inline` (the theme test enforces all three).

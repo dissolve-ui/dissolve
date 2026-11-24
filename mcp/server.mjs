@@ -60,8 +60,17 @@ Grain counts are capped at 6000 per burst.
 npx expo install ${PKG} ${PEERS.join(' ')}
 \`\`\`
 
-Tested with Expo SDK 57, React Native 0.86, @shopify/react-native-skia 2.6, react-native-reanimated 4.5,
-react-native-worklets 0.10, react-native-gesture-handler 2.32. It runs in Expo Go.
+Always install with npx expo install (not npm install with versions): Expo picks the versions that
+match the app's SDK. Supported: Expo SDK 57 or 58.
+- SDK 57: React Native 0.86, @shopify/react-native-skia 2.6, react-native-reanimated 4.5,
+  react-native-worklets 0.10, react-native-gesture-handler 2.32.
+- SDK 58: React Native 0.88, @shopify/react-native-skia 2.14, react-native-reanimated 4.7,
+  react-native-worklets 0.13, react-native-gesture-handler 3.3. Prefer it: Skia 2.7+ fixes an iOS
+  leak of makeImageFromView snapshots after dispose(). iOS 27 needs the scene life cycle: a fresh
+  npx expo prebuild on SDK 58 adds SceneDelegate.swift; an ios/ folder kept from SDK 57 must be
+  regenerated (delete it and prebuild).
+The package is @shopify/react-native-skia on both SDKs, the name dissolve imports. Do not install the
+upstream react-native-skia package instead. It runs in Expo Go.
 Expo's Babel preset already adds the worklets plugin. In a bare React Native app add
 'react-native-worklets/plugin' to babel.config.js.
 
@@ -132,7 +141,7 @@ import { SlideToConfirm } from '@/components/dissolve/slide-to-confirm';
 <SlideToConfirm label="Slide to pay 42 €" onConfirm={pay} className="mx-4" />
 \`\`\`
 
-They need NativeWind v5 (Tailwind v4 on react-native-css) and tailwind-merge. Known good on Expo SDK 57:
+They need NativeWind v5 (Tailwind v4 on react-native-css) and tailwind-merge. Known good on Expo SDK 57 or 58:
 nativewind 5.0.0-preview.4, react-native-css 3.0.7, npm overrides { "lightningcss": "1.30.1" },
 metro withNativewind, postcss @tailwindcss/postcss, global.css importing Tailwind.
 Style them with className and the part classNames (knobClassName, textClassName, boxClassName...):
@@ -228,7 +237,7 @@ const VARIANTS = [
     name: 'stream', kind: 'exit', hook: 'useDissolve / DissolveIn',
     use: 'Archive or move: grains fly into a target view (trash, folder, tab icon).',
     info: 'Grains fly into a target, or pour out of a source to form the view.',
-    snippet: `const trash = useRef<View>(null);\n\nawait dissolve({ preset: 'stream', to: trash, duration: 1300, onArrive: () => bump() });\n\n// entrance: grains pour out of a source\n<DissolveIn preset="stream" from={sourceRef}>{card}</DissolveIn>`,
+    snippet: `const trash = useRef<ComponentRef<typeof View>>(null);\n\nawait dissolve({ preset: 'stream', to: trash, duration: 1300, onArrive: () => bump() });\n\n// entrance: grains pour out of a source\n<DissolveIn preset="stream" from={sourceRef}>{card}</DissolveIn>`,
     options: [...COMMON, 'to: RefObject<View> | { x, y, width, height }', 'onArrive: () => void'],
     tips: ['Give the target a visible reaction in onArrive (badge count, bounce).', 'The target ref must be mounted and laid out.'],
   },

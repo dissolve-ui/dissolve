@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type ComponentRef } from 'react';
 import { View as RNView } from 'react-native';
 import RA, { FadeIn, FadeOut, SlideInDown, SlideOutUp } from 'react-native-reanimated';
 import { Text, View, useToken } from '@registry/tw';
@@ -11,7 +11,7 @@ const GOAL = 5;
 export default function ConfettiBurstDemo() {
   const [runs, setRuns] = useState(4);
   const confetti = useRef<ConfettiBurstHandle>(null);
-  const button = useRef<RNView>(null);
+  const button = useRef<ComponentRef<typeof RNView>>(null);
   const primary = useToken('primary');
   const onPrimary = useToken('primary-foreground');
   const fg = useToken('foreground');

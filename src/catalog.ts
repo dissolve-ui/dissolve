@@ -56,7 +56,7 @@ const META: Record<VariantName, Omit<EffectEntry, 'slug' | 'title'>> = {
     icon: 'tray.and.arrow.down',
     kind: 'stream',
     hint: 'tap the card, it flies into the bin',
-    code: `const bin = useRef<View>(null)
+    code: `const bin = useRef<ComponentRef<typeof View>>(null)
 
 await dissolve({ preset: 'stream', to: bin, onArrive: bump })
 

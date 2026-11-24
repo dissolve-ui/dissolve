@@ -83,8 +83,7 @@ export function SplitButton({
   const rightX = useDerivedValue(() => W - width.value);
 
   const bridge = useDerivedValue(() => {
-    const path = Skia.Path.Make();
-    if (g.value >= snapAt || W === 0) return path;
+    if (g.value >= snapAt || W === 0) return Skia.Path.Make();
     const t = g.value / snapAt; // 0 touching, 1 about to snap
     // Waist half height: full while fused, thins fast near the snap, like surface tension.
     const n = R * (1 - 0.86 * Math.pow(t, 0.8));
@@ -97,12 +96,13 @@ export function SplitButton({
     const ay = R * Math.sin(phi);
     const span = bx - ax;
     const k = Math.max(4, span * 0.42);
-    path.moveTo(ax, cy - ay);
-    path.cubicTo(ax + k, cy - n, bx - k, cy - n, bx, cy - ay);
-    path.lineTo(bx, cy + ay);
-    path.cubicTo(bx - k, cy + n, ax + k, cy + n, ax, cy + ay);
-    path.close();
-    return path;
+    return Skia.PathBuilder.Make()
+      .moveTo(ax, cy - ay)
+      .cubicTo(ax + k, cy - n, bx - k, cy - n, bx, cy - ay)
+      .lineTo(bx, cy + ay)
+      .cubicTo(bx - k, cy + n, ax + k, cy + n, ax, cy + ay)
+      .close()
+      .detach();
   });
 
   // Both halves stay one liquid color while joined; the left one turns into Cancel after.

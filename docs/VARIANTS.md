@@ -100,7 +100,7 @@ a = t<0.9 ? 1 : (1-t)/0.1          // ne disparaît qu'à l'arrivée
 
 **API.**
 ```ts
-const trash = useRef<View>(null);
+const trash = useRef<ComponentRef<typeof View>>(null);
 await dissolve({ preset: 'stream', to: trash, onArrive: () => bounce() });
 // entrée
 <DissolveIn from={sendButtonRef} preset="stream">{bubble}</DissolveIn>

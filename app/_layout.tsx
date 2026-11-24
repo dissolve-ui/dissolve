@@ -9,7 +9,7 @@ import { useToken } from '@registry/tw';
 import { ThemeButton } from '@/theme';
 
 // Deep links (/demo/x, /effect/x) still get home underneath, so back always returns there.
-export const unstable_settings = { initialRouteName: 'index' };
+export const unstable_settings = { anchor: 'index' };
 
 const headerRight = () => <ThemeButton />;
 

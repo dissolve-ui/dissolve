@@ -24,10 +24,10 @@ const BTN = 34;
 // Icons drawn in a 34 x 34 box. The triangle sits a touch right of center (optical center).
 const PLAY = Skia.Path.MakeFromSVGString('M13 10.6c0-1 1.1-1.6 1.9-1.1l9.4 6.4c.7.5.7 1.6 0 2.1l-9.4 6.4c-.8.5-1.9-.1-1.9-1.1z')!;
 const PAUSE = (() => {
-  const p = Skia.Path.Make();
+  const p = Skia.PathBuilder.Make();
   p.addRRect(Skia.RRectXY(Skia.XYWHRect(11.5, 10.5, 4, 13), 1.4, 1.4));
   p.addRRect(Skia.RRectXY(Skia.XYWHRect(18.5, 10.5, 4, 13), 1.4, 1.4));
-  return p;
+  return p.detach();
 })();
 
 /** Side presets. Bubble, button and label are classes; the Skia paints read tokens below. */
@@ -184,14 +184,14 @@ export function VoiceNote({
   const count = waveW ? Math.floor((waveW + GAP) / (BAR + GAP)) : 0;
   const bars = useMemo(() => resample(levels ?? voiceLevels(seed, 96), count), [levels, seed, count]);
   const path = useMemo(() => {
-    const p = Skia.Path.Make();
+    const p = Skia.PathBuilder.Make();
     const used = count * (BAR + GAP) - GAP;
     const x0 = snap((waveW - used) / 2);
     bars.forEach((v, i) => {
       const h = snap(Math.max(BAR, v * WAVE_H));
       p.addRRect(Skia.RRectXY(Skia.XYWHRect(x0 + i * (BAR + GAP), snap((WAVE_H - h) / 2), BAR, h), BAR / 2, BAR / 2));
     });
-    return p;
+    return p.detach();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bars, waveW, count]);
 

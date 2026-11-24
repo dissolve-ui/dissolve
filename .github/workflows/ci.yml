@@ -53,3 +53,33 @@ jobs:
       - name: Check the package contents
         working-directory: packages/dissolve-ui
         run: npm pack --dry-run --ignore-scripts
+
+  # The engine and the registry against each supported Expo SDK: the lockfile pins one, this job
+  # swaps in the versions `npx expo install --fix` would pick for the other (React Native, Skia,
+  # Reanimated, worklets, Gesture Handler, expo-*, React types) and typechecks. Types only, so fast.
+  expo-sdk:
+    name: Typecheck on Expo SDK ${{ matrix.sdk }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [57, 58]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install the Expo SDK ${{ matrix.sdk }} versions
+        run: |
+          deps="$(node scripts/expo-sdk-deps.mjs ${{ matrix.sdk }})"
+          echo "$deps" | tr ' ' '\n'
+          npm install --no-save --ignore-scripts --no-audit --no-fund $deps
+
+      - name: Type check
+        run: npm run typecheck
