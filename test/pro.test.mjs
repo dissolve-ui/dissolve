@@ -1,11 +1,10 @@
 // dissolve pro in the CLI and the MCP server, against a local mock of the API (test/mock-api.mjs).
 import { test, describe, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
 import { mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cliSandbox, existsSync, offlineEnv, read, REGISTRY_DIR, ROOT, writeTree } from './helpers.mjs';
-import { CHECKOUT_URL, mockApi, NOPAY, PAYWALL, runNode, USER_CODE, VALID } from './mock-api.mjs';
+import { CHECKOUT_URL, mcpServer, mockApi, NOPAY, PAYWALL, runNode, USER_CODE, VALID } from './mock-api.mjs';
 
 const NATIVE_APP = {
   'package.json': {
@@ -187,42 +186,11 @@ describe('CLI', () => {
 
 /* ---------- MCP ---------- */
 
-/** The MCP server over stdio, with a call(name, args) helper. */
-function mcp(f, extra = {}) {
-  const child = spawn(process.execPath, [join(ROOT, 'mcp', 'server.mjs')], {
-    cwd: f.cwd,
-    env: env(f.home, { DISSOLVE_CLI: sandbox.bin, ...extra }),
-    stdio: ['pipe', 'pipe', 'inherit'],
-  });
-  const waiting = new Map();
-  let buf = '';
-  let id = 0;
-  child.stdout.on('data', (d) => {
-    buf += d;
-    let i;
-    while ((i = buf.indexOf('\n')) !== -1) {
-      const msg = JSON.parse(buf.slice(0, i));
-      buf = buf.slice(i + 1);
-      waiting.get(msg.id)?.(msg);
-    }
-  });
-  const rpc = (method, params) =>
-    new Promise((resolve) => {
-      waiting.set(++id, resolve);
-      child.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
-    });
-  return {
-    rpc,
-    call: async (name, args = {}) => {
-      const msg = await rpc('tools/call', { name, arguments: args });
-      return { text: msg.result.content[0].text, isError: !!msg.result.isError };
-    },
-    close: () => new Promise((r) => (child.on('close', r), child.stdin.end())),
-  };
-}
+/** The MCP server over stdio, with a fresh HOME and the CLI sandbox. */
+const mcp = (f, extra = {}) => mcpServer({ cwd: f.cwd, env: env(f.home, { DISSOLVE_CLI: sandbox.bin, ...extra }) });
 
 describe('MCP', () => {
-  test('lists the pro tools', async () => {
+  test('lists the pro tools, without an account', async () => {
     const f = fixture();
     const s = mcp(f);
     const { result } = await s.rpc('tools/list');
@@ -233,7 +201,7 @@ describe('MCP', () => {
 
   test('list_components includes the pro items, marked pro', async () => {
     const f = fixture();
-    const s = mcp(f);
+    const s = mcp(f, { DISSOLVE_TOKEN: VALID });
     const { text, isError } = await s.call('list_components');
     assert.equal(isError, false, text);
     assert.match(text, /slide-to-confirm/);
@@ -241,25 +209,24 @@ describe('MCP', () => {
     await s.close();
   });
 
-  test('add_component free: installs through the CLI, no API call', async () => {
+  test('add_component free: installs through the CLI, no pro API call', async () => {
     const f = fixture();
-    const s = mcp(f);
+    const s = mcp(f, { DISSOLVE_TOKEN: VALID });
     const { text, isError } = await s.call('add_component', { name: 'slide-to-confirm', cwd: f.cwd, platform: 'native' });
     assert.equal(isError, false, text);
     assert.match(text, /added\s+components\/dissolve\/slide-to-confirm\.tsx/);
-    assert.deepEqual(api.state.requests, []);
     await s.close();
+    // Only the account check and the usage event.
+    assert.deepEqual(api.state.requests.map((r) => r.path), ['/api/me', '/api/mcp/event']);
   });
 
-  test('add_component pro: login message, then status, then the install', async () => {
+  test('add_component pro: sign-in message, then status, then the install', async () => {
     const f = fixture();
     api.reset({ confirmAfter: 1000 });
     const s = mcp(f);
     const first = await s.call('add_component', { name: 'paywall', cwd: f.cwd, platform: 'native' });
-    assert.equal(
-      first.text,
-      `Open ${api.url}/activate?code=${USER_CODE} to connect your dissolve account (code ${USER_CODE}), then ask me again.`,
-    );
+    assert.equal(first.isError, false);
+    assert.match(first.text, new RegExp(`^dissolve needs a free account to work in your agent .* Open ${api.url}/activate\\?code=${USER_CODE} and sign in`));
     assert.ok(!existsSync(join(f.cwd, 'components/dissolve/paywall.tsx')));
     assert.match((await s.call('dissolve_login_status')).text, /Waiting for the user/);
     // A second call before the user confirmed reuses the same code.
@@ -308,7 +275,7 @@ describe('MCP', () => {
 
   test('add_component without a package.json asks for cwd', async () => {
     const f = fixture();
-    const s = mcp(f);
+    const s = mcp(f, { DISSOLVE_TOKEN: VALID });
     const { text, isError } = await s.call('add_component', { name: 'paywall', cwd: sandbox.dir });
     assert.equal(isError, true);
     assert.match(text, /No package\.json/);
