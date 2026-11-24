@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ComponentRef, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View, type GestureResponderEvent } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
@@ -86,7 +86,7 @@ function ExitSample({ effect, trigger }: SampleProps) {
   const { ref, dissolving, dissolve, reset } = useDissolve();
   const [k, setK] = useState(0);
   const busy = useRef(false);
-  const bin = useRef<View>(null);
+  const bin = useRef<ComponentRef<typeof View>>(null);
   const bump = useSharedValue(1);
   const binStyle = useAnimatedStyle(() => ({ transform: [{ scale: bump.value }] }));
   const primary = useToken('primary');
