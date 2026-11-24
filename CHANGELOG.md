@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - The website moved out of this repository; the components, CLI, MCP and registry stay here.
+- The MCP server (`dissolve-ui-mcp` 0.2.0) needs a free dissolve account: the first tool call answers with a sign-in link (Google or GitHub, or `npx dissolve-ui login`) and the next one just works. `tools/list`, `dissolve_login` and `dissolve_login_status` work without one. Each call sends a small usage event (tool, item, version); off with `DISSOLVE_TELEMETRY=0` or `DO_NOT_TRACK=1`. The CLI and the source stay open.
 
 ## [0.1.0] - 2026-11-23
 

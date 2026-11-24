@@ -7,6 +7,25 @@ message per line).
 
 Its data comes from the README and `src/dissolve` (types, hooks, variants).
 
+## A free account
+
+The MCP server needs a free dissolve account. The CLI (`npx dissolve-ui`) and the source stay open
+and work without one.
+
+The first time your agent calls a dissolve tool, the tool answers with a link
+(`https://dissolve.rselmi.com/activate?code=...`) and opens it: sign in with Google or GitHub, then
+ask again. The server picks up the token in the background, so the next call just works. You can
+also run `npx dissolve-ui login` in a terminal; the account is shared with the CLI
+(`~/.config/dissolve/auth.json`, or `DISSOLVE_TOKEN` in CI).
+
+- `tools/list` always answers, and `dissolve_login` and `dissolve_login_status` work without an
+  account. Every other tool checks the token with the dissolve API at most once a day.
+  Offline, a check from the last 7 days is enough.
+- Each tool call sends a small usage event (tool name, item name, server version) to the dissolve
+  API with your token. Turn it off with `DISSOLVE_TELEMETRY=0` or `DO_NOT_TRACK=1`.
+- Free accounts may see one line after an install when a dissolve pro screen pairs with the
+  component (for example `toggle` and `settings-group`).
+
 ## Tools
 
 | Tool | Arguments | Returns |
@@ -16,15 +35,14 @@ Its data comes from the README and `src/dissolve` (types, hooks, variants).
 | `get_setup` | none | Install command with the peer dependencies, the `DissolveProvider` root layout, a minimal `useDissolve` example and the variant picking rules |
 | `list_components` | none | Every component and block you can install, with its platforms, pro items marked `pro` |
 | `add_component` | `name`, `cwd?`, `platform?`, `overwrite?` | Installs it into the app, like `npx dissolve-ui add <name>` |
-| `dissolve_login` | none | A link and a code to connect a dissolve account |
+| `dissolve_login` | none | A link and a code to connect your free dissolve account |
 | `dissolve_login_status` | none | Whether the account is connected and has dissolve pro |
 
 ## dissolve pro
 
-Ask your agent for a pro item ("add the dissolve paywall") like any other. If no account is
-connected, `add_component` answers with a link and a code for you to open (and opens it), then
-installs on the next ask. Without dissolve pro it answers with the checkout link. The account is
-shared with the CLI (`~/.config/dissolve/auth.json`, or `DISSOLVE_TOKEN`).
+Ask your agent for a pro item ("add the dissolve paywall") like any other. With your free account
+connected, `add_component` installs it if you have dissolve pro, and answers with the checkout link
+otherwise.
 
 ## Requirements
 

@@ -115,3 +115,5 @@ To make any view dissolve, burn, melt, peel or gather (not a ready-made componen
 - `get_variant`: the usage snippet, options and best practices of one variant.
 
 Call `list_variants` to pick, then `get_variant` for the code. One effect per user action, never on scroll or on a timer.
+
+The MCP server needs a free dissolve account. If a tool answers with a sign-in link instead, relay it to the user as is and call the tool again once they signed in. The CLI works without an account.

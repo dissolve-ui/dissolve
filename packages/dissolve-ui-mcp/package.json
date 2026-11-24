@@ -1,7 +1,7 @@
 {
   "name": "dissolve-ui-mcp",
-  "version": "0.1.0",
-  "description": "MCP server for dissolve-ui: variants, usage snippets, setup and component installs (free and pro) as tools for your coding agent. No dependencies.",
+  "version": "0.2.0",
+  "description": "MCP server for dissolve-ui: variants, usage snippets, setup and component installs (free and pro) as tools for your coding agent. Needs a free dissolve account. No dependencies.",
   "author": "Rayan Selmi",
   "license": "MIT",
   "homepage": "https://github.com/dissolve-ui/dissolve/tree/main/packages/dissolve-ui-mcp#readme",
