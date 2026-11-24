@@ -3,6 +3,7 @@
 //   Bearer dsv_NOPAY  -> 402 { checkout_url }
 //   anything else     -> 401
 // The device login confirms after `confirmAfter` polls and hands out dsv_VALID.
+// POST /api/mcp/event is recorded in state.events. state.meDown makes /api/me answer 503.
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 
@@ -51,7 +52,7 @@ export const INDEX = [
 ];
 
 export async function mockApi({ confirmAfter = 2 } = {}) {
-  const state = { requests: [], polls: 0, started: 0, clientNames: [] };
+  const state = { requests: [], polls: 0, started: 0, clientNames: [], events: [], meDown: false };
   const body = (req) => new Promise((r) => { let b = ''; req.on('data', (d) => (b += d)); req.on('end', () => r(b)); });
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://x');
@@ -70,7 +71,13 @@ export async function mockApi({ confirmAfter = 2 } = {}) {
       if (auth !== VALID) return json(401, { error: 'unauthorized' });
       return json(200, ITEMS[item[1]]);
     }
+    if (url.pathname === '/api/mcp/event' && req.method === 'POST') {
+      state.events.push({ auth, ...JSON.parse((await body(req)) || '{}') });
+      res.writeHead(204);
+      return res.end();
+    }
     if (url.pathname === '/api/me') {
+      if (state.meDown) return json(503, { error: 'unavailable' });
       if (auth === VALID) return json(200, { user: { id: 'u1', email: 'vibe@example.com', name: 'Vibe' }, pro: true, plan: 'month' });
       if (auth === NOPAY) return json(200, { user: { id: 'u2', email: 'free@example.com', name: 'Free' }, pro: false, plan: null });
       return json(200, { user: null, pro: false, plan: null });
@@ -102,6 +109,8 @@ export async function mockApi({ confirmAfter = 2 } = {}) {
       state.delivered = false;
       state.started = 0;
       state.clientNames.length = 0;
+      state.events.length = 0;
+      state.meDown = false;
       if (opts.confirmAfter) confirmAfter = opts.confirmAfter;
     },
     close: () => new Promise((r) => server.close(r)),
@@ -121,4 +130,34 @@ export function runNode(args, { cwd, env, timeout = 30000 } = {}) {
       resolve({ code, out: out.replace(/\x1b\[[0-9;]*m/g, '') });
     });
   });
+}
+
+/** The MCP server (mcp/server.mjs) over stdio, with rpc(method, params) and call(name, args) helpers. */
+export function mcpServer({ cwd, env, server = new URL('../mcp/server.mjs', import.meta.url).pathname } = {}) {
+  const child = spawn(process.execPath, [server], { cwd, env, stdio: ['pipe', 'pipe', 'inherit'] });
+  const waiting = new Map();
+  let buf = '';
+  let id = 0;
+  child.stdout.on('data', (d) => {
+    buf += d;
+    let i;
+    while ((i = buf.indexOf('\n')) !== -1) {
+      const msg = JSON.parse(buf.slice(0, i));
+      buf = buf.slice(i + 1);
+      waiting.get(msg.id)?.(msg);
+    }
+  });
+  const rpc = (method, params) =>
+    new Promise((resolve) => {
+      waiting.set(++id, resolve);
+      child.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
+    });
+  return {
+    rpc,
+    call: async (name, args = {}) => {
+      const msg = await rpc('tools/call', { name, arguments: args });
+      return { text: msg.result.content[0].text, isError: !!msg.result.isError };
+    },
+    close: () => new Promise((r) => (child.on('close', r), child.stdin.end())),
+  };
 }

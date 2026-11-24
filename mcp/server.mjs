@@ -7,6 +7,10 @@
  * Tools: list_variants, get_variant, get_setup, list_components, add_component, dissolve_login,
  * dissolve_login_status.
  *
+ * The tools need a free dissolve account (the CLI and the source stay open): tools/list always
+ * answers, and every tools/call except dissolve_login and dissolve_login_status first checks the
+ * token with GET /api/me. Without one the call answers with a login link (device flow) instead.
+ *
  * Register it in Claude Code:
  *   claude mcp add dissolve -- npx -y dissolve-ui-mcp
  *
@@ -16,7 +20,8 @@
  * pro.mjs, the client the CLI ships.
  */
 import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { hostname } from 'node:os';
 import { isAbsolute, join } from 'node:path';
 import { createInterface } from 'node:readline';
@@ -29,7 +34,8 @@ const pro = await import('./pro.mjs').catch((e) => {
 });
 
 const PKG = 'dissolve-ui';
-const VERSION = '0.0.1';
+// Keep in step with packages/dissolve-ui-mcp/package.json.
+const VERSION = '0.2.0';
 const PROTOCOL = '2025-06-18';
 
 /* ---------- Data ---------- */
@@ -374,12 +380,12 @@ const TOOLS = [
   },
   {
     name: 'dissolve_login',
-    description: 'Connect the user\'s dissolve account (only needed for pro items). Returns a link and a code to relay to the user.',
+    description: 'Connect the user\'s free dissolve account (the other dissolve tools need one). Returns a link and a code to relay to the user.',
     inputSchema: { type: 'object', properties: {} },
   },
   {
     name: 'dissolve_login_status',
-    description: 'Check whether the dissolve account is connected and has dissolve pro. Call it after the user opened the login link.',
+    description: 'Check whether the dissolve account is connected and has dissolve pro. Call it after the user opened the sign-in link.',
     inputSchema: { type: 'object', properties: {} },
   },
   {
@@ -459,16 +465,19 @@ function watchLogin(pending) {
 
 const loginMessage = (p) => `Open ${p.verify_url} to connect your dissolve account (code ${p.user_code}), then ask me again.`;
 
-/** The login in progress (or a new one, opened in the browser), as the message to relay. */
-async function loginPrompt() {
+/** The login in progress, or a new one (opened in the browser), polled in the background. */
+async function ensureLogin() {
   let pending = pro.pendingLogin();
   if (!pending) {
     pending = await pro.startLogin(`dissolve MCP on ${hostname()}`);
     pro.openBrowser(pending.verify_url);
   }
   watchLogin(pending);
-  return loginMessage(pending);
+  return pending;
 }
+
+/** The login in progress (or a new one), as the message to relay. */
+const loginPrompt = async () => loginMessage(await ensureLogin());
 
 /** A login in progress that the user may have confirmed since: one poll. */
 async function settlePendingLogin() {
@@ -494,15 +503,15 @@ async function addComponent({ name, cwd, platform, overwrite } = {}) {
   if (platform === 'native' || platform === 'web') args.push(`--${platform}`);
   if (overwrite) args.push('--overwrite');
   const { code, out } = await runCli(args, root);
-  if (code === 0) return out;
+  if (code === 0) return { code, text: out };
   // 3: the item is pro and no account is connected (or the token was revoked).
-  if (code === 3) return loginPrompt();
+  if (code === 3) return { code, text: await loginPrompt() };
   // 4: connected, no dissolve pro purchase. Files of the other names may have been written.
   if (code === 4) {
     const links = [...out.matchAll(/^(\S+) is part of dissolve pro\.\s*\n\s*Subscribe: (\S+)/gm)];
     const lines = links.map((m) => `${m[1]} is part of dissolve pro: subscribe at ${m[2]}, then ask me again.`);
     const rest = out.split(/\n\S+ is part of dissolve pro\./)[0].trim();
-    return [...lines, rest && /\b(added|replaced|skipped)\b/.test(rest) ? `\nInstalled meanwhile:\n${rest}` : ''].filter(Boolean).join('\n');
+    return { code, text: [...lines, rest && /\b(added|replaced|skipped)\b/.test(rest) ? `\nInstalled meanwhile:\n${rest}` : ''].filter(Boolean).join('\n') };
   }
   throw new ToolError(out || `dissolve-ui exited with code ${code}.`);
 }
@@ -510,6 +519,7 @@ async function addComponent({ name, cwd, platform, overwrite } = {}) {
 async function describeAccount(token) {
   const who = await pro.me(token);
   if (!who) return null;
+  saveAccount(token, who);
   return `Connected as ${who.user.email}. dissolve pro: ${who.pro ? `active${who.plan ? ` (${who.plan})` : ''}` : 'not active'}.`;
 }
 
@@ -532,24 +542,176 @@ async function loginStatus() {
     if (r === 'expired') return 'The login code expired. Call dissolve_login for a new one.';
   }
   const auth = pro.readToken();
-  if (!auth) return 'Not connected. Only pro items need it: call dissolve_login.';
+  if (!auth) return 'Not connected. The dissolve tools need a free account: call dissolve_login.';
   return (await describeAccount(auth.token)) ?? 'The saved token is not valid anymore. Call dissolve_login.';
 }
 
-async function callTool(name, args) {
+/* ---------- Free account gate ---------- */
+
+const DAY = 24 * 60 * 60 * 1000;
+/** A successful GET /api/me is trusted this long before asking again. */
+const CHECK_EVERY = DAY;
+/** API unreachable: a last success younger than this still lets the call run. */
+const OFFLINE_GRACE = 7 * DAY;
+/** The tools that work without an account (they are how you get one). */
+const UNGATED = new Set(['dissolve_login', 'dissolve_login_status']);
+
+/** The last successful check, next to auth.json: { token: <sha256 prefix>, checked_at, pro }. */
+const accountFile = () => join(pro.configDir(), 'mcp-account.json');
+const tokenId = (token) => createHash('sha256').update(token).digest('hex').slice(0, 16);
+
+/** The last check of this token, or null (none, or made for another token). */
+function readAccount(token) {
+  try {
+    const a = JSON.parse(readFileSync(accountFile(), 'utf8'));
+    return a?.token === tokenId(token) && Number.isFinite(a.checked_at) ? a : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveAccount(token, who) {
+  try {
+    pro.writePrivate(accountFile(), { token: tokenId(token), checked_at: Date.now(), pro: !!who?.pro });
+  } catch {
+    // A read only HOME only means checking again next time.
+  }
+}
+
+const clearAccount = () => rmSync(accountFile(), { force: true });
+
+const SITE = () => pro.apiUrl().replace(/^https?:\/\//, '');
+const accountMessage = (p) =>
+  `dissolve needs a free account to work in your agent (it takes 10 seconds). Open ${p.verify_url} and sign in with Google or GitHub, then ask me again. You can also run \`npx dissolve-ui login\` in a terminal.`;
+const offlineMessage = () =>
+  `dissolve needs a free account to work in your agent, and ${SITE()} could not be reached right now. Check the connection and ask me again, or run \`npx dissolve-ui login\` in a terminal.`;
+
+/** Starts (or reuses) the device login and returns the sign-in message; the token is saved in the background. */
+async function accountPrompt() {
+  try {
+    return accountMessage(await ensureLogin());
+  } catch {
+    // Offline, or the API could not start a login.
+    return offlineMessage();
+  }
+}
+
+/**
+ * Before a gated call: { ok: true, token, pro } when it may run, else { ok: false, text } with
+ * the message to answer instead. Never throws for network reasons.
+ */
+async function checkAccount() {
+  await settlePendingLogin();
+  const auth = pro.readToken();
+  if (!auth) return { ok: false, text: await accountPrompt() };
+  const last = readAccount(auth.token);
+  const age = last ? Date.now() - last.checked_at : Infinity;
+  if (age < CHECK_EVERY) return { ok: true, token: auth.token, pro: !!last.pro };
+
+  let res = null;
+  try {
+    res = await pro.request('/api/me', { token: auth.token, timeout: 5000 });
+  } catch (e) {
+    if (!(e instanceof pro.OfflineError)) throw e;
+  }
+  if (res?.status === 200 && res.body?.user) {
+    saveAccount(auth.token, res.body);
+    return { ok: true, token: auth.token, pro: !!res.body.pro };
+  }
+  // 401, or 200 { user: null }: the token is not valid (revoked, or never was).
+  if (res && (res.status === 401 || res.status === 200)) {
+    clearAccount();
+    if (auth.source === 'env') {
+      return { ok: false, text: 'DISSOLVE_TOKEN is set but dissolve did not accept it. Unset it (the dissolve tools then give you a sign-in link), or set a valid token.' };
+    }
+    pro.clearToken();
+    return { ok: false, text: await accountPrompt() };
+  }
+  // Unreachable or a server error: a recent success is enough.
+  if (age < OFFLINE_GRACE) return { ok: true, token: auth.token, pro: !!last.pro };
+  // A new login cannot replace DISSOLVE_TOKEN: only the connection can fix this one.
+  if (auth.source === 'env') return { ok: false, text: offlineMessage() };
+  return { ok: false, text: await accountPrompt() };
+}
+
+/* ---------- Usage events ---------- */
+
+const telemetryOff = () =>
+  ['0', 'false', 'off'].includes(String(process.env.DISSOLVE_TELEMETRY ?? '').toLowerCase()) ||
+  ['1', 'true'].includes(String(process.env.DO_NOT_TRACK ?? '').toLowerCase());
+
+const itemNames = (name) => String(name ?? '').split(/[\s,]+/).filter(pro.isItemName);
+
+/**
+ * Fire and forget: POST /api/mcp/event per call (per item for add_component). 2 s timeout,
+ * failures ignored, never awaited by the tool. Off with DISSOLVE_TELEMETRY=0 or DO_NOT_TRACK=1.
+ */
+function track(token, tool, args) {
+  if (telemetryOff()) return;
+  const items = tool === 'add_component' ? itemNames(args?.name).slice(0, 10) : tool === 'get_variant' ? itemNames(args?.name).slice(0, 1) : [];
+  for (const item of items.length ? items : [undefined]) {
+    const body = { tool, ...(item ? { item } : {}), client: 'mcp', version: VERSION };
+    const p = pro.request('/api/mcp/event', { token, method: 'POST', body, timeout: 2000 }).catch(() => null);
+    // Lets a closing stdin wait for it (2 s at most) instead of cutting it off.
+    inflight.add(p);
+    p.finally(() => inflight.delete(p));
+  }
+}
+
+/* ---------- Pro pairing hint ---------- */
+
+/** Free component -> the pro screen it naturally pairs with. */
+const PAIRS = {
+  toggle: ['settings-group', 'a ready-made settings screen'],
+  'segmented-control': ['settings-group', 'a ready-made settings screen'],
+  'slide-to-confirm': ['paywall-01', 'a ready-made paywall screen'],
+  'glossy-button': ['paywall-01', 'a ready-made paywall screen'],
+  'otp-input': ['sign-in', 'a ready-made sign in screen'],
+  'password-strength': ['sign-in', 'a ready-made sign in screen'],
+  'quantity-stepper': ['cart-01', 'a ready-made cart screen'],
+  'typing-indicator': ['message-composer', 'a ready-made chat composer'],
+  'voice-note': ['message-composer', 'a ready-made chat composer'],
+  'progress-steps': ['onboarding', 'a ready-made onboarding flow'],
+};
+
+/** One short line for a free user who just installed a component with a pro pair, else ''. */
+function pairingHint(names, account) {
+  if (account.pro) return '';
+  const hit = names.find((n) => PAIRS[n] && !names.includes(PAIRS[n][0]));
+  if (!hit) return '';
+  const [item, what] = PAIRS[hit];
+  return `\n\nPairs well with ${item}, ${what} in dissolve pro: ${pro.apiUrl()}/pro`;
+}
+
+/* ---------- Dispatch ---------- */
+
+async function runTool(name, args, account) {
   if (name === 'list_variants') return listVariants(args);
   if (name === 'get_variant') return getVariant(args);
   if (name === 'get_setup') return getSetup();
+  if (name === 'list_components') return listComponents();
+  if (name === 'add_component') {
+    const { code, text } = await addComponent(args);
+    return code === 0 ? text + pairingHint(itemNames(args?.name).map((n) => n.toLowerCase()), account) : text;
+  }
+  if (name === 'dissolve_login') return login();
+  if (name === 'dissolve_login_status') return loginStatus();
+  throw new RpcError(-32602, `Unknown tool: ${name}`);
+}
+
+async function callTool(name, args) {
+  if (!TOOLS.some((t) => t.name === name)) throw new RpcError(-32602, `Unknown tool: ${name}`);
   try {
-    if (name === 'list_components') return await listComponents();
-    if (name === 'add_component') return await addComponent(args);
-    if (name === 'dissolve_login') return await login();
-    if (name === 'dissolve_login_status') return await loginStatus();
+    if (UNGATED.has(name)) return await runTool(name, args, null);
+    const account = await checkAccount();
+    if (!account.ok) return account.text;
+    const text = await runTool(name, args, account);
+    track(account.token, name, args);
+    return text;
   } catch (e) {
     if (e instanceof pro.OfflineError) throw new ToolError(`${e.message} Check the connection and try again.`);
     throw e;
   }
-  throw new RpcError(-32602, `Unknown tool: ${name}`);
 }
 
 /* ---------- JSON-RPC over stdio ---------- */
@@ -568,7 +730,7 @@ async function handle(req) {
         protocolVersion: typeof params.protocolVersion === 'string' ? params.protocolVersion : PROTOCOL,
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: 'dissolve', version: VERSION },
-        instructions: 'dissolve-ui: animated components and blocks for React Native and React. list_components shows what can be installed, add_component installs it (free or pro, relay its message if the user must connect or subscribe). get_setup, list_variants and get_variant document the dissolve engine.',
+        instructions: 'dissolve-ui: animated components and blocks for React Native and React. list_components shows what can be installed, add_component installs it (free or pro, relay its message if the user must connect or subscribe). get_setup, list_variants and get_variant document the dissolve engine. The tools need a free dissolve account: when a tool answers with a sign-in link, relay it to the user as is and call the tool again once they signed in.',
       };
     case 'ping':
       return {};

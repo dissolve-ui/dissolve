@@ -35,7 +35,7 @@ function readJSON(file) {
   }
 }
 
-function writePrivate(file, data) {
+export function writePrivate(file, data) {
   mkdirSync(configDir(), { recursive: true, mode: 0o700 });
   writeFileSync(file, JSON.stringify(data, null, 2) + '\n', { mode: 0o600 });
   // writeFileSync keeps the mode of an existing file: force it.
