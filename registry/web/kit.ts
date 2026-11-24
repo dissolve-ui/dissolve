@@ -409,9 +409,11 @@ export async function capture(node: HTMLElement, dpr = typeof window === 'undefi
     return img.decode().catch(() => svgs.delete(svg));
   }));
 
-  const text = (t: Text, cs: CSSStyleDeclaration) => {
+  const text = (t: Text, cs: CSSStyleDeclaration, ink?: string) => {
+    const fill = ink ?? cs.color;
+    if (!painted(fill)) return;
     ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${parseFloat(cs.fontSize) * s}px ${cs.fontFamily}`;
-    ctx.fillStyle = cs.color;
+    ctx.fillStyle = fill;
     ctx.letterSpacing = cs.letterSpacing === 'normal' ? '0px' : `${parseFloat(cs.letterSpacing) * s}px`;
     ctx.textBaseline = 'alphabetic';
     const range = document.createRange();
@@ -425,7 +427,7 @@ export async function capture(node: HTMLElement, dpr = typeof window === 'undefi
     }
   };
 
-  const walk = (e: Element, alpha: number) => {
+  const walk = (e: Element, alpha: number, inkIn?: string) => {
     const cs = getComputedStyle(e);
     if (cs.display === 'none' || cs.visibility === 'hidden') return;
     const a = e === node ? alpha : alpha * parseFloat(cs.opacity);
@@ -434,7 +436,13 @@ export async function capture(node: HTMLElement, dpr = typeof window === 'undefi
     const x = b.left - r.left, y = b.top - r.top, w = b.width, h = b.height;
     const rad = radiusOf(cs.borderTopLeftRadius, w, h, s);
     ctx.globalAlpha = a;
-    if (painted(cs.backgroundColor)) {
+    // background-clip: text paints the background through the glyphs only (shimmer labels, gradient
+    // titles): no box, and the text takes the background's colour (or the gradient's first stop).
+    const clipText = cs.backgroundClip === 'text' || (cs as CSSStyleDeclaration & { webkitBackgroundClip?: string }).webkitBackgroundClip === 'text';
+    const ink = clipText
+      ? (painted(cs.backgroundColor) ? cs.backgroundColor : cs.backgroundImage.match(/rgba?\([^)]*\)|#[0-9a-f]{3,8}/i)?.[0] ?? inkIn)
+      : inkIn;
+    if (!clipText && painted(cs.backgroundColor)) {
       rr(ctx, x, y, w, h, rad);
       ctx.fillStyle = cs.backgroundColor;
       ctx.fill();
@@ -467,8 +475,8 @@ export async function capture(node: HTMLElement, dpr = typeof window === 'undefi
       ctx.clip();
     }
     for (const child of e.childNodes) {
-      if (child.nodeType === Node.ELEMENT_NODE) walk(child as Element, a);
-      else if (child.nodeType === Node.TEXT_NODE) { ctx.globalAlpha = a; text(child as Text, cs); }
+      if (child.nodeType === Node.ELEMENT_NODE) walk(child as Element, a, ink);
+      else if (child.nodeType === Node.TEXT_NODE) { ctx.globalAlpha = a; text(child as Text, cs, ink); }
     }
     if (clip) ctx.restore();
   };

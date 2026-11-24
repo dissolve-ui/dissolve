@@ -98,6 +98,7 @@ const CSS = `
 :where(.dissolve-es-icon) svg { display: block; width: 100%; height: 100%; }
 :where(.dissolve-es-value) { display: inline-flex; align-items: flex-start; overflow: hidden; font-variant-numeric: tabular-nums; }
 :where(.dissolve-es-value) > span { display: block; }
+:where(.dissolve-es-value[hidden]) { display: none; }
 :where(.dissolve-es-digit) { display: inline-block; overflow: hidden; }
 :where(.dissolve-es-digit) > span { display: flex; flex-direction: column; transition: transform .26s cubic-bezier(0.22, 1, 0.36, 1); }
 `;
