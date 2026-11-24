@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Supports Expo SDK 58. Expo SDK 57 keeps working: the CLI installs peers with `npx expo install`, so each app gets the versions of its SDK, and CI typechecks the engine and the registry against both SDKs. The README has an Expo SDK 58 note (the Skia 2.7 snapshot leak fix, the iOS 27 scene life cycle).
+
 ### Changed
 - The website moved out of this repository; the components, CLI, MCP and registry stay here.
 
