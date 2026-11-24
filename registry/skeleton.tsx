@@ -50,7 +50,7 @@
  *   </Skeleton.Block>
  * </Skeleton>
  */
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject, type ComponentRef } from 'react';
 import { View as RNView, type DimensionValue, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import {
   Easing,
@@ -66,6 +66,9 @@ import * as Haptics from 'expo-haptics';
 import { capGrain, capture, frames, measure, runDissolve, useDissolveContext } from 'dissolve-ui';
 import { Animated, View, cn } from './tw';
 import { CALM, wait } from './motion';
+
+/** Host ref of a View: the class instance on RN <= 0.86, a ReactNativeElement on 0.88+. */
+type RNViewRef = ComponentRef<typeof RNView>;
 
 export type SkeletonShape = 'line' | 'circle' | 'rect';
 export type SkeletonToken = 'surface' | 'surface-2' | 'border';
@@ -138,8 +141,8 @@ const FILL: Record<SkeletonToken, string> = {
 };
 
 type Entry = {
-  a: RefObject<RNView | null>;
-  b: RefObject<RNView | null>;
+  a: RefObject<RNViewRef | null>;
+  b: RefObject<RNViewRef | null>;
   /** The overlay paints the placeholder: hide the real one. */
   hide: () => void;
   /** The grains have landed: the content shows, the placeholder goes. */
@@ -154,7 +157,7 @@ type SkeletonCtx = {
   clock: SharedValue<number>;
   /** 1 while the wave runs, eased to 0 before the handoff. */
   wave: SharedValue<number>;
-  root: RefObject<RNView | null>;
+  root: RefObject<RNViewRef | null>;
   register: (e: Entry) => () => void;
 };
 const Ctx = createContext<SkeletonCtx | null>(null);
@@ -174,7 +177,7 @@ export function Skeleton({
 }: SkeletonProps) {
   const ctx = useDissolveContext();
   const reduced = useReducedMotion();
-  const root = useRef<RNView>(null);
+  const root = useRef<RNViewRef>(null);
   const clock = useSharedValue(0);
   const wave = useSharedValue(0);
   const blocks = useRef(new Set<Entry>());
@@ -334,8 +337,8 @@ export function Skeleton({
 export function SkeletonBlock({ children, shape = 'line', width, height, size, radius, lines = 1, className, style }: SkeletonBlockProps) {
   const sk = useContext(Ctx);
   const loading = sk?.loading ?? false;
-  const a = useRef<RNView>(null);
-  const b = useRef<RNView>(null);
+  const a = useRef<RNViewRef>(null);
+  const b = useRef<RNViewRef>(null);
   // done: the content shows and the placeholder is gone.
   const [done, setDone] = useState(!loading);
   const aVis = useSharedValue(1);

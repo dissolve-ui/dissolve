@@ -13,19 +13,22 @@
  * Put it over the area the pieces may cover, as the last child of a screen:
  *
  * const confetti = useRef<ConfettiBurstHandle>(null);
- * const button = useRef<View>(null);
+ * const button = useRef<ComponentRef<typeof View>>(null); // not useRef<View>: View is a function on RN 0.88
  * <View style={{ flex: 1 }}>
  *   <View ref={button}><GlossyButton label="Place order" onPress={() => confetti.current?.fire({ from: button })} /></View>
  *   <ConfettiBurst ref={confetti} />
  * </View>
  */
-import { useImperativeHandle, useRef, type Ref, type RefObject } from 'react';
+import { useImperativeHandle, useRef, type Ref, type RefObject, type ComponentRef } from 'react';
 import { StyleSheet, View as RNView } from 'react-native';
 import { Canvas, Picture, Skia, type SkPicture } from '@shopify/react-native-skia';
 import { useFrameCallback, useReducedMotion, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { useToken } from './tw';
+
+/** Host ref of a View: the class instance on RN <= 0.86, a ReactNativeElement on 0.88+. */
+type RNViewRef = ComponentRef<typeof RNView>;
 
 export type ConfettiShape = 'rect' | 'strip' | 'dot';
 
@@ -34,7 +37,7 @@ export type FireOptions = {
   x?: number;
   y?: number;
   /** Throws from the top center of this view instead. */
-  from?: RefObject<RNView | null>;
+  from?: RefObject<RNViewRef | null>;
 };
 
 export type ConfettiBurstHandle = {
@@ -79,7 +82,7 @@ export function ConfettiBurst({ ref, count = 40, colors, shapes = ['rect', 'stri
   const muted = useToken('muted');
   const ink = colors?.length ? colors : [fg, muted];
   const reduced = useReducedMotion();
-  const box = useRef<RNView>(null);
+  const box = useRef<RNViewRef>(null);
   const pieces = useSharedValue<number[]>([]);
   const picture = useSharedValue<SkPicture>(empty);
   const dims = useSharedValue({ w: 1, h: 1 });

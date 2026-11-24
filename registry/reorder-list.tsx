@@ -25,7 +25,7 @@
  *   gap={8}
  * />
  */
-import { createContext, memo, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { createContext, memo, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject, type ComponentRef } from 'react';
 import { PixelRatio, StyleSheet, View as RNView, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Atlas, Canvas, FilterMode, MipmapMode, Skia, makeImageFromView, rect } from '@shopify/react-native-skia';
@@ -51,6 +51,9 @@ import { frames, runDissolve, useDissolveContext, type VariantName } from 'disso
 import { View, cn, useToken } from './tw';
 import { argb, atlasColors, makeColors, makeSprite, notify, toRGB } from './dots';
 import { CALM, wait } from './motion';
+
+/** Host ref of a View: the class instance on RN <= 0.86, a ReactNativeElement on 0.88+. */
+type RNViewRef = ComponentRef<typeof RNView>;
 
 /** Rows making room. */
 const SLIDE_MS = 300;
@@ -126,7 +129,7 @@ type ListCtx = {
   onLift: (k: string, x: number, y: number) => void;
   onMove: (k: string, x: number, y: number) => void;
   onDrop: (k: string) => void;
-  refs: Map<string, RefObject<RNView | null>>;
+  refs: Map<string, RefObject<RNViewRef | null>>;
   move: (k: string, by: number) => void;
   handle: boolean;
   delay: number;
@@ -174,7 +177,7 @@ const Row = memo(function Row({ k, item, index, dragging, render, itemClassName 
   const L = useContext(ListContext)!;
   const { layout, active, phase, dragTop, dragX, lift, tilt, width, canDelete, heights } = L;
   const y = useSharedValue(-1);
-  const ref = useRef<RNView>(null);
+  const ref = useRef<RNViewRef>(null);
 
   useEffect(() => {
     L.refs.set(k, ref);
@@ -312,7 +315,7 @@ export function ReorderList<T>({
 
   const scrollRef = useAnimatedRef<Reanimated.ScrollView>();
   const scrollY = useScrollOffset(scrollRef);
-  const listProbe = useRef<RNView>(null);
+  const listProbe = useRef<RNViewRef>(null);
 
   const order = useSharedValue<string[]>(keys);
   const heights = useSharedValue<Record<string, number>>({});
@@ -418,7 +421,7 @@ export function ReorderList<T>({
   // JS side: haptics, state, callbacks. Stable functions reading the latest props.
   const latest = useRef({ data, keyExtractor, onReorder, onDelete, haptics, preset, ctx });
   latest.current = { data, keyExtractor, onReorder, onDelete, haptics, preset, ctx };
-  const refs = useRef(new Map<string, RefObject<RNView | null>>()).current;
+  const refs = useRef(new Map<string, RefObject<RNViewRef | null>>()).current;
 
   const js = useMemo(() => {
     const buzz = (kind: 'lift' | 'tick' | 'drop' | 'arm') => {

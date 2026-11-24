@@ -12,7 +12,7 @@
  * <TaskCheck label="Oat milk" checked={item.done} onCheckedChange={(v) => toggle(item.id, v)} after="move" onSettled={() => moveToDone(item.id)} />
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View as RNView, type LayoutChangeEvent, type NativeSyntheticEvent, type TextLayoutEventData } from 'react-native';
+import { StyleSheet, View as RNView, type LayoutChangeEvent, type TextProps } from 'react-native';
 import { Canvas, Path, Skia } from '@shopify/react-native-skia';
 import {
   interpolateColor,
@@ -158,7 +158,8 @@ export function TaskCheck({
   };
 
   // One segment per rendered line, at the middle of the lowercase letters.
-  const onTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
+  // Event type read off the prop: RN 0.88 dropped the TextLayoutEventData export.
+  const onTextLayout: NonNullable<TextProps['onTextLayout']> = (e) => {
     setLines(e.nativeEvent.lines.filter((l) => l.width > 0.5).map((l) => ({ x: l.x, w: l.width, y: l.xHeight ? l.y + l.ascender - l.xHeight / 2 : l.y + l.height * 0.55 })));
   };
   const strikePath = useMemo(() => {

@@ -44,7 +44,7 @@
  *   {(scroll) => <Animated.FlatList {...scroll} data={items} renderItem={({ item }) => <PullItem id={item.id}><Row item={item} /></PullItem>} />}
  * </PullToRefresh>
  */
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject, type ComponentRef } from 'react';
 import { Platform, StyleSheet, View as RNView, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated, {
@@ -63,6 +63,9 @@ import * as Haptics from 'expo-haptics';
 import { capture, frames, measure, runDissolve, useDissolveContext } from 'dissolve-ui';
 import { Animated, View, cn, useToken } from './tw';
 import { CALM, CALM_FN, clamp01, hash, wait } from './motion';
+
+/** Host ref of a View: the class instance on RN <= 0.86, a ReactNativeElement on 0.88+. */
+type RNViewRef = ComponentRef<typeof RNView>;
 
 export type PullToken = 'foreground' | 'muted' | 'primary' | 'accent' | 'success' | 'chart-1' | 'chart-2';
 
@@ -156,7 +159,7 @@ function seeds() {
 }
 
 type Box = { x: number; y: number; width: number; height: number };
-type Entry = { ref: RefObject<RNView | null>; reveal: () => void };
+type Entry = { ref: RefObject<RNViewRef | null>; reveal: () => void };
 type PullCtx = {
   register: (id: string | number, entry: Entry) => () => void;
   /** Read once when a PullItem mounts: true if it is new and waits for its entrance. */
@@ -242,7 +245,7 @@ export function PullToRefresh({ children, onRefresh, threshold = 80, haptics = t
     if (haptics) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
   };
 
-  const rootRef = useRef<RNView>(null);
+  const rootRef = useRef<RNViewRef>(null);
   const onRefreshRef = useRef(onRefresh);
   onRefreshRef.current = onRefresh;
   const busy = useRef(false);
@@ -703,7 +706,7 @@ const FILL_KEYS = ['flex', 'flexGrow', 'flexBasis', 'height', 'minHeight', 'aspe
  */
 export function PullItem({ id, children, className, style }: PullItemProps) {
   const pull = useContext(PullContext);
-  const ref = useRef<RNView>(null);
+  const ref = useRef<RNViewRef>(null);
   // New when it mounts during a refresh with an id the refresh did not start with.
   const [fresh] = useState(() => pull?.isNew(id) ?? false);
   const shown = useSharedValue(fresh ? HIDDEN : 1);
