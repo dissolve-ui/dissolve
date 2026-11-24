@@ -8,7 +8,7 @@ components with the same props.
 [![CI](https://github.com/dissolve-ui/dissolve/actions/workflows/ci.yml/badge.svg)](https://github.com/dissolve-ui/dissolve/actions/workflows/ci.yml)
 [![npm downloads](https://img.shields.io/npm/dm/dissolve-ui.svg)](https://www.npmjs.com/package/dissolve-ui)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Expo SDK 57](https://img.shields.io/badge/Expo%20SDK-57-000020.svg)](https://expo.dev)
+[![Expo SDK 57 or 58](https://img.shields.io/badge/Expo%20SDK-57%20%7C%2058-000020.svg)](https://expo.dev)
 
 Put a ref on any component, call `dissolve()`, and it dissolves, melts, peels or rebuilds itself.
 It works on any view, not a specific widget. iOS and Android, works with Expo (runs in Expo Go).
@@ -24,12 +24,38 @@ at 6000 per burst.
 npx expo install dissolve-ui @shopify/react-native-skia react-native-reanimated react-native-worklets react-native-gesture-handler expo-haptics
 ```
 
-The demo app in this repo imports the source directly through the `@/dissolve` path alias.
+`npx expo install` picks the versions that match your Expo SDK. The demo app in this repo imports
+the source directly through the `@/dissolve` path alias.
 
-Known good versions (from `package.json`): Expo SDK 57, React Native 0.86, React 19.2,
-`@shopify/react-native-skia` 2.6, `react-native-reanimated` 4.5, `react-native-worklets` 0.10,
-`react-native-gesture-handler` 2.32. Expo's Babel preset already adds the worklets plugin; a bare
-React Native app needs `'react-native-worklets/plugin'` in `babel.config.js`.
+Supported: Expo SDK 57 or 58. CI typechecks the engine and every component against both.
+
+| | Expo SDK 57 | Expo SDK 58 |
+|---|---|---|
+| React Native | 0.86 | 0.88 |
+| React | 19.2 | 19.3 |
+| `@shopify/react-native-skia` | 2.6 | 2.14 |
+| `react-native-reanimated` | 4.5 | 4.7 |
+| `react-native-worklets` | 0.10 | 0.13 |
+| `react-native-gesture-handler` | 2.32 | 3.3 |
+
+Expo's Babel preset already adds the worklets plugin; a bare React Native app needs
+`'react-native-worklets/plugin'` in `babel.config.js`.
+
+### Expo SDK 58
+
+- **Upgrade for the Skia leak fix.** SDK 58 ships `@shopify/react-native-skia` 2.14. Skia 2.7 fixed
+  a leak on iOS where the images `makeImageFromView` returns stayed in memory after `dispose()`.
+  Every dissolve effect starts with that snapshot, so on SDK 57 (Skia 2.6) iOS memory grows with
+  each effect played.
+- **iOS 27 scene life cycle.** iOS 27 requires the UIKit scene based life cycle. A fresh
+  `npx expo prebuild` on SDK 58 generates `SceneDelegate.swift`, and the window is created there,
+  not in `AppDelegate`. If you keep an `ios/` folder from SDK 57 or customize `AppDelegate.swift`,
+  delete `ios/` and prebuild again (or follow https://expo.fyi/ios-scene-lifecycle). The SDK 57
+  prebuild template has no scene delegate, so an SDK 57 app built with the iOS 27 SDK hits this:
+  move to SDK 58 rather than patching it.
+- The Skia package keeps its name: SDK 58 still bundles `@shopify/react-native-skia`, which the
+  engine and components import. Upstream also publishes it as `react-native-skia` (2.15 and 3.x);
+  dissolve does not support that name yet, so install `@shopify/react-native-skia`.
 
 ## Setup
 
