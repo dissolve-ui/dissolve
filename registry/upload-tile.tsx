@@ -20,7 +20,7 @@
  *   onRemove={(file) => setFiles((all) => all.filter((f) => f.id !== file.id))}
  * />
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { Image, ScrollView, StyleSheet, View as RNView, type GestureResponderEvent, type ImageSourcePropType } from 'react-native';
 import { Atlas, Canvas, Path, Skia, rect, useCanvasRef, type SkImage } from '@shopify/react-native-skia';
 import {
@@ -39,6 +39,9 @@ import { capture, frames, measure, runDissolve, useDissolve, useDissolveContext,
 import { Animated, Pressable, Text, View, cn, useToken } from './tw';
 import { notify } from './dots';
 import { CALM, hash, wait } from './motion';
+
+/** Host ref of a View: the class instance on RN <= 0.86, a ReactNativeElement on 0.88+. */
+type RNViewRef = ComponentRef<typeof RNView>;
 
 /** Room kept around the tile for the × and the grains flying in, in points. */
 const PAD = 6;
@@ -178,7 +181,7 @@ export function UploadTile({ file, upload, maxSize, size = 72, spacing = 0, onDo
   /** No grains (reduced motion, or the snapshot failed): the tile fades in with the progress. */
   const [plain, setPlain] = useState(false);
   const { ref, dissolving, dissolve } = useDissolve();
-  const faceRef = useRef<RNView>(null);
+  const faceRef = useRef<RNViewRef>(null);
   const canvasRef = useCanvasRef();
   const loaded = useRef(!image);
   const onLoaded = useRef<(() => void) | null>(null);
@@ -506,7 +509,7 @@ export type UploadTrayProps = {
 /** Horizontal row of upload tiles with an optional add tile, scrolls to a newly added file. */
 export function UploadTray({ files, upload, maxSize, onAdd, onDone, onRemove, size = 72, gap = 6, haptics = true, className, tileClassName }: UploadTrayProps) {
   const muted = useToken('muted');
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
   const count = useRef(files.length);
   const outer = size + PAD * 2;
 

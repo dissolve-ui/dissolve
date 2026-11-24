@@ -42,6 +42,7 @@ import {
   rect,
   useCanvasRef,
   type SkPath,
+  type SkPathBuilder,
 } from '@shopify/react-native-skia';
 import {
   makeMutable,
@@ -180,7 +181,7 @@ const TAU = Math.PI * 2;
  * sometimes one deep chip. Seeded by id. Points go round the same way for every stamp, so the
  * overlapping stamps of a path union cleanly.
  */
-function chip(p: SkPath, x: number, y: number, r: number, id: number, verts: number) {
+function chip(p: SkPathBuilder, x: number, y: number, r: number, id: number, verts: number) {
   'worklet';
   const a0 = hash(id, 11) * TAU;
   const deep = hash(id, 12) < 0.18 ? Math.floor(hash(id, 13) * verts) : -1;
@@ -238,7 +239,10 @@ export function ScratchCard({
   const rgb = useMemo(() => toRGB(color), [color]);
   const ink = `rgba(${Math.round(rgb[0] * 255 * 0.42)}, ${Math.round(rgb[1] * 255 * 0.42)}, ${Math.round(rgb[2] * 255 * 0.45)}, 0.78)`;
 
-  /** Everything scratched so far, as chipped stamps added in place (see lay). */
+  /**
+   * Everything scratched so far. SkPath is immutable since Skia 2.14, so each move copies it into
+   * a PathBuilder, adds that move's stamps and swaps the shared value (see lay).
+   */
   const path = useSharedValue<SkPath>(Skia.Path.Make());
   /** Live stroke: last point (NaN between strokes), distance to the next stamp, stamps laid, width, stamp id. */
   const sx = useSharedValue(NaN);
@@ -414,7 +418,7 @@ export function ScratchCard({
    */
   const lay = (x: number, y: number, speed: number) => {
     'worklet';
-    const P = path.value;
+    const P = Skia.PathBuilder.MakeFromPath(path.value);
     const px = sx.value === sx.value ? sx.value : x;
     const py = sy.value === sy.value ? sy.value : y;
     const dx = x - px;
@@ -447,7 +451,7 @@ export function ScratchCard({
     carry.value = t - d;
     sx.value = x;
     sy.value = y;
-    notify(path);
+    path.value = P.detach();
   };
 
   /** Rough end of a stroke: a couple of small chips just past the last point. */
@@ -456,11 +460,12 @@ export function ScratchCard({
     if (sx.value !== sx.value) return;
     const id = sid.value++;
     const r = (brush / 2) * nib.value;
-    chip(path.value, sx.value + ldx.value * r * 0.45, sy.value + ldy.value * r * 0.45, r * (0.3 + 0.15 * hash(id, 36)), id, 8);
-    chip(path.value, sx.value + ldx.value * r * 0.7 - ldy.value * r * 0.25, sy.value + ldy.value * r * 0.7 + ldx.value * r * 0.25, r * 0.14, id + 7919, 6);
+    const P = Skia.PathBuilder.MakeFromPath(path.value);
+    chip(P, sx.value + ldx.value * r * 0.45, sy.value + ldy.value * r * 0.45, r * (0.3 + 0.15 * hash(id, 36)), id, 8);
+    chip(P, sx.value + ldx.value * r * 0.7 - ldy.value * r * 0.25, sy.value + ldy.value * r * 0.7 + ldx.value * r * 0.25, r * 0.14, id + 7919, 6);
     sx.value = NaN;
     sy.value = NaN;
-    notify(path);
+    path.value = P.detach();
   };
 
   const tiltTo = (x: number, y: number) => {

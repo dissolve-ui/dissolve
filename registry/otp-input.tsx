@@ -10,7 +10,7 @@
  *
  * <OTPInput autoFocus onComplete={async (code) => (await api.verify(code)).ok} />
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { Platform, StyleSheet, TextInput as RNTextInput, View as RNView, type ViewStyle } from 'react-native';
 import {
   cancelAnimation,
@@ -227,7 +227,7 @@ export function OTPInput({
   const code = (value ?? inner).replace(/\D/g, '').slice(0, length);
   const [phase, setPhase] = useState<Phase>('idle');
   const [focused, setFocused] = useState(false);
-  const input = useRef<RNTextInput>(null);
+  const input = useRef<ComponentRef<typeof RNTextInput>>(null);
   const { ref, dissolving, dissolve, reset } = useDissolve();
   const sweep = useSharedValue(0);
   const shake = useSharedValue(0);

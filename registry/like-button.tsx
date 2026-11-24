@@ -23,9 +23,10 @@ const PALETTE = ['#FF2D55', '#FF9F0A', '#5E5CE6', '#34C759', '#64D2FF'];
 
 function Heart({ size, color, filled }: { size: number; color: string; filled: boolean }) {
   const path = useMemo(() => {
-    const p = Skia.Path.MakeFromSVGString(HEART)!;
-    p.transform(Skia.Matrix().scale(size / 24, size / 24));
-    return p;
+    // PathBuilder, not SkPath.transform: Skia 2.14 made SkPath immutable.
+    const b = Skia.PathBuilder.MakeFromPath(Skia.Path.MakeFromSVGString(HEART)!);
+    b.transform(Skia.Matrix().scale(size / 24, size / 24));
+    return b.detach();
   }, [size]);
   return (
     <Canvas style={{ width: size, height: size }}>
