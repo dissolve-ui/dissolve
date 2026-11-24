@@ -5,8 +5,12 @@ import type { SharedValue } from 'react-native-reanimated';
 
 /** Shared types of the engine. */
 
-/** Ref to a native view. Works with the View typings of every React Native version. */
-export type ViewRef = ComponentRef<typeof View>;
+/**
+ * Ref to a native view. Works with the View typings of every React Native version.
+ * An interface rather than an alias so emitted .d.ts files name `ViewRef` instead of
+ * inlining RN's private `ReactNativeElement` (RN 0.88+), which isn't portable (TS2883).
+ */
+export interface ViewRef extends ComponentRef<typeof View> {}
 
 export type Box = { x: number; y: number; width: number; height: number };
 export type Point = { x: number; y: number };
