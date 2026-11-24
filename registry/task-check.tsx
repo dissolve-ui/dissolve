@@ -162,12 +162,12 @@ export function TaskCheck({
     setLines(e.nativeEvent.lines.filter((l) => l.width > 0.5).map((l) => ({ x: l.x, w: l.width, y: l.xHeight ? l.y + l.ascender - l.xHeight / 2 : l.y + l.height * 0.55 })));
   };
   const strikePath = useMemo(() => {
-    const p = Skia.Path.Make();
+    const p = Skia.PathBuilder.Make();
     for (const l of lines) {
       p.moveTo(l.x, l.y);
       p.lineTo(l.x + l.w, l.y);
     }
-    return p;
+    return p.detach();
   }, [lines]);
 
   const onLayout = (e: LayoutChangeEvent) => {

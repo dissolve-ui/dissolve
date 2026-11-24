@@ -147,10 +147,7 @@ function PlayGlyph({ playing, size, color }: { playing: boolean; size: number; c
 /** Straight progress bar: a Skia path trimmed at the progress. */
 function Bar({ width, prog, track, fill }: { width: number; prog: SharedValue<number>; track: string; fill: string }) {
   const path = useMemo(() => {
-    const p = Skia.Path.Make();
-    p.moveTo(2, 7);
-    p.lineTo(Math.max(3, width - 2), 7);
-    return p;
+    return Skia.PathBuilder.Make().moveTo(2, 7).lineTo(Math.max(3, width - 2), 7).detach();
   }, [width]);
   return (
     <Canvas style={{ width, height: 14 }}>
@@ -163,9 +160,7 @@ function Bar({ width, prog, track, fill }: { width: number; prog: SharedValue<nu
 /** Ring around the pill play button, same trim. */
 function Ring({ size, prog, track, fill }: { size: number; prog: SharedValue<number>; track: string; fill: string }) {
   const path = useMemo(() => {
-    const p = Skia.Path.Make();
-    p.addArc({ x: 2, y: 2, width: size - 4, height: size - 4 }, -90, 359.9);
-    return p;
+    return Skia.PathBuilder.Make().addArc({ x: 2, y: 2, width: size - 4, height: size - 4 }, -90, 359.9).detach();
   }, [size]);
   return (
     <Canvas style={[StyleSheet.absoluteFill, { width: size, height: size }]} pointerEvents="none">
