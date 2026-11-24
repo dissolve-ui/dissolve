@@ -14,7 +14,7 @@ import {
 } from '@shopify/react-native-skia';
 import { makeMutable, useAnimatedReaction, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { notifyInPlace } from '../core';
+import { argb, notifyInPlace } from '../core';
 import type { CustomVariant, RendererProps } from '../types';
 
 /**
@@ -48,6 +48,14 @@ const SS = 12;
 const DEFAULT_SHARDS = 220;
 const GRAVITY_HALF = 450;
 const PI3 = Math.PI * 3;
+// Shard and glint colors are packed ARGB numbers (see argb in core.ts).
+/** A shard at rest: plain white, so the texture shows untouched. */
+const SHARD_REST = 0xffffffff;
+/** Glint tint (a cool white); its alpha is the glint strength. */
+const GLINT_R = 0.94;
+const GLINT_G = 0.97;
+const GLINT_B = 1;
+const GLINT_OFF = argb(GLINT_R, GLINT_G, GLINT_B, 0);
 
 type Pt = { x: number; y: number };
 
@@ -305,8 +313,8 @@ function shardFrame(
   Y: number,
   sec: number,
   pts: { x: number; y: number }[],
-  cols: Float32Array[],
-  glint: Float32Array[],
+  cols: number[],
+  glint: number[],
 ) {
   'worklet';
   for (let i = 0; i < count; i++) {
@@ -323,12 +331,8 @@ function shardFrame(
         const p = pts[v];
         p.x = X + rx[v];
         p.y = Y + ry[v];
-        const c = cols[v];
-        c[0] = 1;
-        c[1] = 1;
-        c[2] = 1;
-        c[3] = 1;
-        glint[v][3] = 0;
+        cols[v] = SHARD_REST;
+        glint[v] = GLINT_OFF;
       }
       continue;
     }
@@ -347,18 +351,17 @@ function shardFrame(
     const sp = Math.sin(phi);
     const s2 = sp * sp;
     const gl = sp > 0 ? 0.55 * s2 * s2 * s2 * a : 0;
+    // Same packed color for every vertex of the shard.
+    const shade = argb(light, light, light, a);
+    const glow = argb(GLINT_R, GLINT_G, GLINT_B, gl);
     for (let v = vs; v < ve; v++) {
       const lx = ax[v];
       const ly = ay[v] * fy;
       const p = pts[v];
       p.x = px + ca * lx - sa * ly;
       p.y = py + sa * lx + ca * ly;
-      const c = cols[v];
-      c[0] = light;
-      c[1] = light;
-      c[2] = light;
-      c[3] = a;
-      glint[v][3] = gl;
+      cols[v] = shade;
+      glint[v] = glow;
     }
   }
 }
@@ -396,12 +399,12 @@ function ShatterRenderer({ burst, progress, end }: RendererProps) {
     const p0 = burst.start.p;
     const tn0 = (rev ? end - p0 : p0) / end;
     const pts0: { x: number; y: number }[] = [];
-    const cols0: Float32Array[] = [];
-    const glint0: Float32Array[] = [];
+    const cols0: number[] = [];
+    const glint0: number[] = [];
     for (let v = 0; v < mesh.vcount; v++) {
       pts0.push({ x: X + mesh.rx[v], y: Y + mesh.ry[v] });
-      cols0.push(new Float32Array([1, 1, 1, 1]));
-      glint0.push(new Float32Array([0.94, 0.97, 1, 0]));
+      cols0.push(SHARD_REST);
+      glint0.push(GLINT_OFF);
     }
     shardFrame(tn0, mesh.count, mesh.sd, mesh.ax, mesh.ay, mesh.rx, mesh.ry, X, Y, sec, pts0, cols0, glint0);
     const f0 = rev ? { r: 0.5, op: 0 } : flashAt(tn0, mesh.flashR);
@@ -452,7 +455,7 @@ function ShatterRenderer({ burst, progress, end }: RendererProps) {
   );
 
   const center = vec(X + M.ox, Y + M.oy);
-  // Skia types colors as string[], it also accepts Float32Array colors at runtime.
+  // Skia types Vertices colors as string[], its native side also takes packed ARGB numbers.
   const colsProp = cols as unknown as SharedValue<string[]>;
   const glintProp = glint as unknown as SharedValue<string[]>;
 

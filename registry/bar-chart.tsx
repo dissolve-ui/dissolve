@@ -37,7 +37,7 @@ import {
 import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { Animated, Text, View, cn, useToken } from './tw';
-import { makeSprite, notify, toRGB } from './dots';
+import { argb, atlasColors, makeColors, makeSprite, notify, toRGB } from './dots';
 import { CALM, CALM_FN, hash } from './motion';
 
 /** Enter: dots fly in and assemble the bars. */
@@ -324,7 +324,7 @@ export function BarChart({
       sprites: new Array(CAPACITY).fill(0).map(() => rect(0, 0, spritePx + 2, spritePx + 2)),
       rnd: new Array(CAPACITY * RND).fill(0).map((_, j) => hash(Math.floor(j / RND), 10 + (j % RND))),
       transforms: makeMutable(new Array(CAPACITY).fill(0).map(() => Skia.RSXform(0, 0, -100, -100))),
-      tints: makeMutable(new Array(CAPACITY).fill(0).map(() => new Float32Array([1, 1, 1, 0]))),
+      tints: makeColors(CAPACITY),
       // x, y, alpha, diameter, r, g, b
       pose: makeMutable<number[]>(new Array(CAPACITY * 7).fill(0)),
       from: makeMutable<number[]>(new Array(CAPACITY * 7).fill(0)),
@@ -423,7 +423,7 @@ export function BarChart({
           Q[i * 2 + 1] = Math.min(base - 2, F[p + 1] + 40);
         } else {
           transforms.value[i].set(0, 0, -100, -100);
-          tints.value[i][3] = 0;
+          tints.value[i] = 0;
           P[p + 2] = 0;
         }
         if (reduced) {
@@ -539,11 +539,7 @@ export function BarChart({
       const m = s / spritePx;
       const half = (m * (spritePx + 2)) / 2;
       T_[i].set(m, 0, x + O[o] - half, y + O[o + 1] - half);
-      const cl = K_[i];
-      cl[0] = r;
-      cl[1] = g;
-      cl[2] = b;
-      cl[3] = alpha < 0 ? 0 : alpha > 1 ? 1 : alpha;
+      K_[i] = argb(r, g, b, alpha);
     }
     sg.sc = sc;
     sg.ps = ps;
@@ -719,7 +715,7 @@ export function BarChart({
             <Canvas style={{ width: W, height }} pointerEvents="none">
               <Picture picture={picture} />
               {sprite ? (
-                <Atlas image={sprite} sprites={sprites} transforms={transforms} colors={tints} colorBlendMode="modulate" sampling={{ filter: FilterMode.Linear, mipmap: MipmapMode.Linear }} />
+                <Atlas image={sprite} sprites={sprites} transforms={transforms} colors={atlasColors(tints)} colorBlendMode="modulate" sampling={{ filter: FilterMode.Linear, mipmap: MipmapMode.Linear }} />
               ) : null}
             </Canvas>
           ) : null}

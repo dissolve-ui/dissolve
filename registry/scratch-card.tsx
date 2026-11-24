@@ -57,7 +57,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { frames, measure, runDissolve, useDissolveContext, type ViewRef } from 'dissolve-ui';
 import { Animated, View, cn } from './tw';
-import { makeSprite, notify, toRGB } from './dots';
+import { argb, atlasColors, makeColors, makeSprite, notify, toRGB } from './dots';
 import { CALM, hash, wait } from './motion';
 
 export type ScratchCardHandle = {
@@ -256,7 +256,7 @@ export function ScratchCard({
       sprite: makeSprite(SPR - 2),
       sprites: new Array(N).fill(0).map(() => rect(0, 0, SPR, SPR)),
       transforms: makeMutable(new Array(N).fill(0).map(() => Skia.RSXform(0, 0, -100, -100))),
-      colors: makeMutable(new Array(N).fill(0).map(() => new Float32Array([1, 1, 1, 0]))),
+      colors: makeColors(N),
     }),
     [rows],
   );
@@ -314,8 +314,11 @@ export function ScratchCard({
         return;
       }
       const snap = await view.makeImageSnapshotAsync();
+      // A CPU copy for the dust; the GPU snapshot is not needed past this point.
       const shot = snap.makeNonTextureImage() ?? snap;
-      const res = await runDissolve(ctx, foilRef, { preset: 'dust', origin: { x: ox, y: oy }, duration: 1100, haptics: false }, { image: shot, box });
+      if (shot !== snap) snap.dispose();
+      // The engine owns the copy: it frees it once the dust is gone.
+      const res = await runDissolve(ctx, foilRef, { preset: 'dust', origin: { x: ox, y: oy }, duration: 1100, haptics: false }, { image: shot, box, owned: [shot] });
       await frames(2);
       setGone(true);
       success();
@@ -544,7 +547,7 @@ export function ScratchCard({
       if (age >= 1) {
         A[k + 5] = 0;
         T_[i].set(0, 0, -100, -100);
-        K_[i][3] = 0;
+        K_[i] = 0;
         continue;
       }
       alive++;
@@ -555,12 +558,8 @@ export function ScratchCard({
       const m = (A[k + 6] * (1 - 0.4 * age)) / SPR;
       T_[i].set(m, 0, A[k] + PAD - (m * SPR) / 2, A[k + 1] + PAD - (m * SPR) / 2);
       const sh = A[k + 7];
-      const cl = K_[i];
-      cl[0] = Math.min(1, b[0] * sh);
-      cl[1] = Math.min(1, b[1] * sh);
-      cl[2] = Math.min(1, b[2] * sh);
       const fade = age < 0.55 ? 1 : 1 - (age - 0.55) / 0.45;
-      cl[3] = fade * fade;
+      K_[i] = argb(b[0] * sh, b[1] * sh, b[2] * sh, fade * fade);
     }
     live.value = alive;
     notify(transforms);
@@ -630,7 +629,7 @@ export function ScratchCard({
 
       {/* Foil grains: outside the clip, so they fall past the card edge. */}
       <Canvas pointerEvents="none" style={{ position: 'absolute', left: -PAD, top: -PAD, width: W + PAD * 2, height: H + PAD + FALL }}>
-        {sprite ? <Atlas image={sprite} sprites={sprites} transforms={transforms} colors={colors} colorBlendMode="modulate" sampling={{ filter: FilterMode.Linear, mipmap: MipmapMode.Linear }} /> : null}
+        {sprite ? <Atlas image={sprite} sprites={sprites} transforms={transforms} colors={atlasColors(colors)} colorBlendMode="modulate" sampling={{ filter: FilterMode.Linear, mipmap: MipmapMode.Linear }} /> : null}
       </Canvas>
     </View>
   );

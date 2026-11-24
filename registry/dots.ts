@@ -3,8 +3,8 @@
  * channels, the round sprite of the Skia Atlas, and the in place buffer update.
  * `npx dissolve-ui add` copies it next to the components that use it.
  */
-import { Skia } from '@shopify/react-native-skia';
-import type { SharedValue } from 'react-native-reanimated';
+import { Skia, type SkColor } from '@shopify/react-native-skia';
+import { makeMutable, type SharedValue } from 'react-native-reanimated';
 
 /** Parses a token string (rgb(28 28 30), rgb(1, 2, 3 / 0.5), #rgb, #rrggbb) into 0..1 channels, alpha last. */
 export function toRGBA(c: string): [number, number, number, number] {
@@ -24,6 +24,32 @@ export function toRGB(c: string): [number, number, number] {
   return [r, g, b];
 }
 
+/**
+ * Packs 0..1 channels into one ARGB integer for the Atlas colors: Skia reads a number with a
+ * plain cast, while a Float32Array color costs several JSI lookups per dot per frame. Channels
+ * are clamped and truncated to bytes, like Skia does with float colors. Same as `argb` in the
+ * engine (dissolve-ui core), kept here so the components do not depend on a newer engine.
+ */
+export function argb(r: number, g: number, b: number, a: number): number {
+  'worklet';
+  const R = r <= 0 ? 0 : r >= 1 ? 255 : (r * 255) | 0;
+  const G = g <= 0 ? 0 : g >= 1 ? 255 : (g * 255) | 0;
+  const B = b <= 0 ? 0 : b >= 1 ? 255 : (b * 255) | 0;
+  const A = a <= 0 ? 0 : a >= 1 ? 255 : (a * 255) | 0;
+  return ((A << 24) | (R << 16) | (G << 8) | B) >>> 0;
+}
+
+/** An Atlas colors buffer of `n` packed ARGB numbers, all transparent. */
+export function makeColors(n: number) {
+  return makeMutable<number[]>(new Array(n).fill(0));
+}
+
+/** The colors buffer as the Atlas prop. */
+export function atlasColors(colors: SharedValue<number[]>) {
+  // Skia types Atlas colors as Float32Array[], its native side also takes packed ARGB numbers.
+  return colors as unknown as SharedValue<SkColor[]>;
+}
+
 /** White antialiased disc of `d` pixels on a (d + 2) square, tinted per dot by the Atlas colors (modulate). */
 export function makeSprite(d: number) {
   const size = d + 2;
@@ -37,7 +63,12 @@ export function makeSprite(d: number) {
   canvas.drawCircle(size / 2, size / 2, d / 2, paint);
   surface.flush();
   const snap = surface.makeImageSnapshot();
-  return snap.makeNonTextureImage() ?? snap;
+  // A CPU copy outlives the surface; the GPU snapshot, the paint and the surface are freed here.
+  const sprite = snap.makeNonTextureImage() ?? snap;
+  if (sprite !== snap) snap.dispose();
+  paint.dispose();
+  surface.dispose();
+  return sprite;
 }
 
 /**

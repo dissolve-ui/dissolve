@@ -1,12 +1,16 @@
 import { useMemo, type ReactElement } from 'react';
 import { StyleSheet } from 'react-native';
-import { Atlas, Canvas, Group, rect, Skia } from '@shopify/react-native-skia';
+import { Atlas, Canvas, Group, rect, Skia, type SkColor } from '@shopify/react-native-skia';
 import { makeMutable, useAnimatedReaction, useSharedValue, type SharedValue } from 'react-native-reanimated';
-import { clampDelay, DEFAULT_END, notifyInPlace, originField } from './core';
+import { argb, clampDelay, DEFAULT_END, notifyInPlace, originField } from './core';
 import type { AtlasVariant, Burst, FieldFn, GrainData, GrainOut } from './types';
 
 /** Base floats per grain: lx, ly, r1, r2, r3, r4, delay, life. Variant extras follow. */
 export const BASE_STRIDE = 8;
+
+/** Rest colors: white x grain (modulate) or no tint at all (tint mode, dstATop). */
+const REST_WHITE = 0xffffffff;
+const REST_TINT = 0x00ffffff;
 
 export type ParticlesProps = {
   burst: Burst;
@@ -88,7 +92,8 @@ export function Particles({ burst, variant, progress, field, layer }: ParticlesP
     const pe0 = rev ? end - p0 : p0;
     const o: GrainOut = { cx: 0, cy: 0, s: 1, rot: 0, r: 1, g: 1, b: 1, a: 1 };
     const xf = [];
-    const cl = [];
+    // One packed ARGB number per grain (see argb in core.ts).
+    const cl: number[] = [];
     for (let i = 0; i < count; i++) {
       const k = i * stride;
       const lx = data[k];
@@ -98,8 +103,8 @@ export function Particles({ burst, variant, progress, field, layer }: ParticlesP
       const restOut = t === 0 && natural !== 'in' && !burst.aux0 && !burst.aux1 && !(natural === 'both' && P.dir === 1);
       if (restOut) {
         xf.push(Skia.RSXform(1 / pr, 0, x + lx - grain / 2, y + ly - grain / 2));
-        // At rest the grain must look untouched: white x grain (modulate) or no tint (tint mode).
-        cl.push(tint ? new Float32Array([1, 1, 1, 0]) : Skia.Color('white'));
+        // At rest the grain must look untouched.
+        cl.push(tint ? REST_TINT : REST_WHITE);
         continue;
       }
       o.cx = x + lx;
@@ -115,7 +120,7 @@ export function Particles({ burst, variant, progress, field, layer }: ParticlesP
       const scos = o.rot === 0 ? sc : sc * Math.cos(o.rot);
       const ssin = o.rot === 0 ? 0 : sc * Math.sin(o.rot);
       xf.push(Skia.RSXform(scos, ssin, o.cx - (scos * half - ssin * half), o.cy - (ssin * half + scos * half)));
-      cl.push(new Float32Array([o.r, o.g, o.b, o.a < 0 ? 0 : o.a]));
+      cl.push(argb(o.r, o.g, o.b, o.a));
     }
     return { sprites, data, transforms: makeMutable(xf), colors: makeMutable(cl) };
     // The burst is immutable for the lifetime of this component.
@@ -167,11 +172,7 @@ export function Particles({ burst, variant, progress, field, layer }: ParticlesP
         const scos = o.rot === 0 ? sc : sc * Math.cos(o.rot);
         const ssin = o.rot === 0 ? 0 : sc * Math.sin(o.rot);
         T[i].set(scos, ssin, o.cx - (scos * half - ssin * half), o.cy - (ssin * half + scos * half));
-        const col = K[i];
-        col[0] = o.r;
-        col[1] = o.g;
-        col[2] = o.b;
-        col[3] = o.a;
+        K[i] = argb(o.r, o.g, o.b, o.a);
       }
       last.value = p;
       lastA0.value = a0;
@@ -181,14 +182,17 @@ export function Particles({ burst, variant, progress, field, layer }: ParticlesP
     },
   );
 
+  // Skia types Atlas colors as Float32Array[], its native side also takes packed ARGB numbers.
+  const atlasColors = colors as unknown as SharedValue<SkColor[]>;
+
   return (
     <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
       {layer ? (
         <Group layer={layer}>
-          <Atlas image={image} sprites={sprites} transforms={transforms} colors={colors} colorBlendMode={tint ? 'dstATop' : 'modulate'} />
+          <Atlas image={image} sprites={sprites} transforms={transforms} colors={atlasColors} colorBlendMode={tint ? 'dstATop' : 'modulate'} />
         </Group>
       ) : (
-        <Atlas image={image} sprites={sprites} transforms={transforms} colors={colors} colorBlendMode={tint ? 'dstATop' : 'modulate'} />
+        <Atlas image={image} sprites={sprites} transforms={transforms} colors={atlasColors} colorBlendMode={tint ? 'dstATop' : 'modulate'} />
       )}
     </Canvas>
   );

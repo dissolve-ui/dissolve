@@ -49,7 +49,7 @@ import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import { frames, runDissolve, useDissolveContext, type VariantName } from 'dissolve-ui';
 import { View, cn, useToken } from './tw';
-import { makeSprite, notify, toRGB } from './dots';
+import { argb, atlasColors, makeColors, makeSprite, notify, toRGB } from './dots';
 import { CALM, wait } from './motion';
 
 /** Rows making room. */
@@ -406,7 +406,7 @@ export function ReorderList<T>({
       sprite: makeSprite(spritePx),
       sprites: new Array(GRAINS).fill(0).map(() => rect(0, 0, spritePx + 2, spritePx + 2)),
       transforms: makeMutable(new Array(GRAINS).fill(0).map(() => Skia.RSXform(0, 0, -100, -100))),
-      tints: makeMutable(new Array(GRAINS).fill(0).map(() => new Float32Array([1, 1, 1, 0]))),
+      tints: makeColors(GRAINS),
       pool: makeMutable<number[]>(new Array(GRAINS * GF).fill(0)),
     }),
     [spritePx],
@@ -471,12 +471,13 @@ export function ReorderList<T>({
           if (image && origin) {
             const w = width.value;
             const h = heights.value[k] ?? 0;
-            const res = await runDissolve(c, ref, { preset: p }, { image, box: { x: origin.x + x, y: origin.y + top, width: w, height: h } });
+            // The engine owns the snapshot: it frees it once the dust is gone.
+            const res = await runDissolve(c, ref, { preset: p }, { image, box: { x: origin.x + x, y: origin.y + top, width: w, height: h }, owned: [image] });
             if (res) {
               await frames(2);
               dur = res.duration;
             }
-          }
+          } else image?.dispose();
         }
         phase.value = GONE;
         if (dur) await wait(dur * 0.3);
@@ -719,11 +720,11 @@ export function ReorderList<T>({
         if (age >= life) {
           G[o + 5] = 0;
           T[i].set(0, 0, -100, -100);
-          K[i][3] = 0;
+          K[i] = 0;
           continue;
         }
         if (age < 0) {
-          K[i][3] = 0;
+          K[i] = 0;
           continue;
         }
         G[o] += G[o + 2] * dt;
@@ -735,11 +736,7 @@ export function ReorderList<T>({
         const m = G[o + 6] / spritePx;
         const half = (m * (spritePx + 2)) / 2;
         T[i].set(m, 0, ox + G[o] - half, oy + G[o + 1] - half);
-        const cl = K[i];
-        cl[0] = c[0];
-        cl[1] = c[1];
-        cl[2] = c[2];
-        cl[3] = a;
+        K[i] = argb(c[0], c[1], c[2], a);
       }
       if (!any) alive.value = 0;
       notify(transforms);
@@ -816,7 +813,7 @@ export function ReorderList<T>({
               image={atlas.sprite}
               sprites={atlas.sprites}
               transforms={transforms}
-              colors={tints}
+              colors={atlasColors(tints)}
               colorBlendMode="modulate"
               sampling={{ filter: FilterMode.Linear, mipmap: MipmapMode.Linear }}
             />

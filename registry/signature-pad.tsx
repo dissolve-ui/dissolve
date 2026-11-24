@@ -240,7 +240,11 @@ export function SignaturePad({
     for (const p of paths) canvas.drawPath(p, paint);
     surface.flush();
     const snap = surface.makeImageSnapshot();
+    // A CPU copy outlives the surface; the GPU snapshot, the paint and the surface are freed here.
     const image = snap.makeNonTextureImage() ?? snap;
+    if (image !== snap) snap.dispose();
+    paint.dispose();
+    surface.dispose();
     return { image, base64: image.encodeToBase64(), width: size.w, height: size.h };
   }, [strokes.length, size, exportBackground, ink, paths]);
 
@@ -259,11 +263,12 @@ export function SignaturePad({
       const box = shot ? await measure(inkRef) : null;
       if (shot && box) {
         // Transparent snapshot of the ink only: the line and the paper stay, the signature blows away.
-        const res = await runDissolve(ctx, inkRef, { preset: 'dust', origin: 'left', duration: 1200, haptics }, { image: shot.image, box });
+        // The engine owns this export: it frees it once the dust is gone.
+        const res = await runDissolve(ctx, inkRef, { preset: 'dust', origin: 'left', duration: 1200, haptics }, { image: shot.image, box, owned: [shot.image] });
         await frames(2);
         setHidden(true);
         if (res) await new Promise((r) => setTimeout(r, res.duration * 0.35));
-      }
+      } else shot?.image.dispose();
       cur.value = [];
       setStrokes([]);
       await frames(2);

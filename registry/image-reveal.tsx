@@ -191,8 +191,11 @@ export function ImageReveal({
       return;
     }
     const snap = await view.makeImageSnapshotAsync();
+    // A CPU copy for the dust; the GPU snapshot is not needed past this point.
     const shot = snap.makeNonTextureImage() ?? snap;
-    const res = await runDissolve(ctx, wrapRef, { preset: 'dust', duration: 1200, haptics }, { image: shot, box });
+    if (shot !== snap) snap.dispose();
+    // The engine owns the copy: it frees it once the dust is gone.
+    const res = await runDissolve(ctx, wrapRef, { preset: 'dust', duration: 1200, haptics }, { image: shot, box, owned: [shot] });
     await frames(2);
     setGone(true);
     if (res) await new Promise((r) => setTimeout(r, res.duration * 0.4));

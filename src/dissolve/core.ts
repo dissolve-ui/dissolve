@@ -68,9 +68,26 @@ export function notifyInPlace<T>(sv: SharedValue<T>, value: T) {
 }
 
 /**
+ * Packs 0..1 channels into one ARGB integer, the cheapest color Skia's Atlas and Vertices
+ * accept: the native side casts a number straight to SkColor, while a Float32Array color
+ * costs several JSI property reads per grain per frame. Channels are clamped to 0..1 and
+ * truncated to bytes, the same rounding Skia applies to float colors.
+ */
+export function argb(r: number, g: number, b: number, a: number): number {
+  'worklet';
+  const R = r <= 0 ? 0 : r >= 1 ? 255 : (r * 255) | 0;
+  const G = g <= 0 ? 0 : g >= 1 ? 255 : (g * 255) | 0;
+  const B = b <= 0 ? 0 : b >= 1 ? 255 : (b * 255) | 0;
+  const A = a <= 0 ? 0 : a >= 1 ? 255 : (a * 255) | 0;
+  return ((A << 24) | (R << 16) | (G << 8) | B) >>> 0;
+}
+
+/**
  * JS side: draw the image into a small width x height surface (nearest sampling, so it is
  * a point sampled downscale) and read it back as RGBA 8888 unpremultiplied. dst defaults
- * to the whole surface. Every Skia object made here is disposed. Null on failure.
+ * to the whole surface. View snapshots are CPU images, so this runs on a CPU raster surface
+ * with no GPU upload or readback; a texture backed image still goes through the GPU. Every
+ * Skia object made here is disposed. Null on failure.
  */
 export function readScaled(image: SkImage, width: number, height: number, dst?: SkRect): Uint8Array | null {
   let surface: SkSurface | null = null;
@@ -78,7 +95,9 @@ export function readScaled(image: SkImage, width: number, height: number, dst?: 
   let snap: SkImage | null = null;
   let raster: SkImage | null = null;
   try {
-    surface = Skia.Surface.MakeOffscreen(width, height) ?? Skia.Surface.Make(width, height);
+    // isTextureBacked exists on the native SkImage, Skia's types just do not declare it.
+    const gpu = (image as SkImage & { isTextureBacked?: () => boolean }).isTextureBacked?.() === true;
+    surface = gpu ? (Skia.Surface.MakeOffscreen(width, height) ?? Skia.Surface.Make(width, height)) : Skia.Surface.Make(width, height);
     if (!surface) return null;
     paint = Skia.Paint();
     const canvas = surface.getCanvas();
@@ -86,8 +105,8 @@ export function readScaled(image: SkImage, width: number, height: number, dst?: 
     canvas.drawImageRect(image, rect(0, 0, image.width(), image.height()), dst ?? rect(0, 0, width, height), paint);
     surface.flush();
     snap = surface.makeImageSnapshot();
-    raster = snap.makeNonTextureImage();
-    const px = raster?.readPixels(0, 0, { width, height, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Unpremul });
+    if (gpu) raster = snap.makeNonTextureImage();
+    const px = (raster ?? snap).readPixels(0, 0, { width, height, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Unpremul });
     if (!px || px.length < width * height * 4) return null;
     return px as Uint8Array;
   } catch {

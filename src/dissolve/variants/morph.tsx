@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
-import { Atlas, Canvas, rect, Skia, type SkImage, type SkRect } from '@shopify/react-native-skia';
-import { makeMutable, useAnimatedReaction, useSharedValue } from 'react-native-reanimated';
-import { notifyInPlace, readScaled, ss } from '../core';
+import { Atlas, Canvas, rect, Skia, type SkColor, type SkImage, type SkRect } from '@shopify/react-native-skia';
+import { makeMutable, useAnimatedReaction, useSharedValue, type SharedValue } from 'react-native-reanimated';
+import { argb, notifyInPlace, readScaled, ss } from '../core';
 import type { Box, CustomVariant, RendererProps } from '../types';
 
 /**
@@ -142,8 +142,9 @@ function MorphRenderer({ burst, progress }: RendererProps) {
     const p0 = burst.start.p;
     const TA = [];
     const TB = [];
-    const CA = [];
-    const CB = [];
+    // Packed ARGB colors, white with the fade as alpha (see argb in core.ts).
+    const CA: number[] = [];
+    const CB: number[] = [];
     for (let k = 0; k < N; k++) {
       const j = k * S;
       let t = (p0 - d[j + 6]) / d[j + 7];
@@ -160,8 +161,8 @@ function MorphRenderer({ burst, progress }: RendererProps) {
       const sb = s / prB;
       TA.push(Skia.RSXform(sa, 0, cx - sa * halfA, cy - sa * halfA));
       TB.push(Skia.RSXform(sb, 0, cx - sb * halfB, cy - sb * halfB));
-      CA.push(new Float32Array([1, 1, 1, d[j + 8] * (1 - cross)]));
-      CB.push(new Float32Array([1, 1, 1, d[j + 9] * cross]));
+      CA.push(argb(1, 1, 1, d[j + 8] * (1 - cross)));
+      CB.push(argb(1, 1, 1, d[j + 9] * cross));
     }
     return {
       N,
@@ -210,8 +211,8 @@ function MorphRenderer({ burst, progress }: RendererProps) {
         const sb = s / prB;
         ta[k].set(sa, 0, cx - sa * halfA, cy - sa * halfA);
         tb[k].set(sb, 0, cx - sb * halfB, cy - sb * halfB);
-        ca[k][3] = d[j + 8] * (1 - cross);
-        cb[k][3] = d[j + 9] * cross;
+        ca[k] = argb(1, 1, 1, d[j + 8] * (1 - cross));
+        cb[k] = argb(1, 1, 1, d[j + 9] * cross);
       }
       last.value = p;
       notifyInPlace(TA, ta);
@@ -221,10 +222,14 @@ function MorphRenderer({ burst, progress }: RendererProps) {
     },
   );
 
+  // Skia types Atlas colors as Float32Array[], its native side also takes packed ARGB numbers.
+  const colorsA = CA as unknown as SharedValue<SkColor[]>;
+  const colorsB = CB as unknown as SharedValue<SkColor[]>;
+
   return (
     <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Atlas image={imageA} sprites={m.spritesA} transforms={TA} colors={CA} colorBlendMode="modulate" />
-      <Atlas image={imageB} sprites={m.spritesB} transforms={TB} colors={CB} colorBlendMode="modulate" />
+      <Atlas image={imageA} sprites={m.spritesA} transforms={TA} colors={colorsA} colorBlendMode="modulate" />
+      <Atlas image={imageB} sprites={m.spritesB} transforms={TB} colors={colorsB} colorBlendMode="modulate" />
     </Canvas>
   );
 }
